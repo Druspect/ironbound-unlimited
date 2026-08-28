@@ -1,12 +1,11 @@
 # Ironbound: Unlimited
 
-Playable cinematic steam railway in the browser.
+Playable cinematic steam railway.
 
-**Play:** https://druspect.github.io/ironbound-unlimited/
+**Play now:** https://raw.githack.com/Druspect/ironbound-unlimited/main/index.html
 
-- **W / ↑** — throttle
-- **S / ↓** — brake
-- **Space** — whistle
-- Engine Shop — buy famous American steam locomotives
+- **W / ↑** throttle · **S / ↓** brake · **Space** whistle
+- Engine Shop — famous American steam locomotives
+- Progress saves in this browser. No account.
 
-Progress saves in this browser (`localStorage`). No account required.
+Also: https://druspect.github.io/ (GitHub Pages, once the first deploy finishes)
