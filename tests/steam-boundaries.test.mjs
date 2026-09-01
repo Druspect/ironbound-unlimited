@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { LOCOMOTIVES } from "../app/locomotive-catalog.ts";
-import { advanceLocomotive } from "../app/locomotive-physics.ts";
+import { advanceLocomotive, targetSpeedForThrottle } from "../app/locomotive-physics.ts";
 import {
   DEFAULT_CONSIST,
   advanceSteamResources,
@@ -26,6 +26,51 @@ test("every engine responds strictly and monotonically to three additional loade
     assert.ok(long.maximumSpeedFactor < short.maximumSpeedFactor, `${engine.id} loaded speed`);
     assert.ok(long.maximumSpeedFactor >= .72 && short.maximumSpeedFactor <= 1);
   }
+});
+
+test("fact-derived handling signatures are bounded and unique across the full fleet", () => {
+  const signatures = new Set();
+  for (const engine of LOCOMOTIVES) {
+    const profile = operatingProfileFor(engine.id);
+    assert.ok(profile.throttleResponseFactor >= .72 && profile.throttleResponseFactor <= 1.24, `${engine.id} response`);
+    assert.ok(profile.adhesionFactor >= .84 && profile.adhesionFactor <= 1.12, `${engine.id} adhesion`);
+    assert.ok(profile.steamingCapacityFactor >= .86 && profile.steamingCapacityFactor <= 1.18, `${engine.id} steam`);
+    assert.ok(profile.brakeRiggingFactor >= .76 && profile.brakeRiggingFactor <= 1.16, `${engine.id} brakes`);
+    signatures.add([profile.throttleResponseFactor, profile.adhesionFactor, profile.steamingCapacityFactor, profile.brakeRiggingFactor].map((value) => value.toFixed(4)).join("/"));
+  }
+  assert.equal(signatures.size, LOCOMOTIVES.length, "no two engines may collapse to one handling signature");
+});
+
+test("adhesion, throttle response, steaming capacity, and brake rigging each change behavior", () => {
+  const prr = operatingProfileFor("prr-1361");
+  const bigBoy = operatingProfileFor("big-boy-4014");
+  const up844 = operatingProfileFor("up-844");
+  const southern = operatingProfileFor("southern-4501");
+  const state = { speed: 0, boilerLoad: 42, heat: 0, overloaded: false, safetyLockSeconds: 0, distance: 0 };
+
+  const accelerate = (profile) => {
+    let current = state;
+    for (let step = 0; step < 80; step += 1) current = advanceLocomotive(current, 62, .1, 1.1, 0, { maximumSpeed: 70, throttleResponseFactor: profile.throttleResponseFactor });
+    return current.speed;
+  };
+  assert.ok(accelerate(prr) > accelerate(bigBoy) + 2, "a high-driver Pacific must answer the regulator faster than an articulated freight engine");
+
+  const gradeTarget = (profile) => targetSpeedForThrottle(60, false, 2.2, { maximumSpeed: 70, adhesionFactor: profile.adhesionFactor });
+  assert.ok(gradeTarget(bigBoy) > gradeTarget(up844), "higher adhesion must preserve more speed on grade");
+
+  const steam = (profile) => {
+    let current = state;
+    for (let step = 0; step < 100; step += 1) current = advanceLocomotive(current, 78, .1, 0, 0, { maximumSpeed: 70, steamingCapacityFactor: profile.steamingCapacityFactor });
+    return current.boilerLoad;
+  };
+  assert.ok(steam(up844) < steam(southern), "greater steaming capacity must carry equal demand at lower boiler load");
+
+  const brake = (profile) => {
+    let current = { ...state, speed: 45 };
+    for (let step = 0; step < 20; step += 1) current = advanceLocomotive(current, 0, .1, 0, 1, { maximumSpeed: 70, brakeRiggingFactor: profile.brakeRiggingFactor });
+    return current.speed;
+  };
+  assert.ok(brake(prr) < brake(bigBoy), "stronger brake rigging must reduce speed sooner under equal application");
 });
 
 test("a hot stationary locomotive still consumes fuel and water", () => {
@@ -79,6 +124,10 @@ test("a longer consist reaches a lower sustainable speed under identical control
         accelerationFactor: metrics.accelerationFactor,
         brakeResponseFactor: metrics.brakeResponseFactor,
         thermalLoadFactor: metrics.resourceLoadFactor / profile.thermalEfficiency,
+        throttleResponseFactor: profile.throttleResponseFactor,
+        adhesionFactor: profile.adhesionFactor,
+        steamingCapacityFactor: profile.steamingCapacityFactor,
+        brakeRiggingFactor: profile.brakeRiggingFactor,
       });
     }
     return state;

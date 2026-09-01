@@ -241,6 +241,10 @@ export default function Home() {
           setEquippedEngine(qaEngine.id);
           brakeRef.current = true;
           setBrakeEngaged(true);
+          if (qaParameters?.get("qaService") === "active") {
+            steamResourcesRef.current = { fuel: 10, water: 10, stationsWithoutService: 3, failure: null };
+            setSteamResources(steamResourcesRef.current);
+          }
           const qaFailure = qaParameters?.get("qaFailure");
           if (qaFailure === "fuel" || qaFailure === "water" || qaFailure === "service") {
             runFailureRef.current = qaFailure;
@@ -372,6 +376,10 @@ export default function Home() {
           maximumSpeed: operatingProfile.maximumSpeedMph * consistMetrics.maximumSpeedFactor,
           accelerationFactor: consistMetrics.accelerationFactor,
           brakeResponseFactor: consistMetrics.brakeResponseFactor,
+          throttleResponseFactor: operatingProfile.throttleResponseFactor,
+          adhesionFactor: operatingProfile.adhesionFactor,
+          steamingCapacityFactor: operatingProfile.steamingCapacityFactor,
+          brakeRiggingFactor: operatingProfile.brakeRiggingFactor,
           thermalLoadFactor: consistMetrics.resourceLoadFactor / operatingProfile.thermalEfficiency *
             (1 + clamp((25 - steamResourcesRef.current.water) / 25, 0, 1) * .22),
         });
@@ -709,6 +717,7 @@ export default function Home() {
           ? "STRONG STEAM"
           : "FULL STEAM";
   const stationDistanceYards = Math.max(0, Math.round(stationState.distance * 1.15));
+  const servicing = stationState.inZone && speed < 2.5 && stationState.dwell > 0 && !stationState.collected;
   const openScreen = (next: typeof screen) => {
     setScreen(next);
     setPaused(next !== "game" || Boolean(runFailureRef.current));
@@ -807,9 +816,9 @@ export default function Home() {
         <div className="mid-scrub scrub-a" />
         <div className="mid-scrub scrub-b" />
 
-        <div className="station-layer" aria-hidden="true">
+        <div className={`station-layer ${servicing ? "is-servicing" : ""}`} aria-hidden="true">
           {STATIONS.map((station, index) => (
-            <div key={station.name} className={`station-world station-${index} station-${station.art}`} data-station-index={index} data-station-name={station.name}>
+            <div key={station.name} className={`station-world station-${index} station-${station.art} ${servicing && stationState.index === index ? "service-active" : ""}`} data-station-index={index} data-station-name={station.name} data-service-active={servicing && stationState.index === index ? "true" : "false"}>
               <img
                 className="station-platform-art"
                 src={`/assets/station-${station.art === "river" ? "plains" : station.art}.webp`}
@@ -818,11 +827,12 @@ export default function Home() {
                 decoding="async"
                 loading={index === 0 ? "eager" : "lazy"}
               />
+              <span className="station-service-activity" />
             </div>
           ))}
         </div>
 
-        <div className={`train-wrap ${whistling ? "is-whistling" : ""}`}>
+        <div className={`train-wrap ${whistling ? "is-whistling" : ""} ${servicing ? "is-servicing" : ""}`}>
           <div className="train-kinetic">
             <div
               className="train-consist component-engine-consist"
@@ -889,10 +899,11 @@ export default function Home() {
           <span className="eyebrow">{stationState.inZone ? "PLATFORM ZONE" : "NEXT REWARD STOP"}</span>
           <strong>{activeStation.name}</strong>
           {stationState.inZone ? (
-            <small>{stationState.collected ? `Passengers aboard • ${activeFactSheet.fuelType} and water full` : speed < 2.5 ? "Hold for boarding and service" : "Brake below 3 MPH"}</small>
+            <small>{stationState.collected ? `Passengers aboard • ${activeFactSheet.fuelType} and water full` : speed < 2.5 ? `Boarding • water • ${activeFactSheet.fuelType} service` : "Brake below 3 MPH"}</small>
           ) : (
             <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStation.reward}</span></small>
           )}
+          {stationState.inZone && !stationState.collected && <div className="service-steps" aria-hidden="true"><span className={stationState.dwell > .05 ? "active" : ""}>BOARD</span><span className={stationState.dwell > .2 ? "active" : ""}>WATER</span><span className={stationState.dwell > .45 ? "active" : ""}>{activeFactSheet.fuelType.toUpperCase()}</span></div>}
           <div className="station-dwell"><i style={{ width: `${stationState.dwell * 100}%` }} /></div>
         </aside>
 
@@ -1064,6 +1075,10 @@ export default function Home() {
                             <div><dt>Modeled engine + tender</dt><dd>{fact.engineAndTenderTons.toLocaleString()} tons</dd></div>
                             <div><dt>Tractive effort</dt><dd>{fact.tractiveEffortLbf.toLocaleString()} lbf</dd></div>
                             <div><dt>Fuel / water</dt><dd>{fact.fuelCapacityLabel} / {fact.waterCapacityGallons.toLocaleString()} gal</dd></div>
+                            <div><dt>Throttle response</dt><dd>{Math.round(profile.throttleResponseFactor * 100)}% of fleet reference</dd></div>
+                            <div><dt>Adhesion</dt><dd>{Math.round(profile.adhesionFactor * 100)}% modeled factor</dd></div>
+                            <div><dt>Steaming capacity</dt><dd>{Math.round(profile.steamingCapacityFactor * 100)}% modeled factor</dd></div>
+                            <div><dt>Brake rigging</dt><dd>{Math.round(profile.brakeRiggingFactor * 100)}% modeled factor</dd></div>
                             <div><dt>Status</dt><dd>{fact.status}</dd></div>
                           </dl>
                           <a href={fact.sourceUrl} target="_blank" rel="noreferrer">SOURCE / DESIGN REFERENCE ↗</a>

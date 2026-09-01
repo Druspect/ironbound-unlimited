@@ -23,6 +23,7 @@ test("engine profiles expose sourced fact sheets without pretending proxies are 
 });
 
 test("all carriage types have unique production art and declared mass", () => {
+  assert.equal(CONSIST_CAR_TYPES.length, 5);
   assert.equal(new Set(CONSIST_CAR_TYPES.map(({ art }) => art)).size, CONSIST_CAR_TYPES.length);
   for (const car of CONSIST_CAR_TYPES) {
     assert.match(car.art, /^\/assets\/carriages\/v1\/[a-z-]+\.webp$/);
@@ -31,6 +32,24 @@ test("all carriage types have unique production art and declared mass", () => {
   }
   assert.match(page, /src=\{car\.art\}/);
   assert.match(page, /src=\{selectedCar\.art\}/);
+  assert.ok(CONSIST_CAR_TYPES.some(({ id, name }) => id === "observation-car" && name === "Observation Parlor"));
+});
+
+test("station service is visibly staged and remains safe under reduced motion", () => {
+  assert.match(css, /station-service-activity\.webp/);
+  assert.match(page, /data-service-active=/);
+  assert.match(page, /qaService/);
+  assert.match(page, />BOARD<\/span>/);
+  assert.match(page, />WATER<\/span>/);
+  assert.match(css, /\.station-world\.service-active \.station-service-activity/);
+  assert.match(css, /\.reduced-motion \.station-world\.service-active \.station-service-activity\s*\{[^}]*animation:\s*none/s);
+});
+
+test("store previews use one normalized comparison stage", () => {
+  assert.match(css, /\.engine-preview\s*\{[^}]*height:\s*124px/s);
+  assert.match(css, /\.engine-preview > img\s*\{[^}]*width:\s*94%[^}]*height:\s*86%[^}]*object-fit:\s*contain/s);
+  assert.match(css, /\.engine-card:has\(\.engine-fact-sheet\[open\]\)\s*\{[^}]*grid-column:\s*1 \/ -1/s);
+  assert.match(css, /\.engine-card:has\(\.engine-fact-sheet\[open\]\) \.engine-preview\s*\{[^}]*width:\s*min\(420px, 34%\)/s);
 });
 
 test("version-three persistence migrates earlier saves and includes live run state", () => {

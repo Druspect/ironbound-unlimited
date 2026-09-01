@@ -12,6 +12,10 @@ export type LocomotivePhysicsConfiguration = {
   accelerationFactor?: number;
   brakeResponseFactor?: number;
   thermalLoadFactor?: number;
+  throttleResponseFactor?: number;
+  adhesionFactor?: number;
+  steamingCapacityFactor?: number;
+  brakeRiggingFactor?: number;
 };
 
 export const LOCOMOTIVE_MODEL = Object.freeze({
@@ -62,7 +66,8 @@ export function targetSpeedForThrottle(
   const speedScale = maximumSpeed / LOCOMOTIVE_MODEL.maximumSpeed;
   const indicatedSpeed = (regulator * 0.94 - excess * excess * 0.045) * speedScale;
   const accelerationFactor = clamp(configuration.accelerationFactor ?? 1, .45, 1.8);
-  const gradePenalty = gradePercent * 4.2 / accelerationFactor;
+  const adhesionFactor = clamp(configuration.adhesionFactor ?? 1, .75, 1.25);
+  const gradePenalty = gradePercent * 4.2 / (accelerationFactor * adhesionFactor);
   const normalTarget = clamp(
     indicatedSpeed - gradePenalty,
     0,
@@ -115,8 +120,9 @@ export function advanceLocomotive(
   // governor was added.
   let safetyLockSeconds = Math.max(0, state.safetyLockSeconds ?? 0);
   const thermalLoadFactor = clamp(configuration.thermalLoadFactor ?? 1, .75, 1.55);
+  const steamingCapacityFactor = clamp(configuration.steamingCapacityFactor ?? 1, .75, 1.3);
   const thermalTarget = clamp(
-    boilerEquilibrium(throttle, overloaded, gradePercent) * thermalLoadFactor,
+    boilerEquilibrium(throttle, overloaded, gradePercent) * thermalLoadFactor / steamingCapacityFactor,
     0,
     120,
   );
@@ -162,10 +168,12 @@ export function advanceLocomotive(
   const targetSpeed = brakePressure > 0.001 ? 0 : poweredTarget;
   const accelerationFactor = clamp(configuration.accelerationFactor ?? 1, .45, 1.8);
   const brakeResponseFactor = clamp(configuration.brakeResponseFactor ?? 1, .8, 1.7);
+  const throttleResponseFactor = clamp(configuration.throttleResponseFactor ?? 1, .65, 1.35);
+  const brakeRiggingFactor = clamp(configuration.brakeRiggingFactor ?? 1, .7, 1.3);
   const speedTime = targetSpeed >= state.speed
-    ? LOCOMOTIVE_MODEL.accelerationTimeConstant / accelerationFactor
+    ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor)
     : LOCOMOTIVE_MODEL.decelerationTimeConstant +
-      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakeResponseFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
+      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakeResponseFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
   const speedBlend = 1 - Math.exp(-dt / speedTime);
   const rollingSpeed = clamp(
     state.speed + (targetSpeed - state.speed) * speedBlend,

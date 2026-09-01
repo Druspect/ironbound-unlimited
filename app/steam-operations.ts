@@ -14,10 +14,14 @@ export type LocomotiveOperatingProfile = {
   fuelCapacityUnit: "lb" | "gal";
   waterCapacityGallons: number;
   thermalEfficiency: number;
+  throttleResponseFactor: number;
+  adhesionFactor: number;
+  steamingCapacityFactor: number;
+  brakeRiggingFactor: number;
 };
 
 export type ConsistCarType = {
-  id: "day-coach" | "pullman" | "baggage-mail" | "dining-car";
+  id: "day-coach" | "pullman" | "baggage-mail" | "dining-car" | "observation-car";
   name: string;
   shortName: string;
   emptyTons: number;
@@ -48,33 +52,53 @@ export type SteamResourceState = {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-type PerformanceProfile = Omit<LocomotiveOperatingProfile, "fuelType" | "fuelCapacity" | "fuelCapacityUnit" | "waterCapacityGallons">;
-
-const PERFORMANCE_PROFILES: Readonly<Record<string, PerformanceProfile>> = Object.freeze({
-  "tom-thumb": { id: "tom-thumb", service: "mixed", maximumSpeedMph: 55, cruiseSpeedMph: 45, economicalSpeedMinMph: 38, economicalSpeedMaxMph: 47, engineAndTenderTons: 126, tractiveEffortIndex: .78, thermalEfficiency: .88 },
-  "southern-4501": { id: "southern-4501", service: "freight", maximumSpeedMph: 60, cruiseSpeedMph: 48, economicalSpeedMinMph: 40, economicalSpeedMaxMph: 51, engineAndTenderTons: 270, tractiveEffortIndex: 1.08, thermalEfficiency: .92 },
-  "prr-1361": { id: "prr-1361", service: "passenger", maximumSpeedMph: 90, cruiseSpeedMph: 65, economicalSpeedMinMph: 55, economicalSpeedMaxMph: 69, engineAndTenderTons: 259, tractiveEffortIndex: 1.12, thermalEfficiency: .95 },
-  "nkp-765": { id: "nkp-765", service: "mixed", maximumSpeedMph: 80, cruiseSpeedMph: 60, economicalSpeedMinMph: 51, economicalSpeedMaxMph: 64, engineAndTenderTons: 401, tractiveEffortIndex: 1.42, thermalEfficiency: 1.02 },
-  "atsf-3751": { id: "atsf-3751", service: "passenger", maximumSpeedMph: 103, cruiseSpeedMph: 72, economicalSpeedMinMph: 61, economicalSpeedMaxMph: 76, engineAndTenderTons: 437, tractiveEffortIndex: 1.46, thermalEfficiency: 1.03 },
-  "nw-611": { id: "nw-611", service: "passenger", maximumSpeedMph: 110, cruiseSpeedMph: 75, economicalSpeedMinMph: 64, economicalSpeedMaxMph: 80, engineAndTenderTons: 436, tractiveEffortIndex: 1.62, thermalEfficiency: 1.08 },
-  "up-844": { id: "up-844", service: "passenger", maximumSpeedMph: 120, cruiseSpeedMph: 78, economicalSpeedMinMph: 66, economicalSpeedMaxMph: 82, engineAndTenderTons: 454, tractiveEffortIndex: 1.68, thermalEfficiency: 1.1 },
-  "nw-1218": { id: "nw-1218", service: "freight", maximumSpeedMph: 70, cruiseSpeedMph: 52, economicalSpeedMinMph: 44, economicalSpeedMaxMph: 56, engineAndTenderTons: 573, tractiveEffortIndex: 1.92, thermalEfficiency: 1.04 },
-  "challenger-3985": { id: "challenger-3985", service: "mixed", maximumSpeedMph: 70, cruiseSpeedMph: 58, economicalSpeedMinMph: 49, economicalSpeedMaxMph: 62, engineAndTenderTons: 537, tractiveEffortIndex: 2.08, thermalEfficiency: 1.08 },
-  "big-boy-4014": { id: "big-boy-4014", service: "freight", maximumSpeedMph: 80, cruiseSpeedMph: 55, economicalSpeedMinMph: 47, economicalSpeedMaxMph: 59, engineAndTenderTons: 595, tractiveEffortIndex: 2.42, thermalEfficiency: 1.12 },
-  "the-flyer-1907": { id: "the-flyer-1907", service: "passenger", maximumSpeedMph: 75, cruiseSpeedMph: 56, economicalSpeedMinMph: 47, economicalSpeedMaxMph: 60, engineAndTenderTons: 238, tractiveEffortIndex: .94, thermalEfficiency: .9 },
-  "polar-express-1225": { id: "polar-express-1225", service: "mixed", maximumSpeedMph: 70, cruiseSpeedMph: 54, economicalSpeedMinMph: 46, economicalSpeedMaxMph: 58, engineAndTenderTons: 401, tractiveEffortIndex: 1.38, thermalEfficiency: 1.01 },
-});
-
 export const LOCOMOTIVE_OPERATING_PROFILES: Readonly<Record<string, LocomotiveOperatingProfile>> = Object.freeze(
-  Object.fromEntries(Object.entries(PERFORMANCE_PROFILES).map(([id, performance]) => {
-    const facts = ENGINE_FACT_SHEETS[id];
-    if (!facts) throw new Error(`Missing fuel and water facts for ${id}`);
+  Object.fromEntries(Object.entries(ENGINE_FACT_SHEETS).map(([id, facts]) => {
+    const articulated = facts.wheelArrangement.split("-").length > 3;
+    const serviceCruiseRatio = facts.service === "passenger" ? .68 : facts.service === "freight" ? .77 : .74;
+    const cruiseSpeedMph = Math.round(facts.maximumSpeedMph * serviceCruiseRatio);
+    const powerDensity = facts.tractiveEffortLbf / (facts.engineAndTenderTons * 2_000);
+    const driverScale = facts.driverDiameterInches / 70;
+    const eraFactor = clamp((facts.builtYear - 1900) / 50, 0, 1);
+    const throttleResponseFactor = clamp(
+      (facts.service === "passenger" ? 1.08 : facts.service === "freight" ? .94 : 1) *
+      Math.pow(driverScale, .35) * Math.pow(400 / facts.engineAndTenderTons, .08) * (articulated ? .86 : 1),
+      .72,
+      1.24,
+    );
+    const adhesionFactor = clamp(
+      .78 + powerDensity * 1.45 + (facts.service === "freight" ? .06 : 0) - (driverScale - 1) * .07,
+      .84,
+      1.12,
+    );
+    const steamingCapacityFactor = clamp(
+      .78 + (facts.waterCapacityGallons / facts.engineAndTenderTons) / 180 + eraFactor * .08 + (facts.fuelType === "oil" ? .035 : 0),
+      .86,
+      1.18,
+    );
+    const brakeRiggingFactor = clamp(
+      1.12 - facts.engineAndTenderTons / 1_900 + (facts.service === "passenger" ? .08 : 0) - (articulated ? .05 : 0),
+      .76,
+      1.16,
+    );
     return [id, {
-      ...performance,
+      id,
+      service: facts.service,
+      maximumSpeedMph: facts.maximumSpeedMph,
+      cruiseSpeedMph,
+      economicalSpeedMinMph: Math.round(cruiseSpeedMph * .84),
+      economicalSpeedMaxMph: Math.round(cruiseSpeedMph * 1.06),
+      engineAndTenderTons: facts.engineAndTenderTons,
+      tractiveEffortIndex: clamp(facts.tractiveEffortLbf / 52_000, .5, 2.7),
       fuelType: facts.fuelType,
       fuelCapacity: facts.fuelCapacity,
       fuelCapacityUnit: facts.fuelCapacityUnit,
       waterCapacityGallons: facts.waterCapacityGallons,
+      thermalEfficiency: clamp(.84 + eraFactor * .18 + (facts.fuelType === "oil" ? .04 : 0) + (facts.service === "passenger" ? .02 : 0), .86, 1.1),
+      throttleResponseFactor,
+      adhesionFactor,
+      steamingCapacityFactor,
+      brakeRiggingFactor,
     }];
   })),
 );
@@ -84,9 +108,12 @@ export const CONSIST_CAR_TYPES: readonly ConsistCarType[] = Object.freeze([
   { id: "pullman", name: "Pullman Sleeper", shortName: "PULLMAN", emptyTons: 63, loadedTons: 70, capacity: "36 passengers", visualClass: "car-pullman", art: "/assets/carriages/v1/pullman-sleeper.webp" },
   { id: "baggage-mail", name: "Baggage & Mail", shortName: "BAGGAGE", emptyTons: 55, loadedTons: 68, capacity: "18 tons", visualClass: "car-baggage", art: "/assets/carriages/v1/baggage-mail.webp" },
   { id: "dining-car", name: "Dining Car", shortName: "DINER", emptyTons: 65, loadedTons: 74, capacity: "48 passengers", visualClass: "car-dining", art: "/assets/carriages/v1/dining-car.webp" },
+  { id: "observation-car", name: "Observation Parlor", shortName: "OBSERVATION", emptyTons: 66, loadedTons: 73, capacity: "28 passengers", visualClass: "car-observation", art: "/assets/carriages/v1/observation-car.webp" },
 ]);
 
-export const DEFAULT_CONSIST = ["day-coach", "baggage-mail", "pullman"] as const;
+// The array is rear-to-front in the scene; head-end baggage belongs nearest
+// the tender and the sleeping car stays at the quiet rear of the train.
+export const DEFAULT_CONSIST = ["pullman", "day-coach", "baggage-mail"] as const;
 
 export function operatingProfileFor(engineId: string) {
   return LOCOMOTIVE_OPERATING_PROFILES[engineId] ?? LOCOMOTIVE_OPERATING_PROFILES["tom-thumb"];

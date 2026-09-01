@@ -63,7 +63,7 @@ test("reference photographs never leak into the public shipping tree", async () 
 });
 
 test("shipping carriage bodies share one alpha-safe production canvas", async () => {
-  for (const name of ["day-coach", "pullman-sleeper", "baggage-mail", "dining-car"]) {
+  for (const name of ["day-coach", "pullman-sleeper", "baggage-mail", "dining-car", "observation-car"]) {
     const url = new URL(`../public/assets/carriages/v1/${name}.webp`, import.meta.url);
     const bytes = await readFile(url);
     const info = await stat(url);

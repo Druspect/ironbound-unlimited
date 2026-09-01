@@ -141,9 +141,11 @@ button { color: inherit; }
 .engine-card:hover { border-color: rgba(210,155,74,.7); transform: translateY(-3px); background: rgba(210,155,74,.055); }
 .engine-card.equipped { border-color: var(--brass); box-shadow: inset 0 0 0 1px rgba(210,155,74,.28); }
 .engine-card.locked { filter: saturate(.42); }
-.engine-preview { position: relative; height: 110px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(circle at 70% 65%, rgba(210,155,74,.18), transparent 50%), #101313; }
+.engine-card:has(.engine-fact-sheet[open]) { grid-column: 1 / -1; }
+.engine-card:has(.engine-fact-sheet[open]) .engine-preview { width: min(420px, 34%); min-width: 330px; justify-self: center; }
+.engine-preview { position: relative; height: 124px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(circle at 70% 65%, rgba(210,155,74,.18), transparent 50%), #101313; }
 .engine-preview::after { content: ""; position: absolute; z-index: 0; inset: auto 6px 14px; border-top: 2px solid rgba(210,155,74,.34); box-shadow: 0 5px 10px rgba(0,0,0,.7); }
-.engine-preview > img { position: relative; z-index: 1; width: 100%; height: 100%; padding: 8px 5px 10px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 7px 5px rgba(0,0,0,.62)); }
+.engine-preview > img { position: relative; z-index: 1; width: 94%; height: 86%; padding: 0; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 7px 5px rgba(0,0,0,.62)); }
 .engine-preview .wheel-arrangement-badge { position: absolute; z-index: 8; top: 7px; right: 7px; padding: 4px 6px; background: rgba(5,7,8,.76); color: var(--brass); font-size: 11px; font-weight: 900; }
 .engine-card-copy { padding: 13px; }
 .engine-card-copy > small { color: var(--brass); font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
@@ -218,6 +220,7 @@ button { color: inherit; }
 .high-contrast .mission-card, .high-contrast .station-card, .high-contrast .right-hud > aside, .high-contrast .cab { background-color: rgba(4,5,5,.97); border-color: rgba(243,234,215,.48); }
 .reduced-motion .train-kinetic { transform: scale(var(--camera-scale, 1)) !important; }
 .reduced-motion .rail-unit { transform: none !important; }
+.reduced-motion .station-world.service-active .station-service-activity { animation: none; }
 
 @keyframes menu-enter { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
 
@@ -229,6 +232,7 @@ button { color: inherit; }
   .shop-balance { justify-self: start; text-align: left; }
   .engine-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .engine-card { min-height: 260px; }
+  .engine-card:has(.engine-fact-sheet[open]) .engine-preview { width: 100%; min-width: 0; }
   .options-list label { gap: 12px; }
   .current-engine { grid-template-columns: 1fr; }
   .current-engine strong { grid-row: auto; grid-column: auto; }
@@ -425,6 +429,9 @@ button { color: inherit; }
   will-change: transform, opacity;
 }
 .station-world img { display: block; width: 100%; height: auto; user-select: none; }
+.station-service-activity { position: absolute; z-index: 3; inset: 0; opacity: 0; transform: translateY(2px); transition: opacity 260ms ease, transform 260ms ease; background: url("/assets/station-service-activity.webp") center / contain no-repeat; filter: drop-shadow(0 5px 4px rgba(0,0,0,.5)); }
+.station-world.service-active .station-service-activity { opacity: 1; transform: none; animation: service-activity 1.8s ease-in-out infinite alternate; }
+@keyframes service-activity { to { filter: brightness(1.08) drop-shadow(0 6px 5px rgba(0,0,0,.55)); } }
 .station-0 { transform: translate3d(calc(var(--station-0-x) - 50%), 0, 0); opacity: var(--station-0-opacity, 0); }
 .station-1 { transform: translate3d(calc(var(--station-1-x) - 50%), 0, 0); opacity: var(--station-1-opacity, 0); }
 .station-2 { transform: translate3d(calc(var(--station-2-x) - 50%), 0, 0); opacity: var(--station-2-opacity, 0); }
@@ -991,6 +998,10 @@ button { color: inherit; }
 .station-card.at-platform { border-left-color: rgba(231,177,91,0.92); box-shadow: -10px 0 24px rgba(210,155,74,0.1); }
 .station-dwell { height: 3px; margin-top: 8px; overflow: hidden; background: rgba(243,234,215,0.12); }
 .station-dwell i { display: block; width: var(--station-dwell, 0%); height: 100%; background: linear-gradient(90deg, var(--copper), #d9e7a2); transition: width 100ms linear; }
+.service-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 7px; }
+.service-steps span { padding: 4px 2px; border: 1px solid rgba(243,234,215,.12); color: rgba(243,234,215,.36); background: rgba(0,0,0,.16); text-align: center; font-size: 8px; font-weight: 900; letter-spacing: .08em; }
+.service-steps span.active { border-color: rgba(210,155,74,.58); color: #d9e7a2; background: rgba(210,155,74,.1); }
+.train-wrap.is-servicing .passenger-body { filter: brightness(1.08) drop-shadow(0 0 8px rgba(237,190,105,.15)); }
 
 .right-hud { position: absolute; z-index: 12; top: 82px; right: 22px; width: 170px; display: grid; gap: 10px; }
 .right-hud .speed-card,
