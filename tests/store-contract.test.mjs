@@ -83,6 +83,7 @@ test("the page carries an executable browser acceptance journey", () => {
   assert.match(page, /station-specific service art/);
   assert.match(page, /visible station service/);
   assert.match(page, /await waitForCondition/);
+  assert.match(page, /timeoutMilliseconds = 8_000/);
   assert.match(page, /station\.dataset\.serviceActive === "true"/);
   assert.match(page, /data-browser-acceptance/);
 });
