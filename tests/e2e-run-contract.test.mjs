@@ -6,10 +6,12 @@ import {
   DEFAULT_CONSIST,
   advanceSteamResources,
   calculateConsistMetrics,
+  calculateServiceDurationSeconds,
   createSteamResourceState,
   operatingProfileFor,
   recordPassedStation,
   serviceSteamLocomotive,
+  stationServiceProgress,
 } from "../app/steam-operations.ts";
 
 test("a complete departure, cruise, brake, and station-service cycle preserves every subsystem contract", () => {
@@ -20,6 +22,10 @@ test("a complete departure, cruise, brake, and station-service cycle preserves e
     accelerationFactor: metrics.accelerationFactor,
     brakeResponseFactor: metrics.brakeResponseFactor,
     thermalLoadFactor: metrics.resourceLoadFactor / profile.thermalEfficiency,
+    throttleResponseFactor: profile.throttleResponseFactor,
+    adhesionFactor: profile.adhesionFactor,
+    steamingCapacityFactor: profile.steamingCapacityFactor,
+    brakeRiggingFactor: profile.brakeRiggingFactor,
   };
   let locomotive = { speed: 0, boilerLoad: 42, heat: 0, overloaded: false, safetyLockSeconds: 0, distance: 0 };
   let resources = createSteamResourceState();
@@ -46,6 +52,12 @@ test("a complete departure, cruise, brake, and station-service cycle preserves e
 
   resources = recordPassedStation(resources);
   assert.equal(resources.stationsWithoutService, 1);
+  const arrival = resources;
+  const serviceDuration = calculateServiceDurationSeconds(arrival, metrics, profile);
+  resources = stationServiceProgress(arrival, .5);
+  assert.ok(resources.fuel > arrival.fuel && resources.fuel < 100);
+  assert.ok(resources.water > arrival.water && resources.water < 100);
+  assert.ok(serviceDuration >= 2.4 && serviceDuration <= 12);
   resources = serviceSteamLocomotive(resources);
   assert.deepEqual(resources, createSteamResourceState());
 });

@@ -9,8 +9,11 @@ import {
   calculateConsistMetrics,
   calculateServiceDurationSeconds,
   createSteamResourceState,
+  latestMissedStationSequence,
   operatingProfileFor,
   recordPassedStation,
+  serviceSteamLocomotive,
+  stationServiceProgress,
 } from "../app/steam-operations.ts";
 
 const LONG_CONSIST = [...DEFAULT_CONSIST, "dining-car", "pullman", "baggage-mail"];
@@ -90,15 +93,49 @@ test("overheating more than doubles boiler-water loss at equal demand", () => {
   assert.equal(hot.fuel, cool.fuel);
 });
 
-test("service time has hard bounds and grows with depletion, missed stops, and consist length", () => {
+test("service time has hard bounds and grows with physical capacity, depletion, and consist length", () => {
+  const starter = operatingProfileFor("tom-thumb");
+  const bigBoy = operatingProfileFor("big-boy-4014");
   const short = calculateConsistMetrics("tom-thumb", DEFAULT_CONSIST);
   const long = calculateConsistMetrics("tom-thumb", LONG_CONSIST);
+  const bigBoyShort = calculateConsistMetrics("big-boy-4014", DEFAULT_CONSIST);
   const ready = createSteamResourceState();
   const depleted = { fuel: 18, water: 9, stationsWithoutService: 3, failure: null };
-  assert.equal(calculateServiceDurationSeconds(ready, short), 2.4);
-  assert.ok(calculateServiceDurationSeconds(depleted, short) > calculateServiceDurationSeconds(ready, short));
-  assert.ok(calculateServiceDurationSeconds(depleted, long) > calculateServiceDurationSeconds(depleted, short));
-  assert.ok(calculateServiceDurationSeconds(depleted, long) <= 10);
+  assert.equal(calculateServiceDurationSeconds(ready, short, starter), 2.4);
+  assert.ok(calculateServiceDurationSeconds(depleted, short, starter) > calculateServiceDurationSeconds(ready, short, starter));
+  assert.ok(calculateServiceDurationSeconds(depleted, long, starter) > calculateServiceDurationSeconds(depleted, short, starter));
+  assert.ok(calculateServiceDurationSeconds({ ...depleted, stationsWithoutService: 0 }, bigBoyShort, bigBoy) > calculateServiceDurationSeconds({ ...depleted, stationsWithoutService: 0 }, short, starter));
+  assert.ok(calculateServiceDurationSeconds(depleted, long, starter) <= 12);
+});
+
+test("station service is progressive and an early departure keeps the partial refill", () => {
+  const arrival = { fuel: 20, water: 35, stationsWithoutService: 3, failure: null };
+  const quarter = stationServiceProgress(arrival, .25);
+  const half = stationServiceProgress(arrival, .5);
+  assert.deepEqual(quarter, { fuel: 40, water: 51.25, stationsWithoutService: 3, failure: null });
+  assert.ok(half.fuel > quarter.fuel && half.water > quarter.water);
+  assert.equal(half.stationsWithoutService, 3, "partial service does not erase the mandatory-stop counter");
+  assert.deepEqual(serviceSteamLocomotive(stationServiceProgress(arrival, 1)), createSteamResourceState());
+});
+
+test("the fourth station remains serviceable until the train leaves its platform grace boundary", () => {
+  const first = 230;
+  const interval = 1_400;
+  const grace = 131;
+  let resources = createSteamResourceState();
+  for (let station = 0; station < 3; station += 1) {
+    const sequenceAtCenter = latestMissedStationSequence(first + station * interval, first, interval, grace);
+    assert.equal(sequenceAtCenter, station - 1);
+    resources = recordPassedStation(resources);
+  }
+  const fourthCenter = first + 3 * interval;
+  assert.equal(latestMissedStationSequence(fourthCenter, first, interval, grace), 2);
+  assert.equal(resources.failure, null, "arriving at the fourth platform must not end the run");
+  assert.deepEqual(serviceSteamLocomotive(resources), createSteamResourceState());
+
+  const outsideFourthPlatform = fourthCenter + grace;
+  assert.equal(latestMissedStationSequence(outsideFourthPlatform, first, interval, grace), 3);
+  assert.equal(recordPassedStation(resources).failure, "service", "passing beyond the fourth platform still ends the run");
 });
 
 test("the service boundary ends a run on the fourth missed station, not before", () => {

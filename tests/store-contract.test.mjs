@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { CONSIST_CAR_TYPES } from "../app/steam-operations.ts";
+import {
+  CONSIST_CAR_TYPES,
+  DEFAULT_CONSIST,
+  addConsistCar,
+  removeAddedConsistCar,
+} from "../app/steam-operations.ts";
 
 const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
@@ -35,6 +40,19 @@ test("all carriage types have unique production art and declared mass", () => {
   assert.ok(CONSIST_CAR_TYPES.some(({ id, name }) => id === "observation-car" && name === "Observation Parlor"));
 });
 
+test("consist expansion stays varied and preserves head-end baggage", () => {
+  const four = addConsistCar(DEFAULT_CONSIST);
+  const five = addConsistCar(four);
+  const six = addConsistCar(five);
+  assert.deepEqual(four, ["pullman", "day-coach", "dining-car", "baggage-mail"]);
+  assert.deepEqual(five, ["pullman", "day-coach", "dining-car", "day-coach", "baggage-mail"]);
+  assert.deepEqual(six, ["observation-car", "pullman", "day-coach", "dining-car", "day-coach", "baggage-mail"]);
+  assert.equal(new Set(six).size, 5, "the six-car default must show every researched body");
+  assert.deepEqual(removeAddedConsistCar(six), five);
+  assert.deepEqual(removeAddedConsistCar(five), four);
+  assert.deepEqual(removeAddedConsistCar(four), [...DEFAULT_CONSIST]);
+});
+
 test("station service is visibly staged and remains safe under reduced motion", () => {
   assert.match(css, /station-service-activity\.webp/);
   assert.match(page, /data-service-active=/);
@@ -43,6 +61,17 @@ test("station service is visibly staged and remains safe under reduced motion", 
   assert.match(page, />WATER<\/span>/);
   assert.match(css, /\.station-world\.service-active \.station-service-activity/);
   assert.match(css, /\.reduced-motion \.station-world\.service-active \.station-service-activity\s*\{[^}]*animation:\s*none/s);
+  assert.match(page, /stationServiceProgress\(dwellRef\.current\.arrivalResources, serviceProgress\)/);
+  assert.match(page, /latestMissedStationSequence\(/);
+});
+
+test("a restarted run returns to a closed regulator with the train brake set", () => {
+  const restart = page.slice(page.indexOf("const restartRun"), page.indexOf("const failureCopy"));
+  assert.match(restart, /throttleRef\.current = 0/);
+  assert.match(restart, /brakeRef\.current = true/);
+  assert.match(restart, /setThrottle\(0\)/);
+  assert.match(restart, /setBrakeEngaged\(true\)/);
+  assert.doesNotMatch(restart, /setThrottle\(42\)|brakeRef\.current = false/);
 });
 
 test("store previews use one normalized comparison stage", () => {
@@ -52,16 +81,19 @@ test("store previews use one normalized comparison stage", () => {
   assert.match(css, /\.engine-card:has\(\.engine-fact-sheet\[open\]\) \.engine-preview\s*\{[^}]*width:\s*min\(420px, 34%\)/s);
 });
 
-test("version-three persistence migrates earlier saves and includes live run state", () => {
+test("version-four persistence migrates earlier saves and includes reward and service continuity", () => {
+  assert.match(page, /ironbound-save-v4/);
   assert.match(page, /ironbound-save-v3/);
   assert.match(page, /\?\? localStorage\.getItem\("ironbound-save-v2"\)/);
   assert.match(page, /\?\? localStorage\.getItem\("ironbound-save-v1"\)/);
-  for (const field of ["throttle", "speed", "boilerLoad", "heat", "distance", "visualTravel", "brakeEngaged", "fuel", "water", "stationsWithoutService", "failure"]) {
+  for (const field of ["throttle", "speed", "boilerLoad", "heat", "distance", "visualTravel", "brakeEngaged", "fuel", "water", "stationsWithoutService", "failure", "claimedStops", "servicedStationSequence"]) {
     assert.match(page, new RegExp(`\\b${field}\\b`));
   }
   assert.match(page, /parsed\.run\.fuel \?\? parsed\.run\.coal/);
   assert.match(page, /runFailureRef\.current = restoredFailure/);
   assert.match(page, /setRunFailure\(restoredFailure\)/);
+  assert.match(page, /claimedStopsRef\.current = new Set/);
+  assert.match(page, /servicedStationRef\.current = Math\.max/);
 });
 
 test("camera defaults to automatic fit and refits when the consist changes", () => {

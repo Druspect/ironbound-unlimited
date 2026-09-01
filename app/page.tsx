@@ -21,14 +21,18 @@ import type { CameraMode } from "./train-geometry";
 import {
   CONSIST_CAR_TYPES,
   DEFAULT_CONSIST,
+  addConsistCar,
   advanceSteamResources,
   calculateConsistMetrics,
   calculateServiceDurationSeconds,
   carTypeFor,
   createSteamResourceState,
+  latestMissedStationSequence,
   operatingProfileFor,
   recordPassedStation,
+  removeAddedConsistCar,
   serviceSteamLocomotive,
+  stationServiceProgress,
   stationsUntilServiceRequired,
 } from "./steam-operations";
 
@@ -62,6 +66,8 @@ const CAR_WHEEL_SPEED_RATIO = 0.92;
 const CAR_TRUCK_PHASES = [0, 34, 17, 51, 11, 45, 23, 57, 7, 41, 29, 63] as const;
 const CAR_RENDER_WIDTH = 190;
 const ENGINE_RENDER_BASE_WIDTH = 420;
+const STATION_STOP_ZONE_DISTANCE = 130;
+const STATION_PASS_GRACE_DISTANCE = STATION_STOP_ZONE_DISTANCE + 1;
 
 const ROUTE_TILES = Array.from({ length: ROUTE_TILE_COUNT + 2 }, (_, index) => {
   const routeIndex = index % ROUTE_TILE_COUNT;
@@ -174,7 +180,12 @@ export default function Home() {
   const whistleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const whistleAudioRef = useRef<HTMLAudioElement | null>(null);
   const rewardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dwellRef = useRef({ station: -1, milliseconds: 0 });
+  const dwellRef = useRef({
+    station: -1,
+    milliseconds: 0,
+    durationMilliseconds: 0,
+    arrivalResources: createSteamResourceState(),
+  });
   const claimedStopsRef = useRef(new Set<string>());
   const equippedEngineRef = useRef(equippedEngine);
   const consistCarsRef = useRef(consistCars);
@@ -234,7 +245,7 @@ export default function Home() {
           if (Number.isInteger(qaStationIndex) && qaStationIndex >= 0 && qaStationIndex < STATIONS.length) {
             visualTravelRef.current = STATIONS[qaStationIndex].position;
             distanceRef.current = STATIONS[qaStationIndex].position;
-            lastPassedStationRef.current = qaStationIndex;
+            lastPassedStationRef.current = qaStationIndex - 1;
             setDistance(STATIONS[qaStationIndex].position);
           }
           setOwnedEngines([STARTER_LOCOMOTIVE_ID, qaEngine.id]);
@@ -256,9 +267,9 @@ export default function Home() {
           pausedRef.current = Boolean(runFailureRef.current);
           setPaused(pausedRef.current);
         } else {
-          const saved = localStorage.getItem("ironbound-save-v3") ?? localStorage.getItem("ironbound-save-v2") ?? localStorage.getItem("ironbound-save-v1");
+          const saved = localStorage.getItem("ironbound-save-v4") ?? localStorage.getItem("ironbound-save-v3") ?? localStorage.getItem("ironbound-save-v2") ?? localStorage.getItem("ironbound-save-v1");
           if (saved) {
-            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null } };
+            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null; claimedStops?: string[]; servicedStationSequence?: number } };
             if (typeof parsed.bonds === "number") setBonds(Math.max(0, parsed.bonds));
             const owned = Array.from(new Set([STARTER_LOCOMOTIVE_ID, ...(Array.isArray(parsed.ownedEngines) ? parsed.ownedEngines.filter((id) => LOCOMOTIVES.some((engine) => engine.id === id)) : [])]));
             setOwnedEngines(owned);
@@ -292,7 +303,18 @@ export default function Home() {
               heatRef.current = restoredHeat;
               distanceRef.current = restoredDistance;
               visualTravelRef.current = Math.max(0, finiteOr(parsed.run.visualTravel, 0));
-              lastPassedStationRef.current = Math.floor((visualTravelRef.current - STATIONS[0].position) / (TILES_PER_BIOME * TILE_TRAVEL));
+              lastPassedStationRef.current = latestMissedStationSequence(
+                visualTravelRef.current,
+                STATIONS[0].position,
+                TILES_PER_BIOME * TILE_TRAVEL,
+                STATION_PASS_GRACE_DISTANCE,
+              );
+              claimedStopsRef.current = new Set(
+                (Array.isArray(parsed.run.claimedStops) ? parsed.run.claimedStops : [])
+                  .filter((key) => /^\d+-\d+$/.test(key))
+                  .slice(-24),
+              );
+              servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));
               brakeRef.current = parsed.run.brakeEngaged !== false;
               steamResourcesRef.current = restoredResources;
               runFailureRef.current = restoredFailure;
@@ -318,9 +340,19 @@ export default function Home() {
   useEffect(() => {
     if (!saveReady || visualQaModeRef.current) return;
     const timer = window.setTimeout(() => {
-      localStorage.setItem("ironbound-save-v3", JSON.stringify({
+      localStorage.setItem("ironbound-save-v4", JSON.stringify({
         bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings,
-        run: { throttle, speed, boilerLoad, heat, distance, visualTravel: visualTravelRef.current, brakeEngaged, fuel: steamResources.fuel, water: steamResources.water, stationsWithoutService: steamResources.stationsWithoutService, failure: runFailure },
+        run: {
+          throttle, speed, boilerLoad, heat, distance,
+          visualTravel: visualTravelRef.current,
+          brakeEngaged,
+          fuel: steamResources.fuel,
+          water: steamResources.water,
+          stationsWithoutService: steamResources.stationsWithoutService,
+          failure: runFailure,
+          claimedStops: Array.from(claimedStopsRef.current).slice(-24),
+          servicedStationSequence: servicedStationRef.current,
+        },
       }));
     }, 350);
     return () => window.clearTimeout(timer);
@@ -436,7 +468,12 @@ export default function Home() {
         const routeLoop = Math.floor(visualTravelRef.current / ROUTE_TRAVEL);
 
         const stationInterval = TILES_PER_BIOME * TILE_TRAVEL;
-        const latestPassedStation = Math.floor((visualTravelRef.current - STATIONS[0].position) / stationInterval);
+        const latestPassedStation = latestMissedStationSequence(
+          visualTravelRef.current,
+          STATIONS[0].position,
+          stationInterval,
+          STATION_PASS_GRACE_DISTANCE,
+        );
         if (latestPassedStation > lastPassedStationRef.current) {
           for (let sequence = lastPassedStationRef.current + 1; sequence <= latestPassedStation; sequence += 1) {
             if (sequence < 0 || sequence === servicedStationRef.current) continue;
@@ -478,14 +515,24 @@ export default function Home() {
         });
 
         const stopKey = `${routeLoop}-${stopStationIndex}`;
-        const inStopZone = stopStationIndex >= 0 && Math.abs(stopStationDistance) <= 130;
+        const inStopZone = stopStationIndex >= 0 && Math.abs(stopStationDistance) <= STATION_STOP_ZONE_DISTANCE;
         const stopCollected = claimedStopsRef.current.has(stopKey);
-        const serviceDurationMilliseconds = calculateServiceDurationSeconds(steamResourcesRef.current, consistMetrics) * 1000;
+        let serviceDurationMilliseconds = dwellRef.current.durationMilliseconds ||
+          calculateServiceDurationSeconds(steamResourcesRef.current, consistMetrics, operatingProfile) * 1000;
         if (inStopZone && speedRef.current < 2.5 && !stopCollected) {
           if (dwellRef.current.station !== stopStationIndex) {
-            dwellRef.current = { station: stopStationIndex, milliseconds: 0 };
+            const arrivalResources = { ...steamResourcesRef.current };
+            serviceDurationMilliseconds = calculateServiceDurationSeconds(arrivalResources, consistMetrics, operatingProfile) * 1000;
+            dwellRef.current = {
+              station: stopStationIndex,
+              milliseconds: 0,
+              durationMilliseconds: serviceDurationMilliseconds,
+              arrivalResources,
+            };
           }
           dwellRef.current.milliseconds += delta;
+          const serviceProgress = clamp(dwellRef.current.milliseconds / serviceDurationMilliseconds, 0, 1);
+          steamResourcesRef.current = stationServiceProgress(dwellRef.current.arrivalResources, serviceProgress);
           if (dwellRef.current.milliseconds >= serviceDurationMilliseconds) {
             const station = STATIONS[stopStationIndex];
             const stationSequence = routeLoop * STATIONS.length + stopStationIndex;
@@ -509,7 +556,12 @@ export default function Home() {
             rewardTimer.current = setTimeout(() => setRewardNotice(null), 4200);
           }
         } else if (!inStopZone || speedRef.current >= 2.5) {
-          dwellRef.current = { station: -1, milliseconds: 0 };
+          dwellRef.current = {
+            station: -1,
+            milliseconds: 0,
+            durationMilliseconds: 0,
+            arrivalResources: { ...steamResourcesRef.current },
+          };
         }
 
         root.style.setProperty("--route-x", `${-(routeTilePosition * viewportWidth)}px`);
@@ -733,11 +785,11 @@ export default function Home() {
     setConsistCars((current) => current.map((existing, carIndex) => carIndex === index ? carId : existing));
   };
   const addCar = () => {
-    setConsistCars((current) => current.length >= 6 ? current : [...current, "day-coach"]);
+    setConsistCars((current) => addConsistCar(current));
     setCameraZoom("auto");
   };
   const removeCar = () => {
-    setConsistCars((current) => current.length <= 3 ? current : current.slice(0, -1));
+    setConsistCars((current) => removeAddedConsistCar(current));
     setCameraZoom("auto");
   };
   const restartRun = () => {
@@ -747,7 +799,12 @@ export default function Home() {
     lastPassedStationRef.current = -1;
     servicedStationRef.current = -1;
     claimedStopsRef.current.clear();
-    dwellRef.current = { station: -1, milliseconds: 0 };
+    dwellRef.current = {
+      station: -1,
+      milliseconds: 0,
+      durationMilliseconds: 0,
+      arrivalResources: cleanResources,
+    };
     visualTravelRef.current = 0;
     distanceRef.current = 0;
     speedRef.current = 0;
@@ -755,9 +812,10 @@ export default function Home() {
     heatRef.current = 0;
     overloadRef.current = false;
     safetyLockRef.current = 0;
-    brakePressureRef.current = 0;
-    brakeRef.current = false;
-    throttleRef.current = 42;
+    brakePressureRef.current = 1;
+    brakeRef.current = true;
+    throttleRef.current = 0;
+    safeDrivingRef.current = createSafeDrivingProgress();
     setSteamResources(cleanResources);
     setRunFailure(null);
     setDistance(0);
@@ -765,9 +823,10 @@ export default function Home() {
     setBoilerLoad(42);
     setHeat(0);
     setOverloaded(false);
-    setBrakePressure(0);
-    setBrakeEngaged(false);
-    setThrottle(42);
+    setBrakePressure(1);
+    setBrakeEngaged(true);
+    setThrottle(0);
+    setRewardNotice(null);
     setScreen("game");
     pausedRef.current = false;
     setPaused(false);
@@ -899,7 +958,7 @@ export default function Home() {
           <span className="eyebrow">{stationState.inZone ? "PLATFORM ZONE" : "NEXT REWARD STOP"}</span>
           <strong>{activeStation.name}</strong>
           {stationState.inZone ? (
-            <small>{stationState.collected ? `Passengers aboard • ${activeFactSheet.fuelType} and water full` : speed < 2.5 ? `Boarding • water • ${activeFactSheet.fuelType} service` : "Brake below 3 MPH"}</small>
+            <small>{stationState.collected ? "Passengers aboard • service complete" : speed < 2.5 ? `Boarding • water • ${activeFactSheet.fuelType} service` : "Brake below 3 MPH"}</small>
           ) : (
             <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStation.reward}</span></small>
           )}
@@ -1094,7 +1153,7 @@ export default function Home() {
 
               {storeTab === "carriages" && <section className="store-department" aria-labelledby="carriage-store-heading">
                 <div className="department-heading"><div><span className="menu-kicker">IRONBOUND YARD</span><h3 id="carriage-store-heading">Build Your Train</h3><p>Every added car increases resource use, acceleration time, stopping distance, and lowers the loaded speed ceiling.</p></div><div className="consist-summary"><small>LOADED TRAIN</small><strong>{Math.round(activeConsistMetrics.totalTrainTons)}</strong><span>TONS</span></div></div>
-                <div className="consist-toolbar"><button onClick={removeCar} disabled={consistCars.length <= 3}>REMOVE LAST CAR</button><strong>{consistCars.length} CARS</strong><button onClick={addCar} disabled={consistCars.length >= 6}>ADD CAR</button></div>
+                <div className="consist-toolbar"><button onClick={removeCar} disabled={consistCars.length <= 3}>REMOVE ADDED CAR</button><strong>{consistCars.length} CARS</strong><button onClick={addCar} disabled={consistCars.length >= 6}>ADD CAR</button></div>
                 <div className="consist-list">
                   {consistCars.map((carId, index) => {
                     const selectedCar = carTypeFor(carId);

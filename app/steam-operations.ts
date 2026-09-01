@@ -114,6 +114,26 @@ export const CONSIST_CAR_TYPES: readonly ConsistCarType[] = Object.freeze([
 // The array is rear-to-front in the scene; head-end baggage belongs nearest
 // the tender and the sleeping car stays at the quiet rear of the train.
 export const DEFAULT_CONSIST = ["pullman", "day-coach", "baggage-mail"] as const;
+const CONSIST_EXPANSION_ORDER = ["dining-car", "day-coach", "observation-car"] as const;
+
+/**
+ * Expands a rear-to-front passenger consist without displacing head-end
+ * baggage from the tender. The observation parlor belongs at the quiet rear.
+ */
+export function addConsistCar(carIds: readonly string[]) {
+  if (carIds.length >= 6) return [...carIds];
+  const addition = CONSIST_EXPANSION_ORDER[Math.max(0, carIds.length - 3)] ?? "day-coach";
+  if (addition === "observation-car") return [addition, ...carIds];
+  const headEndIndex = Math.max(0, carIds.length - 1);
+  return [...carIds.slice(0, headEndIndex), addition, ...carIds.slice(headEndIndex)];
+}
+
+export function removeAddedConsistCar(carIds: readonly string[]) {
+  if (carIds.length <= 3) return [...carIds];
+  if (carIds[0] === "observation-car") return carIds.slice(1);
+  const removableIndex = Math.max(0, carIds.length - 2);
+  return carIds.filter((_, index) => index !== removableIndex);
+}
 
 export function operatingProfileFor(engineId: string) {
   return LOCOMOTIVE_OPERATING_PROFILES[engineId] ?? LOCOMOTIVE_OPERATING_PROFILES["tom-thumb"];
@@ -204,11 +224,50 @@ export function serviceSteamLocomotive(state: SteamResourceState): SteamResource
   return { fuel: 100, water: 100, stationsWithoutService: 0, failure: null };
 }
 
-export function calculateServiceDurationSeconds(state: SteamResourceState, metrics: ConsistMetrics) {
-  const depletion = (200 - state.fuel - state.water) / 200;
-  const consistWork = Math.max(0, metrics.carCount - 3) * .48;
-  const missedStops = state.stationsWithoutService * .42;
-  return clamp(2.4 + depletion * 4.8 + consistWork + missedStops, 2.4, 10);
+/**
+ * Returns the live tender state at a station-service progress point. Passing
+ * the arrival snapshot on every frame makes partial service deterministic:
+ * departing at 40% really retains 40% of the missing fuel and water.
+ */
+export function stationServiceProgress(
+  arrivalState: SteamResourceState,
+  progress: number,
+): SteamResourceState {
+  if (arrivalState.failure) return arrivalState;
+  const completed = clamp(progress, 0, 1);
+  return {
+    ...arrivalState,
+    fuel: arrivalState.fuel + (100 - arrivalState.fuel) * completed,
+    water: arrivalState.water + (100 - arrivalState.water) * completed,
+  };
+}
+
+export function calculateServiceDurationSeconds(
+  state: SteamResourceState,
+  metrics: ConsistMetrics,
+  profile: LocomotiveOperatingProfile,
+) {
+  const missingFuel = profile.fuelCapacity * (100 - state.fuel) / 100;
+  const missingWater = profile.waterCapacityGallons * (100 - state.water) / 100;
+  // Coal chutes move bulk solids more slowly than oil standpipes, while water
+  // columns fill in parallel. These are game-time rates, not literal claims.
+  const fuelFillRate = profile.fuelType === "coal" ? 4_000 : 800;
+  const fuelSeconds = missingFuel / fuelFillRate;
+  const waterSeconds = missingWater / 2_500;
+  const boardingSeconds = 2.4 + Math.max(0, metrics.carCount - 3) * .6;
+  const inspectionSeconds = state.stationsWithoutService * .3;
+  return clamp(Math.max(boardingSeconds, fuelSeconds, waterSeconds) + inspectionSeconds, 2.4, 12);
+}
+
+/** A station is missed only after the rearward platform grace boundary. */
+export function latestMissedStationSequence(
+  travel: number,
+  firstStationPosition: number,
+  stationInterval: number,
+  platformGraceDistance: number,
+) {
+  if (stationInterval <= 0 || platformGraceDistance < 0) throw new Error("Invalid station spacing");
+  return Math.floor((travel - firstStationPosition - platformGraceDistance) / stationInterval);
 }
 
 export const stationsUntilServiceRequired = (state: SteamResourceState) =>
