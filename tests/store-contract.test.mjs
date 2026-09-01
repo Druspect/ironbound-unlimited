@@ -79,6 +79,10 @@ test("the page carries an executable browser acceptance journey", () => {
   assert.match(page, /qaSuite/);
   assert.match(page, /P1 BROWSER ACCEPTANCE/);
   assert.match(page, /full visible platform coverage/);
+  assert.match(page, /wheel-to-rail contact/);
+  assert.match(page, /maximumRailGap <= \.75/);
+  assert.match(page, /carriage body staging/);
+  assert.match(page, /maximumStageError <= \.06/);
   assert.match(page, /audio pack selection/);
   assert.match(page, /station-specific service art/);
   assert.match(page, /visible station service/);
@@ -133,9 +137,9 @@ test("the platform and carriage center share the same forty-percent world anchor
 
 test("rail bed uses tapered ballast, perspective sleepers, and unequal rails", () => {
   assert.match(css, /\.track::before\s*\{[^}]*clip-path:\s*polygon/s);
-  assert.match(css, /\.sleepers\s*\{[^}]*perspective\(480px\)[^}]*rotateX\(58deg\)/s);
-  assert.match(css, /\.rail-far\s*\{[^}]*height:\s*2px[^}]*rotate\(\.38deg\)/s);
-  assert.match(css, /\.rail-near\s*\{[^}]*height:\s*6px[^}]*rotate\(\.14deg\)/s);
+  assert.match(css, /\.sleepers\s*\{[^}]*perspective\(480px\)[^}]*rotateX\(61deg\)/s);
+  assert.match(css, /\.rail-far\s*\{[^}]*height:\s*2px[^}]*rotate\(\.08deg\)/s);
+  assert.match(css, /\.rail-near\s*\{[^}]*bottom:\s*calc\(var\(--train-base-lift\) \+ var\(--scaled-wheel-inset\) - 6px\)[^}]*height:\s*6px[^}]*transform:\s*scaleX\(1\.015\)/s);
 });
 
 test("oil and coal failures have fuel-correct language", () => {
