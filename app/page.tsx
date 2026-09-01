@@ -375,6 +375,11 @@ export default function Home() {
     if (!browserAcceptanceEnabled) return;
     let cancelled = false;
     const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+    const waitForCondition = async (condition: () => boolean, timeoutMilliseconds = 3_000) => {
+      const deadline = performance.now() + timeoutMilliseconds;
+      while (!condition() && performance.now() < deadline) await wait(80);
+      return condition();
+    };
     const runJourney = async () => {
       await wait(700);
       const checks: BrowserAcceptanceCheck[] = [];
@@ -395,7 +400,15 @@ export default function Home() {
       const serviceAssets = serviceLayers.map((layer) => layer.style.backgroundImage);
       checks.push({ name: "station-specific service art", passed: serviceAssets.length === STATIONS.length && new Set(serviceAssets).size === STATIONS.length, detail: `${new Set(serviceAssets).size} unique scenes across ${serviceAssets.length} stations` });
       const activeServiceLayer = station?.querySelector<HTMLElement>(".station-service-activity");
-      const serviceIsVisible = Boolean(station && activeServiceLayer && station.dataset.serviceActive === "true" && Number(getComputedStyle(station).opacity) >= 0.95 && Number(getComputedStyle(activeServiceLayer).opacity) >= 0.95);
+      // React's HUD state follows the animation-frame simulation. Poll the real
+      // rendered service layer so a slow first production frame cannot create a
+      // false negative while still enforcing the same visible-state boundary.
+      const serviceIsVisible = await waitForCondition(() => Boolean(
+        station && activeServiceLayer &&
+        station.dataset.serviceActive === "true" &&
+        Number(getComputedStyle(station).opacity) >= 0.95 &&
+        Number(getComputedStyle(activeServiceLayer).opacity) >= 0.95
+      ));
       checks.push({ name: "visible station service", passed: serviceIsVisible, detail: serviceIsVisible ? "active Cinder Flats crew is visible at the platform" : "service layer is hidden or off-platform" });
 
       const storeButton = Array.from(document.querySelectorAll<HTMLButtonElement>("button")).find((button) => button.textContent?.trim() === "STORE");
