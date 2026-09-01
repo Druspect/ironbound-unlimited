@@ -35,6 +35,8 @@ button { color: inherit; }
 
 .experience {
   --hud-clearance: 185px;
+  --train-base-lift: 22px;
+  --scaled-wheel-inset: 6px;
   position: relative;
   height: 100svh;
   min-height: 620px;
@@ -452,7 +454,7 @@ button { color: inherit; }
   position: absolute;
   z-index: 7;
   left: 40vw;
-  bottom: calc(var(--hud-clearance) + 22px);
+  bottom: calc(var(--hud-clearance) + var(--train-base-lift));
   width: var(--train-world-width);
   transform: translateX(calc(-1 * var(--train-anchor)));
   filter: brightness(1.07) saturate(1.08) contrast(1.03) drop-shadow(0 20px 15px rgba(2, 3, 3, 0.72));
@@ -703,7 +705,22 @@ button { color: inherit; }
   user-select: none;
   pointer-events: none;
 }
-.passenger-body { left: 0; bottom: 14%; width: 100%; height: 76%; object-fit: contain; object-position: center bottom; }
+.passenger-body {
+  left: 0;
+  bottom: 14%;
+  width: 100%;
+  height: 76%;
+  object-fit: contain;
+  object-position: center bottom;
+  transform: translateY(var(--car-body-baseline-shift, 0%));
+}
+/* The five original body canvases have different transparent bottom margins.
+   Normalize their visible underframes to one bogie bolster line without
+   resizing the artwork or moving the wheelsets. */
+.car-baggage { --car-body-baseline-shift: 0.7%; }
+.car-dining { --car-body-baseline-shift: 7%; }
+.car-observation { --car-body-baseline-shift: 4.6%; }
+.car-pullman { --car-body-baseline-shift: 5.5%; }
 .car-mark {
   position: absolute;
   z-index: 4;
@@ -913,9 +930,10 @@ button { color: inherit; }
 .track::before {
   content: "";
   position: absolute;
-  inset: 27% 0 -9%;
-  clip-path: polygon(0 16%, 100% 27%, 100% 92%, 86% 98%, 68% 94%, 51% 100%, 31% 93%, 13% 98%, 0 88%);
-  opacity: .72;
+  inset: auto 0 -5%;
+  height: calc(var(--train-base-lift) + var(--scaled-wheel-inset) + 16px);
+  clip-path: polygon(0 23%, 100% 31%, 100% 91%, 86% 98%, 68% 94%, 51% 100%, 31% 93%, 13% 98%, 0 89%);
+  opacity: .64;
   background:
     linear-gradient(180deg, rgba(133,116,86,.54), rgba(66,59,48,.52) 48%, rgba(23,26,24,.22) 100%),
     radial-gradient(circle at 20% 35%, rgba(177,151,110,.38) 0 1px, transparent 1.5px);
@@ -926,8 +944,9 @@ button { color: inherit; }
   position: absolute;
   left: 5%;
   right: 5%;
-  top: 51%;
-  height: 13%;
+  top: auto;
+  bottom: calc(var(--train-base-lift) + var(--scaled-wheel-inset) - 4px);
+  height: 9px;
   opacity: .2;
   transform: rotate(.18deg);
   background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.62));
@@ -935,9 +954,10 @@ button { color: inherit; }
 }
 .ballast {
   position: absolute;
-  inset: 26% 0 -8%;
-  opacity: .62;
-  clip-path: polygon(0 15%, 100% 29%, 100% 93%, 82% 98%, 63% 94%, 45% 100%, 24% 94%, 0 88%);
+  inset: auto 0 -4%;
+  height: calc(var(--train-base-lift) + var(--scaled-wheel-inset) + 14px);
+  opacity: .56;
+  clip-path: polygon(0 23%, 100% 31%, 100% 93%, 82% 98%, 63% 94%, 45% 100%, 24% 94%, 0 89%);
   background-image: radial-gradient(#a18d6e 0 .8px, transparent 1px), radial-gradient(#171916 0 1px, transparent 1.2px);
   background-position: 0 0, 8px 10px;
   background-size: 14px 12px, 19px 17px;
@@ -945,9 +965,10 @@ button { color: inherit; }
 .sleepers {
   position: absolute;
   z-index: 1;
-  inset: 44% -220px 3%;
-  clip-path: polygon(0 0, 100% 12%, 100% 95%, 0 84%);
-  transform: translateX(var(--track-x)) skewX(-13deg) perspective(480px) rotateX(58deg);
+  inset: auto -220px calc(var(--train-base-lift) + var(--scaled-wheel-inset) - 14px);
+  height: 32px;
+  clip-path: polygon(0 8%, 100% 19%, 100% 92%, 0 82%);
+  transform: translateX(var(--track-x)) skewX(-13deg) perspective(480px) rotateX(61deg);
   transform-origin: 50% 100%;
   background: repeating-linear-gradient(90deg, transparent 0 44px, #171511 45px 54px, #715b42 55px 60px, transparent 61px 82px);
   box-shadow: inset 0 7px rgba(0,0,0,.2);
@@ -961,16 +982,18 @@ button { color: inherit; }
   background: linear-gradient(180deg, #d8c6a2 0 14%, #5b5147 24% 58%, #090b0b 72%);
 }
 .rail-far {
-  top: 51%;
+  top: auto;
+  bottom: calc(var(--train-base-lift) + var(--scaled-wheel-inset) + 7px);
   height: 2px;
-  transform: rotate(.38deg) scaleX(.985);
+  transform: rotate(.08deg) scaleX(.985);
   opacity: .76;
   box-shadow: 0 2px 2px rgba(0,0,0,.55), 0 -1px rgba(235,215,179,.1);
 }
 .rail-near {
-  top: 79%;
+  top: auto;
+  bottom: calc(var(--train-base-lift) + var(--scaled-wheel-inset) - 6px);
   height: 6px;
-  transform: rotate(.14deg) scaleX(1.015);
+  transform: scaleX(1.015);
   box-shadow: 0 5px 4px rgba(0,0,0,.72), 0 -1px rgba(244,222,183,.2);
 }
 
@@ -1276,15 +1299,15 @@ button { color: inherit; }
 .phase-night .sky-glow { background: radial-gradient(circle at 74% 19%, rgba(216,226,224,0.14), transparent 11%), linear-gradient(180deg, rgba(3,12,34,0.75), rgba(12,21,31,0.36)); mix-blend-mode: multiply; }
 
 @media (max-width: 980px) {
+  .experience { --train-base-lift: 20px; }
   .area-title strong { font-size: 17px; }
   .cab { grid-template-columns: minmax(235px, 0.72fr) minmax(430px, 1.28fr); }
   .throttle-control { grid-template-columns: minmax(240px, 1fr) 140px; gap: 10px; }
-  .train-wrap { bottom: calc(var(--hud-clearance) + 20px); }
   .station-world { width: var(--platform-width, min(82vw, 840px)); }
 }
 
 @media (max-width: 680px) {
-  .experience { --hud-clearance: 205px; }
+  .experience { --hud-clearance: 205px; --train-base-lift: 16px; }
   .experience, .scene { min-height: 600px; }
   .topbar { height: 62px; grid-template-columns: auto 1fr auto; padding: 0 10px; }
   .brand-mark { width: 32px; height: 32px; }
@@ -1307,7 +1330,6 @@ button { color: inherit; }
   .biome-card strong { font-size: 17px; }
   .station-card { left: 10px; top: 154px; width: calc(100% - 154px); padding: 10px 11px; }
   .station-card strong { font-size: 17px; }
-  .train-wrap { bottom: calc(var(--hud-clearance) + 16px); }
   .station-world { width: var(--platform-width, 118vw); bottom: calc(var(--hud-clearance) + 14px); }
   .cab { left: 8px; right: 8px; bottom: 8px; grid-template-columns: 1fr; }
   .cab > div { padding: 11px 12px; border-right: 0; }
