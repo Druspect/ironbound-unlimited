@@ -389,6 +389,23 @@ export default function Home() {
       const scale = Number(train?.dataset.cameraScale);
       checks.push({ name: "automatic framing", passed: train?.dataset.cameraMode === "auto" && Number.isFinite(scale) && scale > 0.35 && scale <= 1, detail: `camera scale ${Number.isFinite(scale) ? scale.toFixed(3) : "missing"}` });
 
+      const nearRail = document.querySelector<HTMLElement>(".rail-near")?.getBoundingClientRect();
+      const coachWheels = cars.flatMap((car) => Array.from(car.querySelectorAll<HTMLElement>(".small-wheel")));
+      const railContactGaps = nearRail ? coachWheels.map((wheel) => Math.abs(wheel.getBoundingClientRect().bottom - nearRail.top)) : [];
+      const maximumRailGap = railContactGaps.length > 0 ? Math.max(...railContactGaps) : Number.POSITIVE_INFINITY;
+      checks.push({ name: "wheel-to-rail contact", passed: coachWheels.length === cars.length * 4 && maximumRailGap <= .75, detail: Number.isFinite(maximumRailGap) ? `${maximumRailGap.toFixed(3)}px maximum tire gap` : "geometry unavailable" });
+
+      const expectedBodyOffsets: Readonly<Record<string, number>> = { "day-coach": 0, "baggage-mail": .798, "dining-car": 7.98, "observation-car": 5.244, pullman: 6.27 };
+      const stagedBodies = cars.map((car) => {
+        const carType = car.dataset.carType ?? "";
+        const body = car.querySelector<HTMLElement>(".passenger-body");
+        const matrix = body ? new DOMMatrixReadOnly(getComputedStyle(body).transform) : null;
+        return { carType, offset: matrix?.m42 ?? Number.NaN, expected: expectedBodyOffsets[carType] };
+      });
+      const stagedBodyTypes = new Set(stagedBodies.map(({ carType }) => carType));
+      const maximumStageError = Math.max(...stagedBodies.map(({ offset, expected }) => Math.abs(offset - expected)));
+      checks.push({ name: "carriage body staging", passed: stagedBodyTypes.size === Object.keys(expectedBodyOffsets).length && Number.isFinite(maximumStageError) && maximumStageError <= .06, detail: Number.isFinite(maximumStageError) ? `${maximumStageError.toFixed(3)}px maximum baseline error across five bodies` : "geometry unavailable" });
+
       const station = document.querySelector<HTMLElement>('.station-world[data-station-index="0"]');
       const firstCar = cars[0]?.getBoundingClientRect();
       const lastCar = cars.at(-1)?.getBoundingClientRect();
@@ -872,6 +889,7 @@ export default function Home() {
     "--train-world-width": `${trainWorldWidth}px`,
     "--train-anchor": `${trainAnchor}px`,
     "--camera-scale": cameraScale,
+    "--scaled-wheel-inset": `${6 * cameraScale}px`,
     "--platform-width": `${trainGeometry.platformRenderedWidth}px`,
   };
 
@@ -1040,6 +1058,7 @@ export default function Home() {
                     className={`rail-unit coach consist-car ${car.visualClass}`}
                     style={{ left: `${carIndex * carWidth}px`, width: `${carWidth}px`, "--car-lift": `var(--coach-${carIndex % 2 === 0 ? "a" : "b"}-lift, 0px)` } as SceneStyle}
                     data-passenger-car-index={carIndex}
+                    data-car-type={carId}
                     aria-hidden="true"
                   >
                     {COACH_WHEEL_POSITIONS.map((position, wheelIndex) => (
