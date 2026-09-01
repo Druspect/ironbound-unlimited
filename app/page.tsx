@@ -388,12 +388,15 @@ export default function Home() {
       const firstCar = cars[0]?.getBoundingClientRect();
       const lastCar = cars.at(-1)?.getBoundingClientRect();
       const platform = station?.getBoundingClientRect();
-      const platformCoversCars = Boolean(platform && firstCar && lastCar && platform.left <= firstCar.left + 2 && platform.right >= lastCar.right - 2);
-      checks.push({ name: "full platform coverage", passed: platformCoversCars, detail: platform && firstCar && lastCar ? `${Math.round(platform.width)}px platform / ${Math.round(lastCar.right - firstCar.left)}px cars` : "geometry unavailable" });
+      const platformCoversCars = Boolean(platform && firstCar && lastCar && platform.left >= -2 && platform.right <= window.innerWidth + 2 && platform.left <= firstCar.left + 2 && platform.right >= lastCar.right - 2);
+      checks.push({ name: "full visible platform coverage", passed: platformCoversCars, detail: platform && firstCar && lastCar ? `${Math.round(platform.width)}px on-screen platform / ${Math.round(lastCar.right - firstCar.left)}px cars` : "geometry unavailable" });
 
       const serviceLayers = Array.from(document.querySelectorAll<HTMLElement>(".station-service-activity"));
       const serviceAssets = serviceLayers.map((layer) => layer.style.backgroundImage);
       checks.push({ name: "station-specific service art", passed: serviceAssets.length === STATIONS.length && new Set(serviceAssets).size === STATIONS.length, detail: `${new Set(serviceAssets).size} unique scenes across ${serviceAssets.length} stations` });
+      const activeServiceLayer = station?.querySelector<HTMLElement>(".station-service-activity");
+      const serviceIsVisible = Boolean(station && activeServiceLayer && station.dataset.serviceActive === "true" && Number(getComputedStyle(station).opacity) >= 0.95 && Number(getComputedStyle(activeServiceLayer).opacity) >= 0.95);
+      checks.push({ name: "visible station service", passed: serviceIsVisible, detail: serviceIsVisible ? "active Cinder Flats crew is visible at the platform" : "service layer is hidden or off-platform" });
 
       const storeButton = Array.from(document.querySelectorAll<HTMLButtonElement>("button")).find((button) => button.textContent?.trim() === "STORE");
       storeButton?.click();

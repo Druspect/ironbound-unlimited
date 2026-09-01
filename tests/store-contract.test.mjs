@@ -78,9 +78,11 @@ test("audio packs are selectable systems rather than disabled promises", () => {
 test("the page carries an executable browser acceptance journey", () => {
   assert.match(page, /qaSuite/);
   assert.match(page, /P1 BROWSER ACCEPTANCE/);
-  assert.match(page, /full platform coverage/);
+  assert.match(page, /full visible platform coverage/);
   assert.match(page, /audio pack selection/);
   assert.match(page, /station-specific service art/);
+  assert.match(page, /visible station service/);
+  assert.match(page, /station\.dataset\.serviceActive === "true"/);
   assert.match(page, /data-browser-acceptance/);
 });
 
