@@ -375,7 +375,7 @@ export default function Home() {
     if (!browserAcceptanceEnabled) return;
     let cancelled = false;
     const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-    const waitForCondition = async (condition: () => boolean, timeoutMilliseconds = 3_000) => {
+    const waitForCondition = async (condition: () => boolean, timeoutMilliseconds = 8_000) => {
       const deadline = performance.now() + timeoutMilliseconds;
       while (!condition() && performance.now() < deadline) await wait(80);
       return condition();
