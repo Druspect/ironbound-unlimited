@@ -91,6 +91,43 @@ test("both coach bogies and rods move inward together without changing wheel siz
   assert.doesNotMatch(page, /Train screensaver game\./);
 });
 
+test("every carriage body resolves to the same visible underframe baseline", () => {
+  const canvasWidth = 900;
+  const carWidth = 190;
+  const bodyBoxHeight = 150 * .76;
+  const bodyBottom = 150 * .14;
+  const profiles = [
+    { name: "day coach", transparentBottom: 1, shift: 0 },
+    { name: "baggage", transparentBottom: 5, shift: .7 },
+    { name: "dining", transparentBottom: 39, shift: 7 },
+    { name: "observation", transparentBottom: 26, shift: 4.6 },
+    { name: "pullman", transparentBottom: 31, shift: 5.5 },
+  ];
+  const baselines = profiles.map(({ transparentBottom, shift }) =>
+    bodyBottom + transparentBottom * carWidth / canvasWidth - bodyBoxHeight * shift / 100
+  );
+  assert.ok(Math.max(...baselines) - Math.min(...baselines) < .25, `body baselines diverge: ${baselines.join(", ")}`);
+  for (const { name, shift } of profiles.filter(({ shift }) => shift > 0)) {
+    const className = name === "day coach" ? "day-coach" : name;
+    assert.match(css, new RegExp(`\\.car-${className} \\{ --car-body-baseline-shift: ${String(shift).replace(".", "\\.")}%; \\}`));
+  }
+});
+
+test("coach tires and the near rail share one camera-aware contact plane", () => {
+  assert.match(page, /"--scaled-wheel-inset": `\$\{6 \* cameraScale\}px`/);
+  assert.match(css, /--train-base-lift: 22px/);
+  assert.match(css, /@media \(max-width: 980px\)[\s\S]*--train-base-lift: 20px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*--train-base-lift: 16px/);
+  assert.match(css, /\.train-wrap\s*\{[^}]*bottom:\s*calc\(var\(--hud-clearance\) \+ var\(--train-base-lift\)\)/s);
+  assert.match(css, /\.rail-near\s*\{[^}]*bottom:\s*calc\(var\(--train-base-lift\) \+ var\(--scaled-wheel-inset\) - 6px\)/s);
+  assert.doesNotMatch(css.match(/\.rail-near\s*\{[^}]*\}/s)?.[0] ?? "", /rotate\(/);
+  for (const cameraScale of [.16, .42, .779, 1, 1.04]) {
+    const wheelContactLift = 22 + 6 * cameraScale;
+    const railTopLift = 22 + 6 * cameraScale - 6 + 6;
+    assert.equal(railTopLift, wheelContactLift, `contact at camera scale ${cameraScale}`);
+  }
+});
+
 test("side cards are transparent overlays and the regulator is a dynamic green-to-red rail", () => {
   assert.match(css, /\.mission-card,[\s\S]*background:\s*linear-gradient\(90deg,[^;]*transparent\);[\s\S]*border-left:\s*2px solid/s);
   assert.match(css, /\.right-hud \.speed-card,[\s\S]*background:\s*linear-gradient\(270deg,[^;]*transparent\);[\s\S]*border-right:\s*2px solid/s);
