@@ -5,6 +5,8 @@ import type { RefObject } from "react";
 import { ExhaustSmoke } from "./locomotive-exhaust-view";
 import { createExhaustMotion } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
+import { AUDIO_PACKS, DEFAULT_AUDIO_PACK, audioPackFor, isAudioPackId, soundscapeMix } from "./audio-packs";
+import type { AudioPackId } from "./audio-packs";
 import { advanceBrakePressure, advanceLocomotive } from "./locomotive-physics";
 import { ACTIVE_LOCOMOTIVES, canEquipLocomotive, FLEET_REVIEW_UNLOCKED, resolveEquippedLocomotive, selectLocomotive } from "./fleet-access";
 import { engineFactSheetFor } from "./engine-facts";
@@ -79,12 +81,12 @@ const ROUTE_TILES = Array.from({ length: ROUTE_TILE_COUNT + 2 }, (_, index) => {
 });
 
 const STATIONS = [
-  { name: "Cinder Flats", position: 0.82 * TILE_TRAVEL, reward: "250 rail bonds", bonds: 250, art: "plains" },
-  { name: "Copper Wash", position: 5.82 * TILE_TRAVEL, reward: "400 rail bonds", bonds: 400, art: "mesa" },
-  { name: "Saltworks", position: 10.82 * TILE_TRAVEL, reward: "525 rail bonds", bonds: 525, art: "plains" },
-  { name: "Timberline", position: 15.82 * TILE_TRAVEL, reward: "Boiler shield + 650 bonds", bonds: 650, art: "pine" },
-  { name: "Summit House", position: 20.82 * TILE_TRAVEL, reward: "800 rail bonds", bonds: 800, art: "pine" },
-  { name: "Stillwater", position: 25.82 * TILE_TRAVEL, reward: "1,000 rail bonds", bonds: 1000, art: "river" },
+  { name: "Cinder Flats", position: 0.82 * TILE_TRAVEL, reward: "250 rail bonds", bonds: 250, art: "plains", serviceArt: "cinder-flats" },
+  { name: "Copper Wash", position: 5.82 * TILE_TRAVEL, reward: "400 rail bonds", bonds: 400, art: "mesa", serviceArt: "copper-wash" },
+  { name: "Saltworks", position: 10.82 * TILE_TRAVEL, reward: "525 rail bonds", bonds: 525, art: "plains", serviceArt: "saltworks" },
+  { name: "Timberline", position: 15.82 * TILE_TRAVEL, reward: "Boiler shield + 650 bonds", bonds: 650, art: "pine", serviceArt: "timberline" },
+  { name: "Summit House", position: 20.82 * TILE_TRAVEL, reward: "800 rail bonds", bonds: 800, art: "pine", serviceArt: "summit-house" },
+  { name: "Stillwater", position: 25.82 * TILE_TRAVEL, reward: "1,000 rail bonds", bonds: 1000, art: "river", serviceArt: "stillwater" },
 ] as const;
 
 type StationState = {
@@ -94,6 +96,8 @@ type StationState = {
   dwell: number;
   collected: boolean;
 };
+
+type BrowserAcceptanceCheck = { name: string; passed: boolean; detail: string };
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -162,6 +166,9 @@ export default function Home() {
   const [steamResources, setSteamResources] = useState(createSteamResourceState);
   const [runFailure, setRunFailure] = useState<"fuel" | "water" | "service" | null>(null);
   const [settings, setSettings] = useState({ sound: true, reducedMotion: false, highContrast: false, uiScale: 100 });
+  const [selectedAudioPack, setSelectedAudioPack] = useState<AudioPackId>(DEFAULT_AUDIO_PACK);
+  const [browserAcceptanceEnabled, setBrowserAcceptanceEnabled] = useState(false);
+  const [browserAcceptanceChecks, setBrowserAcceptanceChecks] = useState<BrowserAcceptanceCheck[]>([]);
   const [saveReady, setSaveReady] = useState(false);
   const [rewardNotice, setRewardNotice] = useState<{ station: string; reward: string; bonus?: string; service?: string } | null>(null);
   const throttleRef = useRef(throttle);
@@ -179,6 +186,8 @@ export default function Home() {
   const visualTravelRef = useRef(0);
   const whistleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const whistleAudioRef = useRef<HTMLAudioElement | null>(null);
+  const soundscapeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const selectedAudioPackRef = useRef<AudioPackId>(DEFAULT_AUDIO_PACK);
   const rewardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dwellRef = useRef({
     station: -1,
@@ -214,6 +223,10 @@ export default function Home() {
   }, [consistCars]);
 
   useEffect(() => {
+    selectedAudioPackRef.current = selectedAudioPack;
+  }, [selectedAudioPack]);
+
+  useEffect(() => {
     const measureViewport = () => setViewportWidth(Math.max(320, window.innerWidth));
     measureViewport();
     window.addEventListener("resize", measureViewport, { passive: true });
@@ -225,6 +238,26 @@ export default function Home() {
     queueMicrotask(() => {
       if (cancelled) return;
       try {
+        const browserParameters = new URLSearchParams(window.location.search);
+        const browserAcceptanceRequested = browserParameters.get("qaSuite") === "p1";
+        if (browserAcceptanceRequested) {
+          visualQaModeRef.current = true;
+          setBrowserAcceptanceEnabled(true);
+          const sixCarConsist = addConsistCar(addConsistCar(addConsistCar(DEFAULT_CONSIST)));
+          consistCarsRef.current = sixCarConsist;
+          setConsistCars(sixCarConsist);
+          setCameraZoom("auto");
+          visualTravelRef.current = STATIONS[0].position;
+          distanceRef.current = STATIONS[0].position;
+          setDistance(STATIONS[0].position);
+          steamResourcesRef.current = { fuel: 18, water: 22, stationsWithoutService: 3, failure: null };
+          setSteamResources(steamResourcesRef.current);
+          brakeRef.current = true;
+          setBrakeEngaged(true);
+          setScreen("game");
+          pausedRef.current = false;
+          setPaused(false);
+        }
         const qaParameters = process.env.NODE_ENV !== "production"
           ? new URLSearchParams(window.location.search)
           : null;
@@ -266,10 +299,10 @@ export default function Home() {
           setScreen("game");
           pausedRef.current = Boolean(runFailureRef.current);
           setPaused(pausedRef.current);
-        } else {
+        } else if (!browserAcceptanceRequested) {
           const saved = localStorage.getItem("ironbound-save-v4") ?? localStorage.getItem("ironbound-save-v3") ?? localStorage.getItem("ironbound-save-v2") ?? localStorage.getItem("ironbound-save-v1");
           if (saved) {
-            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null; claimedStops?: string[]; servicedStationSequence?: number } };
+            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; selectedAudioPack?: AudioPackId; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null; claimedStops?: string[]; servicedStationSequence?: number } };
             if (typeof parsed.bonds === "number") setBonds(Math.max(0, parsed.bonds));
             const owned = Array.from(new Set([STARTER_LOCOMOTIVE_ID, ...(Array.isArray(parsed.ownedEngines) ? parsed.ownedEngines.filter((id) => LOCOMOTIVES.some((engine) => engine.id === id)) : [])]));
             setOwnedEngines(owned);
@@ -280,6 +313,7 @@ export default function Home() {
             }
             if (parsed.cameraZoom === "auto" || parsed.cameraZoom === "close" || parsed.cameraZoom === "standard" || parsed.cameraZoom === "wide") setCameraZoom(parsed.cameraZoom);
             if (parsed.settings) setSettings((current) => ({ ...current, ...parsed.settings }));
+            if (isAudioPackId(parsed.selectedAudioPack)) setSelectedAudioPack(parsed.selectedAudioPack);
             if (parsed.run) {
               const restoredThrottle = clamp(finiteOr(parsed.run.throttle, 0), 0, 100);
               const restoredSpeed = clamp(finiteOr(parsed.run.speed, 0), 0, 140);
@@ -338,10 +372,54 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!browserAcceptanceEnabled) return;
+    let cancelled = false;
+    const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+    const runJourney = async () => {
+      await wait(700);
+      const checks: BrowserAcceptanceCheck[] = [];
+      const train = document.querySelector<HTMLElement>(".train-consist");
+      const cars = Array.from(document.querySelectorAll<HTMLElement>(".consist-car"));
+      checks.push({ name: "six-car consist", passed: train?.dataset.carCount === "6" && cars.length === 6, detail: `${cars.length} rendered passenger cars` });
+      const scale = Number(train?.dataset.cameraScale);
+      checks.push({ name: "automatic framing", passed: train?.dataset.cameraMode === "auto" && Number.isFinite(scale) && scale > 0.35 && scale <= 1, detail: `camera scale ${Number.isFinite(scale) ? scale.toFixed(3) : "missing"}` });
+
+      const station = document.querySelector<HTMLElement>('.station-world[data-station-index="0"]');
+      const firstCar = cars[0]?.getBoundingClientRect();
+      const lastCar = cars.at(-1)?.getBoundingClientRect();
+      const platform = station?.getBoundingClientRect();
+      const platformCoversCars = Boolean(platform && firstCar && lastCar && platform.left <= firstCar.left + 2 && platform.right >= lastCar.right - 2);
+      checks.push({ name: "full platform coverage", passed: platformCoversCars, detail: platform && firstCar && lastCar ? `${Math.round(platform.width)}px platform / ${Math.round(lastCar.right - firstCar.left)}px cars` : "geometry unavailable" });
+
+      const serviceLayers = Array.from(document.querySelectorAll<HTMLElement>(".station-service-activity"));
+      const serviceAssets = serviceLayers.map((layer) => layer.style.backgroundImage);
+      checks.push({ name: "station-specific service art", passed: serviceAssets.length === STATIONS.length && new Set(serviceAssets).size === STATIONS.length, detail: `${new Set(serviceAssets).size} unique scenes across ${serviceAssets.length} stations` });
+
+      const storeButton = Array.from(document.querySelectorAll<HTMLButtonElement>("button")).find((button) => button.textContent?.trim() === "STORE");
+      storeButton?.click();
+      await wait(120);
+      const audioTab = Array.from(document.querySelectorAll<HTMLButtonElement>("button")).find((button) => button.textContent?.trim() === "AUDIO PACKS");
+      audioTab?.click();
+      await wait(120);
+      const mountainCard = document.querySelector<HTMLElement>('[data-audio-pack="mountain-echo"]');
+      mountainCard?.querySelector<HTMLButtonElement>("button")?.click();
+      await wait(160);
+      const activeMountain = document.querySelector<HTMLElement>('[data-audio-pack="mountain-echo"].installed');
+      checks.push({ name: "audio pack selection", passed: Boolean(activeMountain?.querySelector<HTMLButtonElement>("button:disabled")), detail: activeMountain ? "Mountain Echo selected through Store controls" : "selection did not persist in the rendered Store" });
+
+      const audioCards = document.querySelectorAll("[data-audio-pack]");
+      checks.push({ name: "all audio packs functional", passed: audioCards.length === AUDIO_PACKS.length && !document.body.textContent?.includes("COMING SOON"), detail: `${audioCards.length} selectable packs; no placeholder copy` });
+      if (!cancelled) setBrowserAcceptanceChecks(checks);
+    };
+    void runJourney();
+    return () => { cancelled = true; };
+  }, [browserAcceptanceEnabled]);
+
+  useEffect(() => {
     if (!saveReady || visualQaModeRef.current) return;
     const timer = window.setTimeout(() => {
       localStorage.setItem("ironbound-save-v4", JSON.stringify({
-        bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings,
+        bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack,
         run: {
           throttle, speed, boilerLoad, heat, distance,
           visualTravel: visualTravelRef.current,
@@ -356,7 +434,7 @@ export default function Home() {
       }));
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, throttle, speed, boilerLoad, heat, distance, brakeEngaged, steamResources, runFailure, saveReady]);
+  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, throttle, speed, boilerLoad, heat, distance, brakeEngaged, steamResources, runFailure, saveReady]);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--user-ui-scale", String(settings.uiScale / 100));
@@ -372,6 +450,25 @@ export default function Home() {
       whistleAudioRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const soundscape = new Audio(audioPackFor(selectedAudioPack).loopAsset);
+    soundscape.preload = "auto";
+    soundscape.loop = true;
+    soundscape.volume = 0;
+    soundscapeAudioRef.current = soundscape;
+    return () => {
+      soundscape.pause();
+      if (soundscapeAudioRef.current === soundscape) soundscapeAudioRef.current = null;
+    };
+  }, [selectedAudioPack]);
+
+  useEffect(() => {
+    const soundscape = soundscapeAudioRef.current;
+    if (!soundscape) return;
+    if (screen === "game" && settings.sound) void soundscape.play().catch(() => undefined);
+    else soundscape.pause();
+  }, [screen, settings.sound, selectedAudioPack]);
 
   useEffect(() => {
     throttleRef.current = throttle;
@@ -519,7 +616,7 @@ export default function Home() {
         const stopCollected = claimedStopsRef.current.has(stopKey);
         let serviceDurationMilliseconds = dwellRef.current.durationMilliseconds ||
           calculateServiceDurationSeconds(steamResourcesRef.current, consistMetrics, operatingProfile) * 1000;
-        if (inStopZone && speedRef.current < 2.5 && !stopCollected) {
+        if (inStopZone && speedRef.current < 2.5 && !stopCollected && !pausedRef.current) {
           if (dwellRef.current.station !== stopStationIndex) {
             const arrivalResources = { ...steamResourcesRef.current };
             serviceDurationMilliseconds = calculateServiceDurationSeconds(arrivalResources, consistMetrics, operatingProfile) * 1000;
@@ -626,6 +723,17 @@ export default function Home() {
           travel: railTravel, driverRadius, speed: velocity,
           load: throttleRef.current / 100, paused: pausedRef.current,
         });
+        const soundscape = soundscapeAudioRef.current;
+        if (soundscape) {
+          const mix = soundscapeMix(selectedAudioPackRef.current, {
+            speedMph: velocity,
+            throttle: throttleRef.current,
+            paused: pausedRef.current,
+            servicing: inStopZone && speedRef.current < 2.5,
+          });
+          soundscape.volume = mix.volume;
+          soundscape.playbackRate = mix.playbackRate;
+        }
         root.style.setProperty("--transition-haze", String(Math.sin(biomeMix * Math.PI) * 0.34));
         root.style.setProperty("--station-dwell", `${clamp(dwellRef.current.milliseconds / serviceDurationMilliseconds, 0, 1) * 100}%`);
 
@@ -773,6 +881,7 @@ export default function Home() {
   const openScreen = (next: typeof screen) => {
     setScreen(next);
     setPaused(next !== "game" || Boolean(runFailureRef.current));
+    if (next === "game" && settings.sound) void soundscapeAudioRef.current?.play().catch(() => undefined);
   };
   const purchaseOrEquip = (engineId: string) => {
     const next = selectLocomotive({ bonds, ownedEngines, equippedEngine }, engineId);
@@ -860,6 +969,11 @@ export default function Home() {
         </div>
       </header>
 
+      {browserAcceptanceEnabled && <aside className={`browser-acceptance ${browserAcceptanceChecks.length > 0 && browserAcceptanceChecks.every((check) => check.passed) ? "passed" : "running"}`} data-browser-acceptance={browserAcceptanceChecks.length > 0 && browserAcceptanceChecks.every((check) => check.passed) ? "passed" : "running"}>
+        <strong>P1 BROWSER ACCEPTANCE</strong>
+        {browserAcceptanceChecks.length === 0 ? <span>Running real interface journey…</span> : browserAcceptanceChecks.map((check) => <span key={check.name} data-check={check.passed ? "passed" : "failed"}>{check.passed ? "✓" : "×"} {check.name}: {check.detail}</span>)}
+      </aside>}
+
       <section className="scene" aria-label={`Interactive steam train crossing ${activeBiome.name}`}>
         <div className="sky-glow" />
         <div className="route-strip" aria-hidden="true">
@@ -886,7 +1000,7 @@ export default function Home() {
                 decoding="async"
                 loading={index === 0 ? "eager" : "lazy"}
               />
-              <span className="station-service-activity" />
+              <span className="station-service-activity" style={{ backgroundImage: `url("/assets/stations/service/v1/${station.serviceArt}.webp")` }} />
             </div>
           ))}
         </div>
@@ -1169,10 +1283,14 @@ export default function Home() {
               </section>}
 
               {storeTab === "audio" && <section className="store-department audio-packs" aria-labelledby="audio-store-heading">
-                <div className="department-heading"><div><span className="menu-kicker">SOUND CABINET</span><h3 id="audio-store-heading">Audio Packs</h3><p>Sound packs change railway atmosphere without changing engine performance.</p></div></div>
-                <article className="audio-pack installed"><span>INSTALLED</span><h4>Heritage Steam</h4><p>The working Ironbound steam whistle, balanced for cab controls and reduced-motion play.</p><button disabled>IN SERVICE</button></article>
-                <article className="audio-pack"><span>IN PRODUCTION</span><h4>Mountain Echo</h4><p>Long-valley reverberation, grade-working exhaust, rail joints, and station ambience.</p><button disabled>COMING SOON</button></article>
-                <article className="audio-pack"><span>IN PRODUCTION</span><h4>Winter Limited</h4><p>Cold-start steam, snow-muted running gear, bells, and platform atmosphere.</p><button disabled>COMING SOON</button></article>
+                <div className="department-heading"><div><span className="menu-kicker">SOUND CABINET</span><h3 id="audio-store-heading">Audio Packs</h3><p>Select a complete railway soundscape. The active pack follows speed, regulator demand, pauses, and station work without changing engine performance.</p></div><div className="audio-now-playing"><small>IN SERVICE</small><strong>{audioPackFor(selectedAudioPack).name}</strong></div></div>
+                {AUDIO_PACKS.map((pack) => {
+                  const selected = pack.id === selectedAudioPack;
+                  return <article key={pack.id} className={`audio-pack ${selected ? "installed" : ""}`} data-audio-pack={pack.id}>
+                    <span>{selected ? "ACTIVE" : "AVAILABLE"}</span><h4>{pack.name}</h4><small>{pack.tagline}</small><p>{pack.detail}</p>
+                    <button disabled={selected} aria-pressed={selected} onClick={() => setSelectedAudioPack(pack.id)}>{selected ? "IN SERVICE" : "SELECT PACK"}</button>
+                  </article>;
+                })}
               </section>}
             </section>
           )}

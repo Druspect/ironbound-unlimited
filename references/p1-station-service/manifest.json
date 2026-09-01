@@ -1,0 +1,19 @@
+{
+  "policy": "Original generated production art; no photographic source, tracing, prior Ironbound graphic, or third-party game art was used as an image input.",
+  "generatedWith": "OpenAI built-in image generation",
+  "productionCanvas": { "width": 1774, "height": 887, "format": "WebP", "alpha": true },
+  "constraints": [
+    "1900-1920 railway equipment and clothing",
+    "transparent side-on foreground",
+    "no locomotive, railcar, rail, signage, logo, readable text, or watermark",
+    "station-specific people, tools, freight, light, and palette"
+  ],
+  "assets": [
+    { "station": "Cinder Flats", "file": "public/assets/stations/service/v1/cinder-flats.webp", "design": "warm high-plains timber water crane, coal chute, mail, passengers" },
+    { "station": "Copper Wash", "file": "public/assets/stations/service/v1/copper-wash.webp", "design": "red-desert iron water column, copper freight, porter, passengers" },
+    { "station": "Saltworks", "file": "public/assets/stations/service/v1/saltworks.webp", "design": "whitewashed salt service plant, dust crews, salt sacks, clerk" },
+    { "station": "Timberline", "file": "public/assets/stations/service/v1/timberline.webp", "design": "forest timber crane, lumber service, mail, family passengers" },
+    { "station": "Summit House", "file": "public/assets/stations/service/v1/summit-house.webp", "design": "frosted alpine standpipe, covered fuel, winter crews and travelers" },
+    { "station": "Stillwater", "file": "public/assets/stations/service/v1/stillwater.webp", "design": "river-basin cast-iron column, freight, fishermen, terminus passengers" }
+  ]
+}

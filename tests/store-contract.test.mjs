@@ -54,7 +54,8 @@ test("consist expansion stays varied and preserves head-end baggage", () => {
 });
 
 test("station service is visibly staged and remains safe under reduced motion", () => {
-  assert.match(css, /station-service-activity\.webp/);
+  assert.match(page, /assets\/stations\/service\/v1\/\$\{station\.serviceArt\}\.webp/);
+  assert.doesNotMatch(page, /station-service-activity\.webp/);
   assert.match(page, /data-service-active=/);
   assert.match(page, /qaService/);
   assert.match(page, />BOARD<\/span>/);
@@ -63,6 +64,24 @@ test("station service is visibly staged and remains safe under reduced motion", 
   assert.match(css, /\.reduced-motion \.station-world\.service-active \.station-service-activity\s*\{[^}]*animation:\s*none/s);
   assert.match(page, /stationServiceProgress\(dwellRef\.current\.arrivalResources, serviceProgress\)/);
   assert.match(page, /latestMissedStationSequence\(/);
+});
+
+test("audio packs are selectable systems rather than disabled promises", () => {
+  const audioPanel = page.slice(page.indexOf('{storeTab === "audio"'), page.indexOf('{screen === "options"'));
+  assert.match(page, /AUDIO_PACKS\.map/);
+  assert.match(page, /setSelectedAudioPack\(pack\.id\)/);
+  assert.match(page, /soundscapeMix\(selectedAudioPackRef\.current/);
+  assert.match(page, /selectedAudioPack,/);
+  assert.doesNotMatch(audioPanel, /COMING SOON|IN PRODUCTION|<button disabled>COMING SOON<\/button>/);
+});
+
+test("the page carries an executable browser acceptance journey", () => {
+  assert.match(page, /qaSuite/);
+  assert.match(page, /P1 BROWSER ACCEPTANCE/);
+  assert.match(page, /full platform coverage/);
+  assert.match(page, /audio pack selection/);
+  assert.match(page, /station-specific service art/);
+  assert.match(page, /data-browser-acceptance/);
 });
 
 test("a restarted run returns to a closed regulator with the train brake set", () => {
