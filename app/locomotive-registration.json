@@ -1,0 +1,3208 @@
+{
+  "art_revision": "7d6ce72c3cf886ea",
+  "canvas": {
+    "width": 960,
+    "height": 340
+  },
+  "animation": {
+    "frames": 32,
+    "columns": 8,
+    "direction": "clockwise"
+  },
+  "rail_reference_height": 260,
+  "rail_y": 332,
+  "profiles": {
+    "tom-thumb": {
+      "wheel_arrangement": "4-6-0",
+      "tender_width": 30,
+      "locomotive_width": 72,
+      "body_bottom": 14,
+      "tender_bottom": 10,
+      "stack_tip": {
+        "x": 1043,
+        "y": 7
+      },
+      "drivers": [
+        29.6,
+        50.9,
+        72.3
+      ],
+      "driver_size": 18,
+      "trailing": [],
+      "leading": [
+        87.5,
+        95.1
+      ],
+      "truck_size": 6.8,
+      "tender_axles": [
+        18.4,
+        39.4,
+        67.4,
+        88.4
+      ],
+      "tender_wheel_size": 19.8,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 29.6,
+          "end": 72.3,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 86.67261,
+        "y": 2.87617
+      },
+      "body_bounds": {
+        "x": 269,
+        "y": 6,
+        "width": 691,
+        "height": 298
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 218,
+        "width": 288,
+        "height": 96
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 29.6,
+          "size": 18,
+          "cx": 473.0,
+          "cy": 270.0,
+          "diameter": 124,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 50.9,
+          "size": 18,
+          "cx": 621.0,
+          "cy": 270.0,
+          "diameter": 124,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 72.3,
+          "size": 18,
+          "cx": 769.0,
+          "cy": 270.0,
+          "diameter": 124,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 87.5,
+          "size": 6.8,
+          "cx": 873.5,
+          "cy": 308.5,
+          "diameter": 47,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 95.1,
+          "size": 6.8,
+          "cx": 926.5,
+          "cy": 308.5,
+          "diameter": 47,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 18.4,
+          "size": 19.8,
+          "cx": 52.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 39.4,
+          "size": 19.8,
+          "cx": 113.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 67.4,
+          "size": 19.8,
+          "cx": 194.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 88.4,
+          "size": 19.8,
+          "cx": 254.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 8,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 0,
+          "leading": 0,
+          "trailing": 0,
+          "tender": 0
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -16.0,
+        "driver-2": -16.0,
+        "driver-3": -16.0,
+        "leading-1": -8.0,
+        "leading-2": -16.0,
+        "tender-1": -28.0,
+        "tender-2": -28.0,
+        "tender-3": -28.0,
+        "tender-4": -28.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -62.0,
+        "driver-2": -62.0,
+        "driver-3": -62.0,
+        "leading-1": -23.0,
+        "leading-2": -23.0,
+        "tender-1": -29.0,
+        "tender-2": -29.0,
+        "tender-3": -29.0,
+        "tender-4": -29.0
+      },
+      "driver_contact_gaps_px": [
+        -62.0,
+        -62.0,
+        -62.0
+      ],
+      "tender_contact_gaps_px": [
+        -29.0,
+        -29.0,
+        -29.0,
+        -29.0
+      ]
+    },
+    "southern-4501": {
+      "wheel_arrangement": "2-8-2",
+      "tender_width": 35,
+      "locomotive_width": 68,
+      "body_bottom": 1,
+      "tender_bottom": 9,
+      "stack_tip": {
+        "x": 933,
+        "y": 3
+      },
+      "drivers": [
+        37,
+        50,
+        63,
+        76
+      ],
+      "driver_size": 12.3,
+      "trailing": [
+        17.5
+      ],
+      "leading": [
+        91
+      ],
+      "truck_size": 6.15,
+      "trailing_size": 8.4,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 37,
+          "end": 76,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 89.10197,
+        "y": 29.93067
+      },
+      "body_bounds": {
+        "x": 307,
+        "y": 100,
+        "width": 653,
+        "height": 237
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 144,
+        "width": 336,
+        "height": 173
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 37,
+          "size": 12.3,
+          "cx": 549.0,
+          "cy": 292.0,
+          "diameter": 80,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 50,
+          "size": 12.3,
+          "cx": 634.0,
+          "cy": 292.0,
+          "diameter": 80,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 63,
+          "size": 12.3,
+          "cx": 718.0,
+          "cy": 292.0,
+          "diameter": 80,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 76,
+          "size": 12.3,
+          "cx": 803.0,
+          "cy": 292.0,
+          "diameter": 80,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 91,
+          "size": 6.15,
+          "cx": 901.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 17.5,
+          "size": 8.4,
+          "cx": 421.5,
+          "cy": 304.5,
+          "diameter": 55,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 47.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 97.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 218.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 269.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 6,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 11,
+          "leading": 0,
+          "trailing": 10,
+          "tender": 10
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": 3.0,
+        "driver-2": 0.0,
+        "driver-3": 9.0,
+        "driver-4": 9.0,
+        "leading-1": -9.0,
+        "trailing-1": 8.0,
+        "tender-1": -19.0,
+        "tender-2": 8.0,
+        "tender-3": 3.0,
+        "tender-4": 8.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -40.0,
+        "driver-2": -40.0,
+        "driver-3": -40.0,
+        "driver-4": -40.0,
+        "leading-1": -20.0,
+        "trailing-1": -27.0,
+        "tender-1": -20.0,
+        "tender-2": -20.0,
+        "tender-3": -20.0,
+        "tender-4": -20.0
+      },
+      "driver_contact_gaps_px": [
+        -40.0,
+        -40.0,
+        -40.0,
+        -40.0
+      ],
+      "tender_contact_gaps_px": [
+        -20.0,
+        -20.0,
+        -20.0,
+        -20.0
+      ]
+    },
+    "prr-1361": {
+      "wheel_arrangement": "4-6-2",
+      "tender_width": 35,
+      "locomotive_width": 68,
+      "body_bottom": 0,
+      "tender_bottom": 9,
+      "stack_tip": {
+        "x": 926,
+        "y": 4
+      },
+      "drivers": [
+        32,
+        47,
+        62
+      ],
+      "driver_size": 13.8,
+      "trailing": [
+        16
+      ],
+      "leading": [
+        87,
+        94.5
+      ],
+      "truck_size": 5.5,
+      "trailing_size": 8.3,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 32,
+          "end": 62,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 87.81896,
+        "y": 29.50464
+      },
+      "body_bounds": {
+        "x": 307,
+        "y": 98,
+        "width": 653,
+        "height": 242
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 151,
+        "width": 336,
+        "height": 166
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 32,
+          "size": 13.8,
+          "cx": 516.0,
+          "cy": 287.0,
+          "diameter": 90,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 47,
+          "size": 13.8,
+          "cx": 614.0,
+          "cy": 287.0,
+          "diameter": 90,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 62,
+          "size": 13.8,
+          "cx": 712.0,
+          "cy": 287.0,
+          "diameter": 90,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 87,
+          "size": 5.5,
+          "cx": 875.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 94.5,
+          "size": 5.5,
+          "cx": 924.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 16,
+          "size": 8.3,
+          "cx": 412.0,
+          "cy": 305.0,
+          "diameter": 54,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 47.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 97.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 218.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 269.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 7,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 0,
+          "leading": 8,
+          "trailing": 7,
+          "tender": 9
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -15.0,
+        "driver-2": -13.0,
+        "driver-3": -44.0,
+        "leading-1": 6.0,
+        "leading-2": -17.0,
+        "trailing-1": 5.0,
+        "tender-1": -8.0,
+        "tender-2": 6.0,
+        "tender-3": 7.0,
+        "tender-4": 7.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -45.0,
+        "driver-2": -45.0,
+        "driver-3": -45.0,
+        "leading-1": -18.0,
+        "leading-2": -18.0,
+        "trailing-1": -27.0,
+        "tender-1": -20.0,
+        "tender-2": -20.0,
+        "tender-3": -20.0,
+        "tender-4": -20.0
+      },
+      "driver_contact_gaps_px": [
+        -45.0,
+        -45.0,
+        -45.0
+      ],
+      "tender_contact_gaps_px": [
+        -20.0,
+        -20.0,
+        -20.0,
+        -20.0
+      ]
+    },
+    "nkp-765": {
+      "wheel_arrangement": "2-8-4",
+      "tender_width": 36,
+      "locomotive_width": 67,
+      "body_bottom": 6,
+      "tender_bottom": 9,
+      "stack_tip": {
+        "x": 856,
+        "y": 0
+      },
+      "drivers": [
+        31.5,
+        44.5,
+        57.5,
+        70.5
+      ],
+      "driver_size": 12.2,
+      "trailing": [
+        10,
+        20
+      ],
+      "leading": [
+        94
+      ],
+      "truck_size": 5.9,
+      "trailing_size": 7.3,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 31.5,
+          "end": 70.5,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 86.15723,
+        "y": 32.94118
+      },
+      "body_bounds": {
+        "x": 317,
+        "y": 112,
+        "width": 643,
+        "height": 212
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 150,
+        "width": 346,
+        "height": 167
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 31.5,
+          "size": 12.2,
+          "cx": 519.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 44.5,
+          "size": 12.2,
+          "cx": 603.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 57.5,
+          "size": 12.2,
+          "cx": 687.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 70.5,
+          "size": 12.2,
+          "cx": 770.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 94,
+          "size": 5.9,
+          "cx": 921.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 10,
+          "size": 7.3,
+          "cx": 381.5,
+          "cy": 308.5,
+          "diameter": 47,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 20,
+          "size": 7.3,
+          "cx": 445.5,
+          "cy": 308.5,
+          "diameter": 47,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 48.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 100.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 224.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 276.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 6,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 3,
+          "leading": 0,
+          "trailing": 11,
+          "tender": 10
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -3.0,
+        "driver-2": -2.0,
+        "driver-3": -2.0,
+        "driver-4": -18.0,
+        "leading-1": -18.0,
+        "trailing-1": -2.0,
+        "trailing-2": 9.0,
+        "tender-1": 3.0,
+        "tender-2": 0.0,
+        "tender-3": 1.0,
+        "tender-4": 8.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -39.0,
+        "driver-2": -39.0,
+        "driver-3": -39.0,
+        "driver-4": -39.0,
+        "leading-1": -19.0,
+        "trailing-1": -23.0,
+        "trailing-2": -23.0,
+        "tender-1": -21.0,
+        "tender-2": -21.0,
+        "tender-3": -21.0,
+        "tender-4": -21.0
+      },
+      "driver_contact_gaps_px": [
+        -39.0,
+        -39.0,
+        -39.0,
+        -39.0
+      ],
+      "tender_contact_gaps_px": [
+        -21.0,
+        -21.0,
+        -21.0,
+        -21.0
+      ]
+    },
+    "atsf-3751": {
+      "wheel_arrangement": "4-8-4",
+      "tender_width": 35,
+      "locomotive_width": 68,
+      "body_bottom": 6,
+      "tender_bottom": 10,
+      "stack_tip": {
+        "x": 937,
+        "y": 3
+      },
+      "drivers": [
+        35,
+        48.5,
+        62,
+        75.5
+      ],
+      "driver_size": 13.1,
+      "trailing": [
+        11,
+        20
+      ],
+      "leading": [
+        90,
+        97
+      ],
+      "truck_size": 5.7,
+      "trailing_size": 7.5,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 35,
+          "end": 75.5,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 89.34687,
+        "y": 27.57707
+      },
+      "body_bounds": {
+        "x": 307,
+        "y": 92,
+        "width": 653,
+        "height": 232
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 143,
+        "width": 336,
+        "height": 171
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 35,
+          "size": 13.1,
+          "cx": 536.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 48.5,
+          "size": 13.1,
+          "cx": 624.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 62,
+          "size": 13.1,
+          "cx": 712.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 75.5,
+          "size": 13.1,
+          "cx": 800.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 90,
+          "size": 5.7,
+          "cx": 894.5,
+          "cy": 313.5,
+          "diameter": 37,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 97,
+          "size": 5.7,
+          "cx": 940.5,
+          "cy": 313.5,
+          "diameter": 37,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 11,
+          "size": 7.5,
+          "cx": 379.5,
+          "cy": 307.5,
+          "diameter": 49,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 20,
+          "size": 7.5,
+          "cx": 437.5,
+          "cy": 307.5,
+          "diameter": 49,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 47.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 97.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 218.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 269.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 7,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 0,
+          "leading": 0,
+          "trailing": 15,
+          "tender": 8
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -7.0,
+        "driver-2": 0.0,
+        "driver-3": -13.0,
+        "driver-4": -42.0,
+        "leading-1": -18.0,
+        "leading-2": -18.0,
+        "trailing-1": -8.0,
+        "trailing-2": 15.0,
+        "tender-1": -13.0,
+        "tender-2": 8.0,
+        "tender-3": 8.0,
+        "tender-4": 8.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -43.0,
+        "driver-2": -43.0,
+        "driver-3": -43.0,
+        "driver-4": -43.0,
+        "leading-1": -19.0,
+        "leading-2": -19.0,
+        "trailing-1": -25.0,
+        "trailing-2": -25.0,
+        "tender-1": -20.0,
+        "tender-2": -20.0,
+        "tender-3": -20.0,
+        "tender-4": -20.0
+      },
+      "driver_contact_gaps_px": [
+        -43.0,
+        -43.0,
+        -43.0,
+        -43.0
+      ],
+      "tender_contact_gaps_px": [
+        -20.0,
+        -20.0,
+        -20.0,
+        -20.0
+      ]
+    },
+    "nw-611": {
+      "wheel_arrangement": "4-8-4",
+      "tender_width": 38,
+      "locomotive_width": 65,
+      "body_bottom": 3,
+      "tender_bottom": 9,
+      "stack_tip": {
+        "x": 880,
+        "y": 9
+      },
+      "drivers": [
+        40,
+        53,
+        66,
+        79
+      ],
+      "driver_size": 12.3,
+      "trailing": [
+        12,
+        21
+      ],
+      "leading": [
+        89,
+        96.3
+      ],
+      "truck_size": 6.6,
+      "trailing_size": 7.7,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 40,
+          "end": 79,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 89.32099,
+        "y": 36.57054
+      },
+      "body_bounds": {
+        "x": 336,
+        "y": 119,
+        "width": 624,
+        "height": 213
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 152,
+        "width": 365,
+        "height": 165
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 40,
+          "size": 12.3,
+          "cx": 585.5,
+          "cy": 293.5,
+          "diameter": 77,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 53,
+          "size": 12.3,
+          "cx": 666.5,
+          "cy": 293.5,
+          "diameter": 77,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 66,
+          "size": 12.3,
+          "cx": 747.5,
+          "cy": 293.5,
+          "diameter": 77,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 79,
+          "size": 12.3,
+          "cx": 828.5,
+          "cy": 293.5,
+          "diameter": 77,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 89,
+          "size": 6.6,
+          "cx": 891.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 96.3,
+          "size": 6.6,
+          "cx": 936.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 12,
+          "size": 7.7,
+          "cx": 411.0,
+          "cy": 308.0,
+          "diameter": 48,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 21,
+          "size": 7.7,
+          "cx": 467.0,
+          "cy": 308.0,
+          "diameter": 48,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 51.0,
+          "cy": 310.0,
+          "diameter": 44,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 106.0,
+          "cy": 310.0,
+          "diameter": 44,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 237.0,
+          "cy": 310.0,
+          "diameter": 44,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 292.0,
+          "cy": 310.0,
+          "diameter": 44,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 9,
+        "truck_inset": 6,
+        "max_gap": {
+          "driver": 13,
+          "leading": 0,
+          "trailing": 20,
+          "tender": 9
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": 7.0,
+        "driver-2": 7.0,
+        "driver-3": 11.0,
+        "driver-4": 11.0,
+        "leading-1": -6.0,
+        "leading-2": -20.0,
+        "trailing-1": 18.0,
+        "trailing-2": 14.0,
+        "tender-1": 1.0,
+        "tender-2": 7.0,
+        "tender-3": 7.0,
+        "tender-4": 7.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -39.0,
+        "driver-2": -39.0,
+        "driver-3": -39.0,
+        "driver-4": -39.0,
+        "leading-1": -21.0,
+        "leading-2": -21.0,
+        "trailing-1": -24.0,
+        "trailing-2": -24.0,
+        "tender-1": -22.0,
+        "tender-2": -22.0,
+        "tender-3": -22.0,
+        "tender-4": -22.0
+      },
+      "driver_contact_gaps_px": [
+        -39.0,
+        -39.0,
+        -39.0,
+        -39.0
+      ],
+      "tender_contact_gaps_px": [
+        -22.0,
+        -22.0,
+        -22.0,
+        -22.0
+      ]
+    },
+    "up-844": {
+      "wheel_arrangement": "4-8-4",
+      "tender_width": 35,
+      "locomotive_width": 68,
+      "body_bottom": 6,
+      "tender_bottom": 7,
+      "stack_tip": {
+        "x": 905,
+        "y": 1
+      },
+      "drivers": [
+        35,
+        49,
+        63,
+        77
+      ],
+      "driver_size": 13.1,
+      "trailing": [
+        11,
+        20
+      ],
+      "leading": [
+        90,
+        97
+      ],
+      "truck_size": 5.65,
+      "trailing_size": 7.5,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 35,
+          "end": 77,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 86.7956,
+        "y": 28.9944
+      },
+      "body_bounds": {
+        "x": 307,
+        "y": 98,
+        "width": 653,
+        "height": 226
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 154,
+        "width": 336,
+        "height": 168
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 35,
+          "size": 13.1,
+          "cx": 536.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 49,
+          "size": 13.1,
+          "cx": 627.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 63,
+          "size": 13.1,
+          "cx": 718.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 77,
+          "size": 13.1,
+          "cx": 810.0,
+          "cy": 289.0,
+          "diameter": 86,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 90,
+          "size": 5.65,
+          "cx": 894.5,
+          "cy": 313.5,
+          "diameter": 37,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 97,
+          "size": 5.65,
+          "cx": 940.5,
+          "cy": 313.5,
+          "diameter": 37,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 11,
+          "size": 7.5,
+          "cx": 379.5,
+          "cy": 307.5,
+          "diameter": 49,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 20,
+          "size": 7.5,
+          "cx": 437.5,
+          "cy": 307.5,
+          "diameter": 49,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 47.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 97.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 218.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 269.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 6,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 0,
+          "leading": 5,
+          "trailing": 20,
+          "tender": 9
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -9.0,
+        "driver-2": -8.0,
+        "driver-3": -11.0,
+        "driver-4": -21.0,
+        "leading-1": 3.0,
+        "leading-2": -18.0,
+        "trailing-1": -2.0,
+        "trailing-2": 18.0,
+        "tender-1": -17.0,
+        "tender-2": 5.0,
+        "tender-3": 6.0,
+        "tender-4": 7.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -43.0,
+        "driver-2": -43.0,
+        "driver-3": -43.0,
+        "driver-4": -43.0,
+        "leading-1": -19.0,
+        "leading-2": -19.0,
+        "trailing-1": -25.0,
+        "trailing-2": -25.0,
+        "tender-1": -20.0,
+        "tender-2": -20.0,
+        "tender-3": -20.0,
+        "tender-4": -20.0
+      },
+      "driver_contact_gaps_px": [
+        -43.0,
+        -43.0,
+        -43.0,
+        -43.0
+      ],
+      "tender_contact_gaps_px": [
+        -20.0,
+        -20.0,
+        -20.0,
+        -20.0
+      ]
+    },
+    "nw-1218": {
+      "wheel_arrangement": "2-6-6-4",
+      "tender_width": 35,
+      "locomotive_width": 68,
+      "body_bottom": 4,
+      "tender_bottom": 7,
+      "stack_tip": {
+        "x": 896,
+        "y": 4
+      },
+      "drivers": [
+        30,
+        40,
+        50,
+        64,
+        74,
+        84
+      ],
+      "driver_size": 9.6,
+      "trailing": [
+        8,
+        16
+      ],
+      "leading": [
+        95
+      ],
+      "truck_size": 5.4,
+      "trailing_size": 6,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 30,
+          "end": 50,
+          "phase": 0
+        },
+        {
+          "start": 64,
+          "end": 84,
+          "phase": 90
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 89.36774,
+        "y": 36.01651
+      },
+      "body_bounds": {
+        "x": 307,
+        "y": 120,
+        "width": 653,
+        "height": 210
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 172,
+        "width": 336,
+        "height": 150
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 30,
+          "size": 9.6,
+          "cx": 503.5,
+          "cy": 300.5,
+          "diameter": 63,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 40,
+          "size": 9.6,
+          "cx": 568.5,
+          "cy": 300.5,
+          "diameter": 63,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 50,
+          "size": 9.6,
+          "cx": 633.5,
+          "cy": 300.5,
+          "diameter": 63,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 64,
+          "size": 9.6,
+          "cx": 724.5,
+          "cy": 300.5,
+          "diameter": 63,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-5",
+          "kind": "driver",
+          "x": 74,
+          "size": 9.6,
+          "cx": 790.5,
+          "cy": 300.5,
+          "diameter": 63,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-6",
+          "kind": "driver",
+          "x": 84,
+          "size": 9.6,
+          "cx": 855.5,
+          "cy": 300.5,
+          "diameter": 63,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 95,
+          "size": 5.4,
+          "cx": 927.5,
+          "cy": 314.5,
+          "diameter": 35,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 8,
+          "size": 6,
+          "cx": 359.5,
+          "cy": 312.5,
+          "diameter": 39,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 16,
+          "size": 6,
+          "cx": 411.5,
+          "cy": 312.5,
+          "diameter": 39,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 47.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 97.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 218.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 269.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 5,
+        "truck_inset": 4,
+        "max_gap": {
+          "driver": 6,
+          "leading": 0,
+          "trailing": 22,
+          "tender": 0
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": 3.0,
+        "driver-2": 4.0,
+        "driver-3": -20.0,
+        "driver-4": 1.0,
+        "driver-5": -9.0,
+        "driver-6": -9.0,
+        "leading-1": -16.0,
+        "trailing-1": -10.0,
+        "trailing-2": 20.0,
+        "tender-1": -10.0,
+        "tender-2": -3.0,
+        "tender-3": -4.0,
+        "tender-4": -4.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -31.0,
+        "driver-2": -31.0,
+        "driver-3": -31.0,
+        "driver-4": -31.0,
+        "driver-5": -31.0,
+        "driver-6": -31.0,
+        "leading-1": -17.0,
+        "trailing-1": -19.0,
+        "trailing-2": -19.0,
+        "tender-1": -20.0,
+        "tender-2": -20.0,
+        "tender-3": -20.0,
+        "tender-4": -20.0
+      },
+      "driver_contact_gaps_px": [
+        -31.0,
+        -31.0,
+        -31.0,
+        -31.0,
+        -31.0,
+        -31.0
+      ],
+      "tender_contact_gaps_px": [
+        -20.0,
+        -20.0,
+        -20.0,
+        -20.0
+      ]
+    },
+    "challenger-3985": {
+      "wheel_arrangement": "4-6-6-4",
+      "tender_width": 34,
+      "locomotive_width": 69,
+      "body_bottom": 1,
+      "tender_bottom": 7,
+      "stack_tip": {
+        "x": 919,
+        "y": 3
+      },
+      "drivers": [
+        29,
+        39,
+        49,
+        64,
+        74,
+        84
+      ],
+      "driver_size": 9.6,
+      "trailing": [
+        6,
+        13
+      ],
+      "leading": [
+        92,
+        97.3
+      ],
+      "truck_size": 5,
+      "trailing_size": 6,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 29,
+          "end": 49,
+          "phase": 0
+        },
+        {
+          "start": 64,
+          "end": 84,
+          "phase": 90
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 88.03151,
+        "y": 31.40724
+      },
+      "body_bounds": {
+        "x": 298,
+        "y": 105,
+        "width": 662,
+        "height": 232
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 153,
+        "width": 326,
+        "height": 169
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 29,
+          "size": 9.6,
+          "cx": 490.0,
+          "cy": 300.0,
+          "diameter": 64,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 39,
+          "size": 9.6,
+          "cx": 556.0,
+          "cy": 300.0,
+          "diameter": 64,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 49,
+          "size": 9.6,
+          "cx": 622.0,
+          "cy": 300.0,
+          "diameter": 64,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 64,
+          "size": 9.6,
+          "cx": 722.0,
+          "cy": 300.0,
+          "diameter": 64,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-5",
+          "kind": "driver",
+          "x": 74,
+          "size": 9.6,
+          "cx": 788.0,
+          "cy": 300.0,
+          "diameter": 64,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-6",
+          "kind": "driver",
+          "x": 84,
+          "size": 9.6,
+          "cx": 854.0,
+          "cy": 300.0,
+          "diameter": 64,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 92,
+          "size": 5,
+          "cx": 907.5,
+          "cy": 315.5,
+          "diameter": 33,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 97.3,
+          "size": 5,
+          "cx": 942.5,
+          "cy": 315.5,
+          "diameter": 33,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 6,
+          "size": 6,
+          "cx": 337.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 13,
+          "size": 6,
+          "cx": 384.0,
+          "cy": 312.0,
+          "diameter": 40,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 45.5,
+          "cy": 312.5,
+          "diameter": 39,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 94.5,
+          "cy": 312.5,
+          "diameter": 39,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 212.5,
+          "cy": 312.5,
+          "diameter": 39,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 261.5,
+          "cy": 312.5,
+          "diameter": 39,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 5,
+        "truck_inset": 4,
+        "max_gap": {
+          "driver": 8,
+          "leading": 0,
+          "trailing": 28,
+          "tender": 0
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -31.0,
+        "driver-2": -4.0,
+        "driver-3": 3.0,
+        "driver-4": -11.0,
+        "driver-5": -3.0,
+        "driver-6": 6.0,
+        "leading-1": -6.0,
+        "leading-2": -16.0,
+        "trailing-1": -14.0,
+        "trailing-2": 24.0,
+        "tender-1": -18.0,
+        "tender-2": -10.0,
+        "tender-3": -6.0,
+        "tender-4": -3.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -32.0,
+        "driver-2": -32.0,
+        "driver-3": -32.0,
+        "driver-4": -32.0,
+        "driver-5": -32.0,
+        "driver-6": -32.0,
+        "leading-1": -17.0,
+        "leading-2": -17.0,
+        "trailing-1": -20.0,
+        "trailing-2": -20.0,
+        "tender-1": -19.0,
+        "tender-2": -19.0,
+        "tender-3": -19.0,
+        "tender-4": -19.0
+      },
+      "driver_contact_gaps_px": [
+        -32.0,
+        -32.0,
+        -32.0,
+        -32.0,
+        -32.0,
+        -32.0
+      ],
+      "tender_contact_gaps_px": [
+        -19.0,
+        -19.0,
+        -19.0,
+        -19.0
+      ]
+    },
+    "big-boy-4014": {
+      "wheel_arrangement": "4-8-8-4",
+      "tender_width": 34,
+      "locomotive_width": 69,
+      "body_bottom": 5,
+      "tender_bottom": 2,
+      "stack_tip": {
+        "x": 899,
+        "y": 3
+      },
+      "coupling_extension": 36,
+      "drivers": [
+        19,
+        28,
+        37,
+        46,
+        58,
+        67,
+        76,
+        85
+      ],
+      "driver_size": 8.6,
+      "trailing": [
+        6,
+        11
+      ],
+      "leading": [
+        92.5,
+        97.5
+      ],
+      "truck_size": 4.3,
+      "tender_axles": [
+        12,
+        25,
+        38,
+        62,
+        75,
+        88
+      ],
+      "tender_wheel_size": 11,
+      "tender_groups": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          3,
+          4,
+          5
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 19,
+          "end": 46,
+          "phase": 0
+        },
+        {
+          "start": 58,
+          "end": 85,
+          "phase": 90
+        }
+      ],
+      "canvas": {
+        "width": 996,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 88.70755,
+        "y": 40.53843
+      },
+      "body_bounds": {
+        "x": 334,
+        "y": 136,
+        "width": 662,
+        "height": 191
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 162,
+        "width": 326,
+        "height": 173
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 19,
+          "size": 8.6,
+          "cx": 459.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 28,
+          "size": 8.6,
+          "cx": 519.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 37,
+          "size": 8.6,
+          "cx": 578.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 46,
+          "size": 8.6,
+          "cx": 638.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-5",
+          "kind": "driver",
+          "x": 58,
+          "size": 8.6,
+          "cx": 717.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-6",
+          "kind": "driver",
+          "x": 67,
+          "size": 8.6,
+          "cx": 777.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-7",
+          "kind": "driver",
+          "x": 76,
+          "size": 8.6,
+          "cx": 837.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "driver-8",
+          "kind": "driver",
+          "x": 85,
+          "size": 8.6,
+          "cx": 896.5,
+          "cy": 303.5,
+          "diameter": 57,
+          "bottom": 3.076923076923077,
+          "rodGroup": 1,
+          "phase": 90
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 92.5,
+          "size": 4.3,
+          "cx": 946.0,
+          "cy": 318.0,
+          "diameter": 28,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 97.5,
+          "size": 4.3,
+          "cx": 979.0,
+          "cy": 318.0,
+          "diameter": 28,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 6,
+          "size": 4.3,
+          "cx": 373.0,
+          "cy": 318.0,
+          "diameter": 28,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 11,
+          "size": 4.3,
+          "cx": 406.0,
+          "cy": 318.0,
+          "diameter": 28,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 12,
+          "size": 11,
+          "cx": 39.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 25,
+          "size": 11,
+          "cx": 82.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 38,
+          "size": 11,
+          "cx": 124.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 62,
+          "size": 11,
+          "cx": 202.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-5",
+          "kind": "tender",
+          "x": 75,
+          "size": 11,
+          "cx": 245.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-6",
+          "kind": "tender",
+          "x": 88,
+          "size": 11,
+          "cx": 287.0,
+          "cy": 314.0,
+          "diameter": 36,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 5,
+        "truck_inset": 4,
+        "max_gap": {
+          "driver": 10,
+          "leading": 0,
+          "trailing": 8,
+          "tender": 2
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -20.0,
+        "driver-2": -18.0,
+        "driver-3": -2.0,
+        "driver-4": -28.0,
+        "driver-5": 6.0,
+        "driver-6": 8.0,
+        "driver-7": 7.0,
+        "driver-8": -28.0,
+        "leading-1": -13.0,
+        "leading-2": -13.0,
+        "trailing-1": 1.0,
+        "trailing-2": 6.0,
+        "tender-1": -12.0,
+        "tender-2": -14.0,
+        "tender-3": -2.0,
+        "tender-4": -15.0,
+        "tender-5": -14.0,
+        "tender-6": 0.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -29.0,
+        "driver-2": -29.0,
+        "driver-3": -29.0,
+        "driver-4": -29.0,
+        "driver-5": -29.0,
+        "driver-6": -29.0,
+        "driver-7": -29.0,
+        "driver-8": -29.0,
+        "leading-1": -14.0,
+        "leading-2": -14.0,
+        "trailing-1": -14.0,
+        "trailing-2": -14.0,
+        "tender-1": -18.0,
+        "tender-2": -18.0,
+        "tender-3": -18.0,
+        "tender-4": -18.0,
+        "tender-5": -18.0,
+        "tender-6": -18.0
+      },
+      "driver_contact_gaps_px": [
+        -29.0,
+        -29.0,
+        -29.0,
+        -29.0,
+        -29.0,
+        -29.0,
+        -29.0,
+        -29.0
+      ],
+      "tender_contact_gaps_px": [
+        -18.0,
+        -18.0,
+        -18.0,
+        -18.0,
+        -18.0,
+        -18.0
+      ]
+    },
+    "the-flyer-1907": {
+      "wheel_arrangement": "4-4-2",
+      "tender_width": 34,
+      "locomotive_width": 69,
+      "body_bottom": 0,
+      "tender_bottom": 4,
+      "stack_tip": {
+        "x": 1532,
+        "y": 4
+      },
+      "drivers": [
+        39.5,
+        61
+      ],
+      "driver_size": 13.7,
+      "trailing": [
+        15
+      ],
+      "leading": [
+        85.5,
+        93
+      ],
+      "truck_size": 5.7,
+      "trailing_size": 8.8,
+      "tender_axles": [
+        15,
+        30,
+        68,
+        83
+      ],
+      "tender_wheel_size": 11.5,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 39.5,
+          "end": 61,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 87.38522,
+        "y": 17.47405
+      },
+      "body_bounds": {
+        "x": 298,
+        "y": 58,
+        "width": 662,
+        "height": 282
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 208,
+        "width": 326,
+        "height": 122
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 39.5,
+          "size": 13.7,
+          "cx": 559.5,
+          "cy": 286.5,
+          "diameter": 91,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 61,
+          "size": 13.7,
+          "cx": 701.5,
+          "cy": 286.5,
+          "diameter": 91,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 85.5,
+          "size": 5.7,
+          "cx": 864.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "leading-2",
+          "kind": "leading",
+          "x": 93,
+          "size": 5.7,
+          "cx": 914.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 15,
+          "size": 8.8,
+          "cx": 397.0,
+          "cy": 303.0,
+          "diameter": 58,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 15,
+          "size": 11.5,
+          "cx": 49.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 30,
+          "size": 11.5,
+          "cx": 98.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 68,
+          "size": 11.5,
+          "cx": 222.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 83,
+          "size": 11.5,
+          "cx": 271.0,
+          "cy": 313.0,
+          "diameter": 38,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 7,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 0,
+          "leading": 0,
+          "trailing": 15,
+          "tender": 0
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -7.0,
+        "driver-2": -8.0,
+        "leading-1": -12.0,
+        "leading-2": -18.0,
+        "trailing-1": 11.0,
+        "tender-1": -15.0,
+        "tender-2": -15.0,
+        "tender-3": -16.0,
+        "tender-4": -16.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -45.0,
+        "driver-2": -45.0,
+        "leading-1": -19.0,
+        "leading-2": -19.0,
+        "trailing-1": -29.0,
+        "tender-1": -19.0,
+        "tender-2": -19.0,
+        "tender-3": -19.0,
+        "tender-4": -19.0
+      },
+      "driver_contact_gaps_px": [
+        -45.0,
+        -45.0
+      ],
+      "tender_contact_gaps_px": [
+        -19.0,
+        -19.0,
+        -19.0,
+        -19.0
+      ]
+    },
+    "polar-express-1225": {
+      "wheel_arrangement": "2-8-4",
+      "tender_width": 36,
+      "locomotive_width": 67,
+      "body_bottom": 4,
+      "tender_bottom": 4,
+      "stack_tip": {
+        "x": 1793,
+        "y": 4
+      },
+      "drivers": [
+        30,
+        43,
+        56,
+        69
+      ],
+      "driver_size": 12.1,
+      "trailing": [
+        10,
+        19
+      ],
+      "leading": [
+        94
+      ],
+      "truck_size": 5.8,
+      "trailing_size": 7.2,
+      "tender_axles": [
+        14,
+        29,
+        65,
+        80
+      ],
+      "tender_wheel_size": 12,
+      "tender_groups": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "rod_groups": [
+        {
+          "start": 30,
+          "end": 69,
+          "phase": 0
+        }
+      ],
+      "canvas": {
+        "width": 960,
+        "height": 340
+      },
+      "smoke_socket": {
+        "x": 88.87834,
+        "y": 35.35111
+      },
+      "body_bounds": {
+        "x": 317,
+        "y": 119,
+        "width": 643,
+        "height": 211
+      },
+      "tender_bounds": {
+        "x": 0,
+        "y": 182,
+        "width": 346,
+        "height": 148
+      },
+      "axles": [
+        {
+          "id": "driver-1",
+          "kind": "driver",
+          "x": 30,
+          "size": 12.1,
+          "cx": 510.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-2",
+          "kind": "driver",
+          "x": 43,
+          "size": 12.1,
+          "cx": 593.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-3",
+          "kind": "driver",
+          "x": 56,
+          "size": 12.1,
+          "cx": 677.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "driver-4",
+          "kind": "driver",
+          "x": 69,
+          "size": 12.1,
+          "cx": 761.0,
+          "cy": 293.0,
+          "diameter": 78,
+          "bottom": 3.076923076923077,
+          "rodGroup": 0,
+          "phase": 0
+        },
+        {
+          "id": "leading-1",
+          "kind": "leading",
+          "x": 94,
+          "size": 5.8,
+          "cx": 921.5,
+          "cy": 313.5,
+          "diameter": 37,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-1",
+          "kind": "trailing",
+          "x": 10,
+          "size": 7.2,
+          "cx": 381.0,
+          "cy": 309.0,
+          "diameter": 46,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "trailing-2",
+          "kind": "trailing",
+          "x": 19,
+          "size": 7.2,
+          "cx": 439.0,
+          "cy": 309.0,
+          "diameter": 46,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-1",
+          "kind": "tender",
+          "x": 14,
+          "size": 12,
+          "cx": 48.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-2",
+          "kind": "tender",
+          "x": 29,
+          "size": 12,
+          "cx": 100.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-3",
+          "kind": "tender",
+          "x": 65,
+          "size": 12,
+          "cx": 224.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        },
+        {
+          "id": "tender-4",
+          "kind": "tender",
+          "x": 80,
+          "size": 12,
+          "cx": 276.5,
+          "cy": 311.5,
+          "diameter": 41,
+          "bottom": 3.076923076923077,
+          "rodGroup": null,
+          "phase": 0
+        }
+      ],
+      "wheel_seating": {
+        "driver_inset": 6,
+        "truck_inset": 5,
+        "max_gap": {
+          "driver": 0,
+          "leading": 0,
+          "trailing": 3,
+          "tender": 0
+        }
+      },
+      "raw_shell_gaps_px": {
+        "driver-1": -22.0,
+        "driver-2": -22.0,
+        "driver-3": -22.0,
+        "driver-4": -35.0,
+        "leading-1": -18.0,
+        "trailing-1": -4.0,
+        "trailing-2": 3.0,
+        "tender-1": -14.0,
+        "tender-2": -6.0,
+        "tender-3": 0.0,
+        "tender-4": -6.0
+      },
+      "support_contact_gaps_px": {
+        "driver-1": -39.0,
+        "driver-2": -39.0,
+        "driver-3": -39.0,
+        "driver-4": -39.0,
+        "leading-1": -19.0,
+        "trailing-1": -23.0,
+        "trailing-2": -23.0,
+        "tender-1": -21.0,
+        "tender-2": -21.0,
+        "tender-3": -21.0,
+        "tender-4": -21.0
+      },
+      "driver_contact_gaps_px": [
+        -39.0,
+        -39.0,
+        -39.0,
+        -39.0
+      ],
+      "tender_contact_gaps_px": [
+        -21.0,
+        -21.0,
+        -21.0,
+        -21.0
+      ]
+    }
+  }
+}

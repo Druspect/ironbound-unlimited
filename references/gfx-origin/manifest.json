@@ -1,0 +1,24 @@
+{
+  "policy": "reference-only; final shipping art must be original, public domain, or separately licensed",
+  "engines": [
+    {"id":"tom-thumb","file":"engines/tom-thumb-proxy-4-6-0.jpg","identity":"period 4-6-0 proxy","source":"https://www.victorianrailways.net/motive%20power/d_steam/dsteam.html","status":"fictional-proxy"},
+    {"id":"southern-4501","file":"engines/southern-4501.jpg","identity":"Southern Railway No. 4501","source":"https://hawkinsrails.net/steam/4501/4501.htm","status":"reference-only"},
+    {"id":"prr-1361","file":"engines/prr-1361.jpg","identity":"PRR K4s No. 1361","source":"https://www.railroadcity.org/k4-1361-history","status":"reference-only"},
+    {"id":"nkp-765","file":"engines/nkp-765.jpg","identity":"Nickel Plate Road No. 765","source":"https://www.rrpicturearchives.net/showPicture.aspx?id=5342991","status":"reference-only"},
+    {"id":"atsf-3751","file":"engines/atsf-3751.jpg","identity":"Santa Fe No. 3751","source":"https://www.sbrhs.org/equipment/santa-fe-3751/specifications.html","status":"reference-only"},
+    {"id":"nw-611","file":"engines/nw-611.jpg","identity":"N&W Class J No. 611","source":"https://www.dhr.virginia.gov/historic-registers/128-6479/","status":"reference-only"},
+    {"id":"up-844","file":"engines/up-844.jpg","identity":"Union Pacific No. 844","source":"https://www.up.com/about-us/history/steam/living-legend-844","status":"reference-only"},
+    {"id":"nw-1218","file":"engines/nw-1218.jpg","identity":"N&W Class A No. 1218","source":"https://www.dhr.virginia.gov/historic-registers/128-6655/","status":"reference-only"},
+    {"id":"challenger-3985","file":"engines/challenger-3985.jpg","identity":"UP Challenger No. 3985","source":"https://rrhma.com/loc3985/","status":"reference-only"},
+    {"id":"big-boy-4014","file":"engines/big-boy-4014.jpg","identity":"UP Big Boy No. 4014","source":"https://www.up.com/about-us/history/steam/big-boy-4014","status":"official-reference-only"},
+    {"id":"the-flyer-1907","file":"engines/the-flyer-1907-proxy-atlantic.jpg","identity":"PRR E6s No. 460 Atlantic proxy","source":"https://www.rrpicturearchives.net/showPicture.aspx?id=5422017","status":"fictional-proxy"},
+    {"id":"polar-express-1225","file":"engines/polar-express-1225-origin.jpg","identity":"Pere Marquette No. 1225","source":"https://michigansteamtrain.com/equipment/","status":"documented-inspiration"}
+  ],
+  "carriages": [
+    {"id":"day-coach","file":"carriages/day-coach.webp","identity":"1923 heavyweight coach 5046","source":"https://www.rmne.org/naug5046","status":"reference-only"},
+    {"id":"pullman-sleeper","file":"carriages/pullman-sleeper.jpg","identity":"Pullman sleeping car","source":"https://www.railtarget.cz/technologies-and-infrastructure/how-railroads-shaped-the-civil-war-and-beyond-6971.html","status":"reference-only"},
+    {"id":"baggage-rpo","file":"carriages/baggage-rpo.jpg","identity":"Nevada Northern baggage and RPO No. 20","source":"https://archive.nnry.com/pass/passroster/passrost.html","status":"museum-reference"},
+    {"id":"dining-car","file":"carriages/dining-car.jpg","identity":"Canadian Pacific heritage dining car","source":"https://www.jtgtravel.com/calgary-follow-the-historical-canadian-pacific-railway/","status":"reference-only"},
+    {"id":"observation-car","file":"carriages/observation-car.jpg","identity":"1905 Pere Marquette observation car No. 25","source":"https://storage.googleapis.com/dlwyuxieavpcce/passenger-trains-early-1900s.html","status":"reference-only"}
+  ]
+}
