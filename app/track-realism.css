@@ -223,7 +223,7 @@
   top: auto;
   bottom: calc(var(--rail-contact-plane) + 10px);
   height: var(--rail-far-profile);
-  transform: rotate(.05deg) scaleX(.986);
+  transform: scaleX(.986);
   opacity: .72;
   filter: saturate(.76) brightness(.86);
   box-shadow: 0 2px 2px rgba(0, 0, 0, .52);
