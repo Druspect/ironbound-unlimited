@@ -1,0 +1,54 @@
+/*
+ * Native range inputs otherwise collapse to the browser track height. Keep the
+ * actual interactive element large enough for touch while leaving the visual
+ * rail compact and consistent with the rest of the cab UI.
+ */
+.options-list .scale-option input[type="range"] {
+  width: min(260px, 42vw);
+  min-width: 160px;
+  height: 44px;
+  margin: 0;
+  padding: 12px 0;
+  accent-color: var(--brass);
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+
+.options-list .scale-option input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(243,234,215,.28);
+}
+
+.options-list .scale-option input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border: 0;
+  border-radius: 50%;
+  appearance: none;
+  background: var(--brass);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.34);
+}
+
+.options-list .scale-option input[type="range"]::-moz-range-track {
+  height: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(243,234,215,.28);
+}
+
+.options-list .scale-option input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--brass);
+}
+
+.options-list .scale-option input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.34);
+}
