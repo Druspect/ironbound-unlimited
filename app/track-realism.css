@@ -65,19 +65,19 @@
 .ballast {
   z-index: 0;
   inset: auto -1.5% -8px;
-  height: calc(var(--rail-contact-plane) + 31px);
+  height: calc(var(--rail-contact-plane) + 36px);
   opacity: 1;
-  clip-path: polygon(0 31%, 6% 24%, 18% 20%, 32% 17%, 50% 15%, 68% 17%, 82% 20%, 94% 25%, 100% 32%, 100% 100%, 0 100%);
+  clip-path: polygon(0 34%, 6% 25%, 18% 20%, 32% 16%, 50% 14%, 68% 16%, 82% 20%, 94% 26%, 100% 34%, 100% 100%, 0 100%);
   background:
     radial-gradient(ellipse at 8px 7px, rgba(190, 181, 162, .38) 0 1.1px, transparent 1.45px),
     radial-gradient(ellipse at 3px 12px, rgba(78, 75, 68, .70) 0 1.35px, transparent 1.7px),
     radial-gradient(ellipse at 15px 4px, rgba(132, 123, 108, .55) 0 1.25px, transparent 1.65px),
     radial-gradient(ellipse at 11px 15px, rgba(44, 43, 40, .68) 0 1.15px, transparent 1.55px),
-    linear-gradient(180deg, #746f63 0%, #5b574e 30%, #403e39 68%, #282826 100%);
+    linear-gradient(180deg, #777166 0%, #5c574e 30%, #403e39 68%, #282826 100%);
   background-size: 19px 17px, 23px 19px, 29px 21px, 17px 23px, 100% 100%;
   background-position: var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, 0 0;
   box-shadow:
-    inset 0 7px 9px rgba(235, 224, 202, .07),
+    inset 0 7px 9px rgba(235, 224, 202, .08),
     inset 0 -14px 18px rgba(0, 0, 0, .42),
     0 5px 10px rgba(0, 0, 0, .28);
 }
@@ -89,8 +89,8 @@
   left: 0;
   right: 0;
   bottom: 7px;
-  height: 31px;
-  opacity: .55;
+  height: 36px;
+  opacity: .5;
   background:
     radial-gradient(ellipse at 5px 5px, rgba(29, 29, 27, .78) 0 1px, transparent 1.35px),
     radial-gradient(ellipse at 12px 9px, rgba(111, 102, 87, .42) 0 1.2px, transparent 1.55px);
@@ -110,27 +110,31 @@
 /* Weathered hardwood ties. One 32 px cell contains a 15 px tie face, giving
    realistic timber coverage without the high-contrast picket-fence rhythm of
    the previous 82 px stripe pattern. Five complete tie pitches fit the 160 px
-   motion period, so the track texture also loops without a phase jump. */
+   motion period, so the track texture also loops without a phase jump.
+
+   The tie plane is intentionally a little taller than the mathematical rail
+   separation. Perspective rotation compresses it back down on screen, leaving
+   enough visible timber between the two rail heads to read as actual track. */
 .sleepers {
   z-index: 1;
-  inset: auto -220px calc(var(--rail-contact-plane) - 19px);
-  height: 39px;
+  inset: auto -220px calc(var(--rail-contact-plane) - 23px);
+  height: 48px;
   overflow: hidden;
-  clip-path: polygon(0 5%, 100% 12%, 100% 92%, 0 84%);
-  transform: translate3d(var(--track-x), 0, 0) skewX(-5deg) perspective(620px) rotateX(62deg);
+  clip-path: polygon(0 4%, 100% 11%, 100% 94%, 0 85%);
+  transform: translate3d(var(--track-x), 0, 0) skewX(-6deg) perspective(680px) rotateX(56deg);
   transform-origin: 50% 100%;
   background:
     repeating-linear-gradient(
       90deg,
       transparent 0 7px,
-      #211b17 7px 8px,
-      #4b392b 8px 10px,
-      #5b4633 10px 18px,
-      #483629 18px 21px,
-      #241c17 21px 22px,
+      #1d1814 7px 8px,
+      #493729 8px 10px,
+      #604a36 10px 18px,
+      #4a3729 18px 21px,
+      #211914 21px 22px,
       transparent 22px var(--track-tie-pitch)
     );
-  box-shadow: inset 0 -8px 9px rgba(0, 0, 0, .28);
+  box-shadow: inset 0 -9px 10px rgba(0, 0, 0, .31), inset 0 3px 2px rgba(213, 181, 136, .055);
 }
 
 /* Sun-bleached grain and end checking remain subtle enough that the ties read
@@ -140,8 +144,8 @@
   position: absolute;
   inset: 0;
   background:
-    repeating-linear-gradient(90deg, transparent 0 9px, rgba(205, 174, 130, .12) 9px 10px, transparent 10px 14px, rgba(24, 18, 14, .20) 14px 15px, transparent 15px 32px),
-    repeating-linear-gradient(0deg, transparent 0 6px, rgba(225, 199, 158, .05) 6px 7px, transparent 7px 13px);
+    repeating-linear-gradient(90deg, transparent 0 9px, rgba(205, 174, 130, .13) 9px 10px, transparent 10px 14px, rgba(24, 18, 14, .22) 14px 15px, transparent 15px 32px),
+    repeating-linear-gradient(0deg, transparent 0 6px, rgba(225, 199, 158, .06) 6px 7px, transparent 7px 13px);
   mix-blend-mode: screen;
 }
 
@@ -152,12 +156,12 @@
   content: "";
   position: absolute;
   inset: 0;
-  opacity: .72;
+  opacity: .78;
   background-image:
-    radial-gradient(circle at 10px 31%, #171615 0 1.15px, #6c5239 1.2px 1.8px, transparent 1.9px),
-    radial-gradient(circle at 19px 31%, #171615 0 1.15px, #6c5239 1.2px 1.8px, transparent 1.9px),
-    radial-gradient(circle at 10px 70%, #171615 0 1.15px, #6c5239 1.2px 1.8px, transparent 1.9px),
-    radial-gradient(circle at 19px 70%, #171615 0 1.15px, #6c5239 1.2px 1.8px, transparent 1.9px);
+    radial-gradient(circle at 10px 28%, #151514 0 1.15px, #765a3e 1.2px 1.8px, transparent 1.9px),
+    radial-gradient(circle at 19px 28%, #151514 0 1.15px, #765a3e 1.2px 1.8px, transparent 1.9px),
+    radial-gradient(circle at 10px 72%, #151514 0 1.15px, #765a3e 1.2px 1.8px, transparent 1.9px),
+    radial-gradient(circle at 19px 72%, #151514 0 1.15px, #765a3e 1.2px 1.8px, transparent 1.9px);
   background-size: var(--track-tie-pitch) 100%;
   background-repeat: repeat-x;
 }
@@ -192,7 +196,7 @@
   top: 0;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(180deg, rgba(245, 241, 224, .52), rgba(173, 169, 158, .12));
+  background: linear-gradient(180deg, rgba(245, 241, 224, .54), rgba(173, 169, 158, .12));
 }
 
 .rail::after {
@@ -217,11 +221,11 @@
 
 .rail-far {
   top: auto;
-  bottom: calc(var(--rail-contact-plane) + 5px);
+  bottom: calc(var(--rail-contact-plane) + 10px);
   height: var(--rail-far-profile);
-  transform: rotate(.06deg) scaleX(.986);
-  opacity: .68;
-  filter: saturate(.72) brightness(.82);
+  transform: rotate(.05deg) scaleX(.986);
+  opacity: .72;
+  filter: saturate(.76) brightness(.86);
   box-shadow: 0 2px 2px rgba(0, 0, 0, .52);
 }
 
@@ -229,7 +233,12 @@
    --train-base-lift changes there and the shared contact plane follows it. */
 @media (orientation: landscape) and (max-height: 560px) {
   .sleepers {
-    height: 36px;
-    bottom: calc(var(--rail-contact-plane) - 18px);
+    height: 42px;
+    bottom: calc(var(--rail-contact-plane) - 20px);
+    transform: translate3d(var(--track-x), 0, 0) skewX(-6deg) perspective(620px) rotateX(58deg);
+  }
+
+  .rail-far {
+    bottom: calc(var(--rail-contact-plane) + 8px);
   }
 }
