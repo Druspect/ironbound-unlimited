@@ -195,6 +195,6 @@
 @media (orientation: landscape) and (max-height: 560px) {
   .sleepers {
     height: 36px;
-    inset-bottom: calc(var(--rail-contact-plane) - 18px);
+    bottom: calc(var(--rail-contact-plane) - 18px);
   }
 }
