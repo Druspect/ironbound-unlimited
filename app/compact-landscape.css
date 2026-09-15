@@ -12,7 +12,10 @@
   }
 
   .experience {
-    --hud-clearance: clamp(132px, 35svh, 160px);
+    /* Keep the complete rail contact plane above the compact cab instead of
+     * merely lifting the sprite away from its track. This preserves wheel,
+     * platform, and ballast alignment together. */
+    --hud-clearance: clamp(180px, 46svh, 210px);
     --train-base-lift: 10px;
     overflow: hidden;
   }
@@ -24,11 +27,79 @@
 
   .mission-card,
   .right-hud {
-    top: 64px;
+    top: 60px;
   }
 
+  /* Compact cards retain the essential operating information while opening a
+   * clear center corridor for the train. */
   .mission-card {
-    padding-block: 8px;
+    width: min(42vw, 360px);
+    min-height: 0;
+    padding: 7px 10px;
+  }
+
+  .mission-card p {
+    margin-bottom: 3px;
+    font-size: 8px;
+  }
+
+  .mission-card h1 {
+    margin: 2px 0 4px;
+    font-size: 18px;
+  }
+
+  .mission-card .mission-rule {
+    margin-block: 3px;
+  }
+
+  .mission-card > span {
+    font-size: 8px;
+  }
+
+  .right-hud {
+    right: 10px;
+    width: 148px;
+    gap: 4px;
+  }
+
+  .right-hud .speed-card {
+    padding: 5px 8px;
+  }
+
+  .right-hud .speed-card > .eyebrow,
+  .right-hud .speed-card .engine-limit,
+  .right-hud .biome-card,
+  .right-hud .zoom-card {
+    display: none;
+  }
+
+  .right-hud .speed-reading strong {
+    font-size: 30px;
+  }
+
+  .right-hud .speed-reading span,
+  .right-hud .status-line {
+    font-size: 8px;
+  }
+
+  .station-card {
+    top: 142px;
+    left: 10px;
+    width: min(230px, 25vw);
+    padding: 7px 9px;
+  }
+
+  .station-card .eyebrow,
+  .station-card small {
+    font-size: 8px;
+  }
+
+  .station-card strong {
+    font-size: 15px;
+  }
+
+  .station-card .service-steps {
+    display: none;
   }
 
   .cab {
