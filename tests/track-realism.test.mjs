@@ -12,6 +12,10 @@ function cssNumber(name) {
   return Number(match[1]);
 }
 
+function rule(selector) {
+  return trackCss.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\s*\\{([\\s\\S]*?)\\n\\}`))?.[1] ?? "";
+}
+
 test("track realism layer is the final scene-style override", () => {
   const globals = layout.indexOf('import "./globals.css"');
   const compact = layout.indexOf('import "./compact-landscape.css"');
@@ -21,7 +25,7 @@ test("track realism layer is the final scene-style override", () => {
   assert.doesNotMatch(trackCss, /inset-bottom/);
 });
 
-test("timber tie proportions stay close to the FRA conventional-track reference", () => {
+test("timber tie proportions stay close to conventional North American track", () => {
   const gauge = cssNumber("--track-standard-gauge-in");
   const tieLength = cssNumber("--track-tie-length-in");
   const tieWidth = cssNumber("--track-tie-width-in");
@@ -40,6 +44,8 @@ test("timber tie proportions stay close to the FRA conventional-track reference"
   const renderedCoverage = tieFace / tiePitch;
   assert.ok(Math.abs(renderedCoverage - physicalCoverage) <= 0.02,
     `rendered tie coverage ${renderedCoverage} diverges from physical ${physicalCoverage}`);
+  assert.ok(gauge / tieLength > .54 && gauge / tieLength < .56,
+    "standard gauge must remain coherent with the declared tie length");
 });
 
 test("tie texture loops seamlessly with rail travel", () => {
@@ -49,11 +55,30 @@ test("tie texture loops seamlessly with rail travel", () => {
   assert.match(page, /--track-x", `\$\{-\(\(visualTravelRef\.current \* 7\.2\) % 160\)\}px`/);
 });
 
+test("ties and ballast share the same rail-travel phase", () => {
+  assert.match(rule(".sleepers"), /translate3d\(var\(--track-x\), 0, 0\)/);
+  assert.match(rule(".ballast"), /background-position:\s*var\(--track-x\) 0/);
+  assert.match(rule(".ballast::before"), /background-position:\s*var\(--track-x\) 0/);
+  assert.doesNotMatch(rule(".rail-near"), /track-x/);
+  assert.doesNotMatch(rule(".rail-far"), /track-x/);
+});
+
 test("near rail profile preserves the calibrated wheel contact plane", () => {
   assert.match(trackCss, /--rail-contact-plane:\s*calc\(var\(--train-base-lift\) \+ var\(--scaled-wheel-inset\)\)/);
   assert.match(trackCss, /\.rail-near\s*\{[\s\S]*?bottom:\s*calc\(var\(--rail-contact-plane\) - var\(--rail-near-profile\)\);[\s\S]*?height:\s*var\(--rail-near-profile\)/);
   assert.match(page, /Math\.abs\(wheel\.getBoundingClientRect\(\)\.bottom - nearRail\.top\)/);
   assert.match(page, /maximumRailGap <= \.75/);
+});
+
+test("legacy fence-like pseudo track is replaced instead of double-composited", () => {
+  const before = rule(".track::before");
+  const after = rule(".track::after");
+  assert.match(before, /z-index:\s*-1/);
+  assert.match(before, /height:\s*24px/);
+  assert.match(before, /filter:\s*none/);
+  assert.doesNotMatch(before, /train-base-lift/);
+  assert.match(after, /height:\s*7px/);
+  assert.match(after, /rail-contact-plane/);
 });
 
 test("scene renders one physical track with two profiled rails", () => {
@@ -64,6 +89,8 @@ test("scene renders one physical track with two profiled rails", () => {
   assert.match(trackCss, /polished[\s\S]*rust-stained web[\s\S]*shadowed foot/i);
   assert.match(trackCss, /\.rail::before/);
   assert.match(trackCss, /\.rail::after/);
+  assert.ok(cssNumber("--rail-near-profile") > cssNumber("--rail-far-profile"),
+    "near rail must read heavier than the perspective-receding far rail");
 });
 
 test("ballast, timber and fastener layers remain structurally separate", () => {
