@@ -3,7 +3,8 @@
  * ----------------------
  * Conventional U.S. standard gauge is 56.5 in (1435 mm). The timber-track
  * proportions below use a 7 x 9 x 102 in tie reference on 19.5 in centers,
- * matching the FRA conventional-track geometry used for ballast/track studies.
+ * matching conventional North American timber-track practice used by the
+ * period represented in Ironbound.
  *
  * This scene is a low side view, so gauge appears as vertical perspective
  * separation rather than literal screen-space width. We preserve the useful
@@ -26,6 +27,38 @@
   --rail-far-profile: 4px;
 }
 
+/* Replace the legacy pseudo-track layers entirely. Leaving them underneath the
+   detailed section double-built the ballast shoulder and was the main reason
+   the rail bed still read as a thick fence/deck from a low camera angle. */
+.track::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -1%;
+  right: -1%;
+  bottom: -12px;
+  height: 24px;
+  clip-path: polygon(0 34%, 6% 29%, 18% 33%, 31% 25%, 45% 30%, 59% 23%, 74% 31%, 89% 26%, 100% 35%, 100% 100%, 0 100%);
+  opacity: .58;
+  background: linear-gradient(180deg, rgba(59, 57, 52, .56), rgba(24, 25, 23, .74));
+  box-shadow: inset 0 4px 7px rgba(0, 0, 0, .24);
+  filter: none;
+}
+
+.track::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: -2%;
+  right: -2%;
+  bottom: calc(var(--rail-contact-plane) - 12px);
+  height: 7px;
+  opacity: .34;
+  transform: none;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .48));
+  filter: blur(3px);
+}
+
 /* A raised, shouldered ballast prism. Keeping the shoulder irregular prevents
    the track from reading as a flat painted strip while the dense small-stone
    field avoids the oversized 'cobblestone' look. */
@@ -42,6 +75,7 @@
     radial-gradient(ellipse at 11px 15px, rgba(44, 43, 40, .68) 0 1.15px, transparent 1.55px),
     linear-gradient(180deg, #746f63 0%, #5b574e 30%, #403e39 68%, #282826 100%);
   background-size: 19px 17px, 23px 19px, 29px 21px, 17px 23px, 100% 100%;
+  background-position: var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, 0 0;
   box-shadow:
     inset 0 7px 9px rgba(235, 224, 202, .07),
     inset 0 -14px 18px rgba(0, 0, 0, .42),
@@ -61,6 +95,7 @@
     radial-gradient(ellipse at 5px 5px, rgba(29, 29, 27, .78) 0 1px, transparent 1.35px),
     radial-gradient(ellipse at 12px 9px, rgba(111, 102, 87, .42) 0 1.2px, transparent 1.55px);
   background-size: 16px 14px, 21px 18px;
+  background-position: var(--track-x) 0, var(--track-x) 0;
   mix-blend-mode: multiply;
 }
 
