@@ -185,7 +185,13 @@ test("six animated cars stay within environment-normalized performance budgets",
   const releaseBrake = page.getByRole("button", { name: "Release train brake" });
   if (await releaseBrake.isVisible()) await releaseBrake.click();
   await setRangeValue(page.locator("#throttle"), 72);
-  await page.waitForTimeout(1_200);
+  await expect(page.locator("#throttle")).toHaveValue("72");
+  await expect(page.locator(".brake-button")).toHaveAttribute("aria-pressed", "false");
+  await expect.poll(async () => Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0), {
+    message: "six-car performance sample must begin after the train is moving",
+    timeout: 8_000,
+  }).toBeGreaterThan(1);
+  const speedAtSampleStartMph = Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0);
 
   const moving = await sampleAnimationPerformance(page, 4_000);
   const requiredMovingFps = Math.min(30, baseline.averageFps * .70);
@@ -197,6 +203,11 @@ test("six animated cars stay within environment-normalized performance budgets",
   }));
   const performanceReport = {
     environment: { ...environment, ci: Boolean(process.env.CI) },
+    motionProof: {
+      requestedThrottlePercent: 72,
+      brakeReleased: true,
+      speedAtSampleStartMph,
+    },
     baseline,
     moving,
     derivedMetrics: {
@@ -231,7 +242,7 @@ test("six animated cars stay within environment-normalized performance budgets",
   console.log(
     `[performance] baseline=${baseline.averageFps.toFixed(2)}fps moving=${moving.averageFps.toFixed(2)}fps ` +
     `retention=${(performanceReport.derivedMetrics.fpsRetention * 100).toFixed(1)}% ` +
-    `p95=${moving.p95FrameMs.toFixed(1)}ms heap=${moving.heapUsedMiB?.toFixed(1) ?? "n/a"}MiB`,
+    `speed=${speedAtSampleStartMph}mph p95=${moving.p95FrameMs.toFixed(1)}ms heap=${moving.heapUsedMiB?.toFixed(1) ?? "n/a"}MiB`,
   );
 
   // The baseline itself must be healthy enough to make comparison meaningful.
