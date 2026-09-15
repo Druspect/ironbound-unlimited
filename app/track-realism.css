@@ -27,6 +27,21 @@
   --rail-far-profile: 4px;
 }
 
+/* At normal desktop height the original composition let the cab cover nearly
+   the entire timber/ballast section. Lift the whole rail scene together: train
+   and rail contact move through --train-base-lift while the station platform
+   receives the same +14 px. Their established 4 px relative offset remains
+   unchanged. Compact landscape intentionally keeps its tighter geometry. */
+@media (min-height: 561px) {
+  .experience {
+    --train-base-lift: 36px;
+  }
+
+  .station-world {
+    bottom: calc(var(--hud-clearance) + 32px);
+  }
+}
+
 /* Replace the legacy pseudo-track layers entirely. Leaving them underneath the
    detailed section double-built the ballast shoulder and was the main reason
    the rail bed still read as a thick fence/deck from a low camera angle. */
