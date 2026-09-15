@@ -76,8 +76,14 @@ test.describe("track realism gate", () => {
     expect(section.maxWheelGap).toBeLessThanOrEqual(.75);
 
     expect(section.sleepers.height).toBeGreaterThan(18);
-    expect(section.ballast.top).toBeLessThan(section.far.top);
-    expect(section.ballast.bottom).toBeGreaterThan(section.near.bottom);
+    expect(section.ballast.height).toBeGreaterThanOrEqual(38);
+    expect(section.ballast.height).toBeLessThanOrEqual(50);
+    // The ballast element starts below the far running head and no higher than
+    // the lower edge of the near rail profile. This prevents the ballast crown
+    // from visually swallowing the rails/ties.
+    expect(section.ballast.top).toBeGreaterThan(section.far.top);
+    expect(section.ballast.top).toBeGreaterThanOrEqual(section.near.top);
+    expect(section.ballast.top).toBeLessThanOrEqual(section.near.bottom + 2);
     expect(section.ballastZ).toBeLessThan(section.sleeperZ);
     expect(section.sleeperZ).toBeLessThan(section.nearRailZ);
 

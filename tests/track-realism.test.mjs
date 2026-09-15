@@ -80,16 +80,23 @@ test("near rail profile preserves the calibrated wheel contact plane", () => {
   assert.match(page, /maximumRailGap <= \.75/);
 });
 
-test("legacy fence-like pseudo track is replaced instead of double-composited", () => {
+test("legacy fence-like pseudo underlay is disabled rather than double-composited", () => {
   const before = rule(".track::before");
   const after = rule(".track::after");
-  assert.match(before, /z-index:\s*-1/);
-  assert.match(before, /height:\s*24px/);
-  assert.match(before, /filter:\s*none/);
-  assert.doesNotMatch(before, /train-base-lift/);
-  assert.match(after, /height:\s*7px/);
+  assert.match(before, /content:\s*none/);
+  assert.doesNotMatch(before, /background:/);
+  assert.match(after, /height:\s*6px/);
   assert.match(after, /rail-contact-plane/);
   assert.match(after, /repeating-linear-gradient/);
+});
+
+test("ballast crown stays compact and below the running surface instead of forming a slab", () => {
+  const ballast = rule(".ballast");
+  assert.match(ballast, /bottom:\s*18px/);
+  assert.match(ballast, /height:\s*45px/);
+  assert.match(ballast, /mask-image:\s*linear-gradient/);
+  assert.doesNotMatch(ballast, /height:\s*calc\(var\(--rail-contact-plane\)/);
+  assert.doesNotMatch(rule(".ballast::after"), /linear-gradient/);
 });
 
 test("tie ends stay discrete instead of forming a continuous shelf", () => {
