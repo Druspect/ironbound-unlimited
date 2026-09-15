@@ -6,7 +6,8 @@ test.describe("track realism gate", () => {
   test.describe.configure({ retries: 0 });
 
   test("realistic track section preserves rail hierarchy and wheel contact", async ({ page }, testInfo) => {
-    await page.setViewportSize({ width: 1365, height: 768 });
+    const viewport = { width: 1365, height: 768 };
+    await page.setViewportSize(viewport);
     await page.goto("/?qaEngine=tom-thumb&qaCars=6&qaStation=0");
     await expect(page.locator(".scene")).toBeVisible();
     await expect(page.locator(".consist-car")).toHaveCount(6);
@@ -94,12 +95,24 @@ test.describe("track realism gate", () => {
     expect(section.cab.top - section.near.bottom).toBeGreaterThanOrEqual(18);
     expect(section.cab.top - section.far.top).toBeGreaterThanOrEqual(28);
 
-    // Always attach the exact current track pixels before the baseline check.
-    // That makes visual approval inspectable even while a new snapshot is
-    // intentionally missing or an approved baseline is expected to change.
-    const trackEvidence = await page.locator(".track").screenshot({
+    // Locator screenshots scroll elements into view; fixed UI can then cover
+    // the target and produce a false "track" image of the header. Capture the
+    // track's current viewport rectangle instead, clipped to the visible scene,
+    // so evidence and baseline represent its real gameplay composition.
+    const trackBox = await page.locator(".track").boundingBox();
+    expect(trackBox).not.toBeNull();
+    const x = Math.max(0, trackBox.x);
+    const y = Math.max(0, trackBox.y);
+    const right = Math.min(viewport.width, trackBox.x + trackBox.width);
+    const bottom = Math.min(viewport.height, trackBox.y + trackBox.height);
+    const clip = { x, y, width: right - x, height: bottom - y };
+    expect(clip.width).toBeGreaterThan(1000);
+    expect(clip.height).toBeGreaterThan(50);
+
+    const trackEvidence = await page.screenshot({
       animations: "disabled",
       caret: "hide",
+      clip,
     });
     await testInfo.attach("track-section-current", {
       body: trackEvidence,
@@ -109,9 +122,10 @@ test.describe("track realism gate", () => {
     // Keep a track-only baseline in addition to the full station composition.
     // This makes tie/ballast/rail-profile regressions visible even when they
     // occupy too few pixels to dominate the whole-scene screenshot diff.
-    await expect(page.locator(".track")).toHaveScreenshot("track-section-1365x768.png", {
+    await expect(page).toHaveScreenshot("track-section-1365x768.png", {
       animations: "disabled",
       caret: "hide",
+      clip,
     });
   });
 });
