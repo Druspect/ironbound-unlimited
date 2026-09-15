@@ -25,8 +25,9 @@ test.describe("track realism gate", () => {
       const far = document.querySelector(".rail-far");
       const ballast = document.querySelector(".ballast");
       const sleepers = document.querySelector(".sleepers");
+      const cab = document.querySelector(".cab");
       const wheels = [...document.querySelectorAll(".consist-car .small-wheel")];
-      if (!track || !near || !far || !ballast || !sleepers) {
+      if (!track || !near || !far || !ballast || !sleepers || !cab) {
         return { ready: false, reason: "track layer missing", wheelCount: wheels.length };
       }
 
@@ -35,6 +36,7 @@ test.describe("track realism gate", () => {
       const farBox = far.getBoundingClientRect();
       const ballastBox = ballast.getBoundingClientRect();
       const sleeperBox = sleepers.getBoundingClientRect();
+      const cabBox = cab.getBoundingClientRect();
       const wheelGaps = wheels.map((wheel) => Math.abs(wheel.getBoundingClientRect().bottom - nearBox.top));
 
       return {
@@ -50,6 +52,7 @@ test.describe("track realism gate", () => {
         far: { top: farBox.top, bottom: farBox.bottom, height: farBox.height },
         ballast: { top: ballastBox.top, bottom: ballastBox.bottom, height: ballastBox.height },
         sleepers: { top: sleeperBox.top, bottom: sleeperBox.bottom, height: sleeperBox.height },
+        cab: { top: cabBox.top },
         maxWheelGap: Math.max(...wheelGaps),
         railTopSeparation: nearBox.top - farBox.top,
         sleeperZ: Number.parseInt(getComputedStyle(sleepers).zIndex, 10),
@@ -72,11 +75,17 @@ test.describe("track realism gate", () => {
     expect(section.railTopSeparation).toBeLessThanOrEqual(16);
     expect(section.maxWheelGap).toBeLessThanOrEqual(.75);
 
-    expect(section.sleepers.height).toBeGreaterThan(12);
+    expect(section.sleepers.height).toBeGreaterThan(18);
     expect(section.ballast.top).toBeLessThan(section.far.top);
     expect(section.ballast.bottom).toBeGreaterThan(section.near.bottom);
     expect(section.ballastZ).toBeLessThan(section.sleeperZ);
     expect(section.sleeperZ).toBeLessThan(section.nearRailZ);
+
+    // The control console must not mask the physical rail section. This gate
+    // protects a readable band of rail, timber and ballast without changing
+    // the calibrated wheel contact surface.
+    expect(section.cab.top - section.near.bottom).toBeGreaterThanOrEqual(18);
+    expect(section.cab.top - section.far.top).toBeGreaterThanOrEqual(28);
 
     // Keep a track-only baseline in addition to the full station composition.
     // This makes tie/ballast/rail-profile regressions visible even when they
