@@ -48,6 +48,16 @@ test("timber tie proportions stay close to conventional North American track", (
     "standard gauge must remain coherent with the declared tie length");
 });
 
+test("desktop composition exposes track without changing train-platform relationship", () => {
+  const desktop = trackCss.match(/@media \(min-height: 561px\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
+  const trainLift = Number(desktop.match(/--train-base-lift:\s*([0-9.]+)px/)?.[1]);
+  const stationOffset = Number(desktop.match(/--hud-clearance\) \+ ([0-9.]+)px/)?.[1]);
+  assert.equal(trainLift, 50);
+  assert.equal(stationOffset, 46);
+  assert.equal(trainLift - stationOffset, 4,
+    "desktop visual lift must preserve the established four-pixel train/platform relationship");
+});
+
 test("tie texture loops seamlessly with rail travel", () => {
   const tiePitch = cssNumber("--track-tie-pitch");
   const motionPeriod = cssNumber("--track-motion-period");
