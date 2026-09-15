@@ -38,14 +38,23 @@ jobs:
           npm test
           npm run lint
 
-      - name: Install browser test runner without changing the lockfile
-        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+      - name: Install isolated browser test runner
+        shell: bash
+        run: |
+          rm -rf .qa-playwright
+          npm install --prefix .qa-playwright --no-save --package-lock=false @playwright/test@1.55.0
+          test ! -e node_modules/@playwright
+          test ! -e node_modules/playwright
+          test ! -e node_modules/playwright-core
+          ln -s "$PWD/.qa-playwright/node_modules/@playwright" node_modules/@playwright
+          ln -s "$PWD/.qa-playwright/node_modules/playwright" node_modules/playwright
+          ln -s "$PWD/.qa-playwright/node_modules/playwright-core" node_modules/playwright-core
 
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: ./.qa-playwright/node_modules/.bin/playwright install --with-deps chromium
 
       - name: External Chromium journeys, visual regression, and budgets
-        run: npx playwright test
+        run: ./.qa-playwright/node_modules/.bin/playwright test
 
       - name: Upload browser evidence
         if: always()
