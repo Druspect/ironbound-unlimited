@@ -1,0 +1,56 @@
+/*
+ * Short-landscape correction used by real phones, foldables, and compact
+ * browser windows. The main stylesheet intentionally keeps a 620px desktop
+ * minimum height; that must not make the railway world taller than a short
+ * landscape viewport.
+ */
+@media (orientation: landscape) and (max-height: 560px) {
+  .experience,
+  .scene {
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .experience {
+    --hud-clearance: clamp(132px, 35svh, 160px);
+    --train-base-lift: 10px;
+    overflow: hidden;
+  }
+
+  .topbar {
+    height: 54px;
+    padding-block: 4px;
+  }
+
+  .mission-card,
+  .right-hud {
+    top: 64px;
+  }
+
+  .mission-card {
+    padding-block: 8px;
+  }
+
+  .cab {
+    bottom: 8px;
+  }
+
+  .cab > div {
+    padding-block: 8px;
+  }
+
+  .telemetry-grid,
+  .resource-monitors,
+  .heat-monitor {
+    margin-top: 6px;
+  }
+
+  .regulator-slider,
+  .regulator-input {
+    height: 62px;
+  }
+
+  .station-world {
+    bottom: calc(var(--hud-clearance) + 8px);
+  }
+}

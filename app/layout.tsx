@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./compact-landscape.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ironbound-unlimited.geologistic.chatgpt.site"),

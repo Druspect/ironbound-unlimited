@@ -7,9 +7,11 @@ import { createExhaustMotion } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
 import { AUDIO_PACKS, DEFAULT_AUDIO_PACK, audioPackFor, isAudioPackId, soundscapeMix } from "./audio-packs";
 import type { AudioPackId } from "./audio-packs";
+import { engineAudioProfileFor } from "./engine-audio-profiles";
 import { advanceBrakePressure, advanceLocomotive } from "./locomotive-physics";
 import { ACTIVE_LOCOMOTIVES, canEquipLocomotive, FLEET_REVIEW_UNLOCKED, resolveEquippedLocomotive, selectLocomotive } from "./fleet-access";
 import { engineFactSheetFor } from "./engine-facts";
+import { carriageFamilyForEngine, isCarCompatibleWithEngine, normalizeConsistForEngine } from "./carriage-compatibility";
 import { LOCOMOTIVES, LOCOMOTIVE_RUNTIME_LAYOUTS, LOCOMOTIVE_SPRITE_ANIMATION, LOCOMOTIVE_SPRITE_CANVAS, LOCOMOTIVE_SPRITE_RAIL_INSET, LOCOMOTIVE_ART_REVISION, STARTER_LOCOMOTIVE_ID, runtimeWheelRadiusRatios } from "./locomotive-catalog";
 import type { Locomotive } from "./locomotive-catalog";
 import {
@@ -243,9 +245,15 @@ export default function Home() {
         if (browserAcceptanceRequested) {
           visualQaModeRef.current = true;
           setBrowserAcceptanceEnabled(true);
-          const sixCarConsist = addConsistCar(addConsistCar(addConsistCar(DEFAULT_CONSIST)));
+          // P1 validates all five carriage body treatments, so its isolated QA
+          // fixture uses a compatibility family that legitimately allows all five.
+          const browserAcceptanceEngineId = "atsf-3751";
+          const sixCarConsist = normalizeConsistForEngine(browserAcceptanceEngineId, addConsistCar(addConsistCar(addConsistCar(DEFAULT_CONSIST))));
           consistCarsRef.current = sixCarConsist;
           setConsistCars(sixCarConsist);
+          equippedEngineRef.current = browserAcceptanceEngineId;
+          setOwnedEngines([STARTER_LOCOMOTIVE_ID, browserAcceptanceEngineId]);
+          setEquippedEngine(browserAcceptanceEngineId);
           setCameraZoom("auto");
           visualTravelRef.current = STATIONS[0].position;
           distanceRef.current = STATIONS[0].position;
@@ -306,10 +314,17 @@ export default function Home() {
             if (typeof parsed.bonds === "number") setBonds(Math.max(0, parsed.bonds));
             const owned = Array.from(new Set([STARTER_LOCOMOTIVE_ID, ...(Array.isArray(parsed.ownedEngines) ? parsed.ownedEngines.filter((id) => LOCOMOTIVES.some((engine) => engine.id === id)) : [])]));
             setOwnedEngines(owned);
-            if (typeof parsed.equippedEngine === "string") setEquippedEngine(resolveEquippedLocomotive(parsed.equippedEngine, owned));
+            const restoredEngine = typeof parsed.equippedEngine === "string"
+              ? resolveEquippedLocomotive(parsed.equippedEngine, owned)
+              : STARTER_LOCOMOTIVE_ID;
+            if (typeof parsed.equippedEngine === "string") setEquippedEngine(restoredEngine);
             if (Array.isArray(parsed.consistCars) && parsed.consistCars.length >= 3 && parsed.consistCars.length <= 6) {
               const validCars = parsed.consistCars.filter((id) => CONSIST_CAR_TYPES.some((car) => car.id === id));
-              if (validCars.length === parsed.consistCars.length) setConsistCars(validCars);
+              if (validCars.length === parsed.consistCars.length) {
+                const compatibleCars = normalizeConsistForEngine(restoredEngine, validCars);
+                consistCarsRef.current = compatibleCars;
+                setConsistCars(compatibleCars);
+              }
             }
             if (parsed.cameraZoom === "auto" || parsed.cameraZoom === "close" || parsed.cameraZoom === "standard" || parsed.cameraZoom === "wide") setCameraZoom(parsed.cameraZoom);
             if (parsed.settings) setSettings((current) => ({ ...current, ...parsed.settings }));
@@ -870,6 +885,8 @@ export default function Home() {
   const activeEngine = ACTIVE_LOCOMOTIVES.find((engine) => engine.id === equippedEngine) ?? ACTIVE_LOCOMOTIVES[0];
   const activeOperatingProfile = operatingProfileFor(activeEngine.id);
   const activeFactSheet = engineFactSheetFor(activeEngine.id);
+  const activeCarriageFamily = carriageFamilyForEngine(activeEngine.id);
+  const activeAudioProfile = engineAudioProfileFor(activeEngine.id);
   const activeConsistMetrics = calculateConsistMetrics(activeEngine.id, consistCars);
   const carWidth = CAR_RENDER_WIDTH;
   const activeRuntimeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[activeEngine.id];
@@ -919,16 +936,20 @@ export default function Home() {
   };
   const purchaseOrEquip = (engineId: string) => {
     const next = selectLocomotive({ bonds, ownedEngines, equippedEngine }, engineId);
+    const compatibleCars = normalizeConsistForEngine(next.equippedEngine, consistCarsRef.current);
+    consistCarsRef.current = compatibleCars;
     setBonds(next.bonds);
     setOwnedEngines(next.ownedEngines);
     setEquippedEngine(next.equippedEngine);
+    setConsistCars(compatibleCars);
     setCameraZoom("auto");
   };
   const updateCar = (index: number, carId: string) => {
+    if (!isCarCompatibleWithEngine(activeEngine.id, carId)) return;
     setConsistCars((current) => current.map((existing, carIndex) => carIndex === index ? carId : existing));
   };
   const addCar = () => {
-    setConsistCars((current) => addConsistCar(current));
+    setConsistCars((current) => normalizeConsistForEngine(activeEngine.id, addConsistCar(current)));
     setCameraZoom("auto");
   };
   const removeCar = () => {
@@ -1301,7 +1322,7 @@ export default function Home() {
               </div>}
 
               {storeTab === "carriages" && <section className="store-department" aria-labelledby="carriage-store-heading">
-                <div className="department-heading"><div><span className="menu-kicker">IRONBOUND YARD</span><h3 id="carriage-store-heading">Build Your Train</h3><p>Every added car increases resource use, acceleration time, stopping distance, and lowers the loaded speed ceiling.</p></div><div className="consist-summary"><small>LOADED TRAIN</small><strong>{Math.round(activeConsistMetrics.totalTrainTons)}</strong><span>TONS</span></div></div>
+                <div className="department-heading"><div><span className="menu-kicker">IRONBOUND YARD</span><h3 id="carriage-store-heading">Build Your Train</h3><p><b>{activeCarriageFamily.label}</b> • {activeCarriageFamily.eraLabel}. Every added car increases resource use, acceleration time, stopping distance, and lowers the loaded speed ceiling.</p></div><div className="consist-summary"><small>LOADED TRAIN</small><strong>{Math.round(activeConsistMetrics.totalTrainTons)}</strong><span>TONS</span></div></div>
                 <div className="consist-toolbar"><button onClick={removeCar} disabled={consistCars.length <= 3}>REMOVE ADDED CAR</button><strong>{consistCars.length} CARS</strong><button onClick={addCar} disabled={consistCars.length >= 6}>ADD CAR</button></div>
                 <div className="consist-list">
                   {consistCars.map((carId, index) => {
@@ -1309,7 +1330,7 @@ export default function Home() {
                     return <article key={index} className={selectedCar.visualClass}>
                       <div className="consist-car-preview"><img src={selectedCar.art} alt="" draggable={false} /><span>{index + 1}</span></div>
                       <label htmlFor={`car-${index}`}><small>CAR {index + 1}</small><strong>{selectedCar.name}</strong></label>
-                      <select id={`car-${index}`} value={carId} onChange={(event) => updateCar(index, event.target.value)}>{CONSIST_CAR_TYPES.map((car) => <option key={car.id} value={car.id}>{car.name}</option>)}</select>
+                      <select id={`car-${index}`} value={carId} onChange={(event) => updateCar(index, event.target.value)}>{CONSIST_CAR_TYPES.filter((car) => activeCarriageFamily.allowedCarIds.includes(car.id)).map((car) => <option key={car.id} value={car.id}>{car.name}</option>)}</select>
                       <p>{selectedCar.loadedTons} loaded tons • {selectedCar.capacity}</p>
                     </article>;
                   })}
@@ -1318,7 +1339,7 @@ export default function Home() {
               </section>}
 
               {storeTab === "audio" && <section className="store-department audio-packs" aria-labelledby="audio-store-heading">
-                <div className="department-heading"><div><span className="menu-kicker">SOUND CABINET</span><h3 id="audio-store-heading">Audio Packs</h3><p>Select a complete railway soundscape. The active pack follows speed, regulator demand, pauses, and station work without changing engine performance.</p></div><div className="audio-now-playing"><small>IN SERVICE</small><strong>{audioPackFor(selectedAudioPack).name}</strong></div></div>
+                <div className="department-heading"><div><span className="menu-kicker">SOUND CABINET</span><h3 id="audio-store-heading">Audio Packs</h3><p>Select a complete railway soundscape. <b>Engine analogue:</b> {activeAudioProfile.analogueLabel}. Recommended pack: {audioPackFor(activeAudioProfile.packId).name}. These are synthesized class analogues, not exact archival recordings.</p></div><div className="audio-now-playing"><small>IN SERVICE</small><strong>{audioPackFor(selectedAudioPack).name}</strong></div></div>
                 {AUDIO_PACKS.map((pack) => {
                   const selected = pack.id === selectedAudioPack;
                   return <article key={pack.id} className={`audio-pack ${selected ? "installed" : ""}`} data-audio-pack={pack.id}>
