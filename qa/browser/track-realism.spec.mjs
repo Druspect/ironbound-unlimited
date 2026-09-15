@@ -5,7 +5,7 @@ test.describe("track realism gate", () => {
   // conceal lifecycle races and weaken this as a physical-contact gate.
   test.describe.configure({ retries: 0 });
 
-  test("realistic track section preserves rail hierarchy and wheel contact", async ({ page }) => {
+  test("realistic track section preserves rail hierarchy and wheel contact", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1365, height: 768 });
     await page.goto("/?qaEngine=tom-thumb&qaCars=6&qaStation=0");
     await expect(page.locator(".scene")).toBeVisible();
@@ -79,10 +79,11 @@ test.describe("track realism gate", () => {
     expect(section.ballast.height).toBeGreaterThanOrEqual(38);
     expect(section.ballast.height).toBeLessThanOrEqual(50);
     // The ballast element starts below the far running head and no higher than
-    // the lower edge of the near rail profile. This prevents the ballast crown
-    // from visually swallowing the rails/ties.
+    // the lower edge of the near rail profile. Half a CSS pixel is allowed for
+    // browser subpixel rounding while remaining tighter than the wheel-contact
+    // tolerance and far below any visible geometry error.
     expect(section.ballast.top).toBeGreaterThan(section.far.top);
-    expect(section.ballast.top).toBeGreaterThanOrEqual(section.near.top);
+    expect(section.ballast.top).toBeGreaterThanOrEqual(section.near.top - .5);
     expect(section.ballast.top).toBeLessThanOrEqual(section.near.bottom + 2);
     expect(section.ballastZ).toBeLessThan(section.sleeperZ);
     expect(section.sleeperZ).toBeLessThan(section.nearRailZ);
@@ -92,6 +93,18 @@ test.describe("track realism gate", () => {
     // the calibrated wheel contact surface.
     expect(section.cab.top - section.near.bottom).toBeGreaterThanOrEqual(18);
     expect(section.cab.top - section.far.top).toBeGreaterThanOrEqual(28);
+
+    // Always attach the exact current track pixels before the baseline check.
+    // That makes visual approval inspectable even while a new snapshot is
+    // intentionally missing or an approved baseline is expected to change.
+    const trackEvidence = await page.locator(".track").screenshot({
+      animations: "disabled",
+      caret: "hide",
+    });
+    await testInfo.attach("track-section-current", {
+      body: trackEvidence,
+      contentType: "image/png",
+    });
 
     // Keep a track-only baseline in addition to the full station composition.
     // This makes tie/ballast/rail-profile regressions visible even when they
