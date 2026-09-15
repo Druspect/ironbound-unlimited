@@ -1,3 +1,4 @@
+import { mkdir, writeFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
 async function waitForScene(page) {
@@ -188,9 +189,24 @@ test("six animated cars stay within environment-normalized performance budgets",
 
   const moving = await sampleAnimationPerformance(page, 4_000);
   const requiredMovingFps = Math.min(30, baseline.averageFps * .70);
+  const environment = await page.evaluate(() => ({
+    userAgent: navigator.userAgent,
+    hardwareConcurrency: navigator.hardwareConcurrency,
+    deviceMemoryGiB: navigator.deviceMemory ?? null,
+    devicePixelRatio: window.devicePixelRatio,
+  }));
   const performanceReport = {
+    environment: { ...environment, ci: Boolean(process.env.CI) },
     baseline,
     moving,
+    derivedMetrics: {
+      fpsRetention: baseline.averageFps > 0 ? moving.averageFps / baseline.averageFps : 0,
+      p95Inflation: baseline.p95FrameMs > 0 ? moving.p95FrameMs / baseline.p95FrameMs : 0,
+      additionalLongTaskMs: moving.longTaskMs - baseline.longTaskMs,
+      heapEndDeltaMiB: baseline.heapUsedMiB === null || moving.heapUsedMiB === null
+        ? null
+        : moving.heapUsedMiB - baseline.heapUsedMiB,
+    },
     derivedBudgets: {
       requiredMovingFps,
       minimumFrameRetention: .70,
@@ -202,13 +218,21 @@ test("six animated cars stay within environment-normalized performance budgets",
       maximumDomNodes: 2_500,
     },
   };
+  const serializedReport = `${JSON.stringify(performanceReport, null, 2)}\n`;
 
-  // Always attach measurements before assertions so a failed budget remains
-  // diagnosable from Actions artifacts instead of losing the useful numbers.
+  // Persist the report outside Playwright's internal attachment structure so
+  // the Actions artifact always exposes the measurements as a plain JSON file.
+  await mkdir("qa-artifacts", { recursive: true });
+  await writeFile("qa-artifacts/performance-budget.json", serializedReport, "utf8");
   await test.info().attach("performance-budget.json", {
-    body: Buffer.from(`${JSON.stringify(performanceReport, null, 2)}\n`),
+    body: Buffer.from(serializedReport),
     contentType: "application/json",
   });
+  console.log(
+    `[performance] baseline=${baseline.averageFps.toFixed(2)}fps moving=${moving.averageFps.toFixed(2)}fps ` +
+    `retention=${(performanceReport.derivedMetrics.fpsRetention * 100).toFixed(1)}% ` +
+    `p95=${moving.p95FrameMs.toFixed(1)}ms heap=${moving.heapUsedMiB?.toFixed(1) ?? "n/a"}MiB`,
+  );
 
   // The baseline itself must be healthy enough to make comparison meaningful.
   expect(baseline.frameCount).toBeGreaterThanOrEqual(20);
