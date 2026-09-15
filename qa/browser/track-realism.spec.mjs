@@ -77,5 +77,13 @@ test.describe("track realism gate", () => {
     expect(section.ballast.bottom).toBeGreaterThan(section.near.bottom);
     expect(section.ballastZ).toBeLessThan(section.sleeperZ);
     expect(section.sleeperZ).toBeLessThan(section.nearRailZ);
+
+    // Keep a track-only baseline in addition to the full station composition.
+    // This makes tie/ballast/rail-profile regressions visible even when they
+    // occupy too few pixels to dominate the whole-scene screenshot diff.
+    await expect(page.locator(".track")).toHaveScreenshot("track-section-1365x768.png", {
+      animations: "disabled",
+      caret: "hide",
+    });
   });
 });
