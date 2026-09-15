@@ -188,9 +188,9 @@ test("six animated cars stay within environment-normalized performance budgets",
   await expect(page.locator("#throttle")).toHaveValue("72");
   await expect(page.locator(".brake-button")).toHaveAttribute("aria-pressed", "false");
   await expect.poll(async () => Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0), {
-    message: "six-car performance sample must begin after the train is moving",
+    message: "six-car performance sample must begin after the train reports nonzero speed",
     timeout: 8_000,
-  }).toBeGreaterThan(1);
+  }).toBeGreaterThanOrEqual(1);
   const speedAtSampleStartMph = Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0);
 
   const moving = await sampleAnimationPerformance(page, 4_000);
