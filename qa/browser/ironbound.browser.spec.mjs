@@ -23,7 +23,13 @@ async function freezeVisualMotion(page) {
 
 async function setRangeValue(locator, value) {
   await locator.evaluate((element, nextValue) => {
-    element.value = String(nextValue);
+    // React tracks controlled-input values on the element instance. Calling the
+    // native prototype setter bypasses that tracker so the subsequent input
+    // event is observed as a real user change instead of being reverted to the
+    // previous controlled value on the next render.
+    const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    if (!valueSetter) throw new Error("HTMLInputElement.value setter is unavailable");
+    valueSetter.call(element, String(nextValue));
     element.dispatchEvent(new Event("input", { bubbles: true }));
     element.dispatchEvent(new Event("change", { bubbles: true }));
   }, value);
@@ -169,95 +175,101 @@ test("station berthing and track perspective match the approved visual baseline"
   });
 });
 
-test("six animated cars stay within environment-normalized performance budgets", async ({ page }) => {
-  test.setTimeout(45_000);
-  await page.setViewportSize({ width: 1365, height: 768 });
-  await page.goto("/?qaEngine=tom-thumb&qaCars=6");
-  await waitForScene(page);
-  await expect(page.locator(".consist-car")).toHaveCount(6);
+test.describe("performance gate", () => {
+  // A retry must never turn a noisy or incorrectly prepared performance sample
+  // into a green check. The environment-normalized budget is the flake control.
+  test.describe.configure({ retries: 0 });
 
-  // First measure the exact same six-car scene while stationary. Hosted CI can
-  // throttle headless Chromium far below desktop refresh rates, so this gives
-  // us the runner's real rendering ceiling before adding train-motion work.
-  await page.waitForTimeout(800);
-  const baseline = await sampleAnimationPerformance(page, 4_000);
+  test("six animated cars stay within environment-normalized performance budgets", async ({ page }) => {
+    test.setTimeout(45_000);
+    await page.setViewportSize({ width: 1365, height: 768 });
+    await page.goto("/?qaEngine=tom-thumb&qaCars=6");
+    await waitForScene(page);
+    await expect(page.locator(".consist-car")).toHaveCount(6);
 
-  const releaseBrake = page.getByRole("button", { name: "Release train brake" });
-  if (await releaseBrake.isVisible()) await releaseBrake.click();
-  await setRangeValue(page.locator("#throttle"), 72);
-  await expect(page.locator("#throttle")).toHaveValue("72");
-  await expect(page.locator(".brake-button")).toHaveAttribute("aria-pressed", "false");
-  await expect.poll(async () => Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0), {
-    message: "six-car performance sample must begin after the train reports nonzero speed",
-    timeout: 8_000,
-  }).toBeGreaterThanOrEqual(1);
-  const speedAtSampleStartMph = Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0);
+    // First measure the exact same six-car scene while stationary. Hosted CI can
+    // throttle headless Chromium far below desktop refresh rates, so this gives
+    // us the runner's real rendering ceiling before adding train-motion work.
+    await page.waitForTimeout(800);
+    const baseline = await sampleAnimationPerformance(page, 4_000);
 
-  const moving = await sampleAnimationPerformance(page, 4_000);
-  const requiredMovingFps = Math.min(30, baseline.averageFps * .70);
-  const environment = await page.evaluate(() => ({
-    userAgent: navigator.userAgent,
-    hardwareConcurrency: navigator.hardwareConcurrency,
-    deviceMemoryGiB: navigator.deviceMemory ?? null,
-    devicePixelRatio: window.devicePixelRatio,
-  }));
-  const performanceReport = {
-    environment: { ...environment, ci: Boolean(process.env.CI) },
-    motionProof: {
-      requestedThrottlePercent: 72,
-      brakeReleased: true,
-      speedAtSampleStartMph,
-    },
-    baseline,
-    moving,
-    derivedMetrics: {
-      fpsRetention: baseline.averageFps > 0 ? moving.averageFps / baseline.averageFps : 0,
-      p95Inflation: baseline.p95FrameMs > 0 ? moving.p95FrameMs / baseline.p95FrameMs : 0,
-      additionalLongTaskMs: moving.longTaskMs - baseline.longTaskMs,
-      heapEndDeltaMiB: baseline.heapUsedMiB === null || moving.heapUsedMiB === null
-        ? null
-        : moving.heapUsedMiB - baseline.heapUsedMiB,
-    },
-    derivedBudgets: {
-      requiredMovingFps,
-      minimumFrameRetention: .70,
-      maximumP95FrameMs: Math.max(150, baseline.p95FrameMs * 1.75),
-      maximumJankRatio: Math.max(.18, baseline.jankRatio + .10),
-      maximumAdditionalLongTaskMs: 900,
-      maximumHeapMiB: 220,
-      maximumHeapGrowthMiB: 64,
-      maximumDomNodes: 2_500,
-    },
-  };
-  const serializedReport = `${JSON.stringify(performanceReport, null, 2)}\n`;
+    const releaseBrake = page.getByRole("button", { name: "Release train brake" });
+    if (await releaseBrake.isVisible()) await releaseBrake.click();
+    await setRangeValue(page.locator("#throttle"), 72);
+    await expect(page.locator("#throttle")).toHaveValue("72");
+    await expect(page.locator(".brake-button")).toHaveAttribute("aria-pressed", "false");
+    await expect.poll(async () => Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0), {
+      message: "six-car performance sample must begin after the train reports nonzero speed",
+      timeout: 8_000,
+    }).toBeGreaterThanOrEqual(1);
+    const speedAtSampleStartMph = Number((await page.locator(".speed-card .speed-reading strong").textContent()) ?? 0);
 
-  // Persist the report outside Playwright's internal attachment structure so
-  // the Actions artifact always exposes the measurements as a plain JSON file.
-  await mkdir("qa-artifacts", { recursive: true });
-  await writeFile("qa-artifacts/performance-budget.json", serializedReport, "utf8");
-  await test.info().attach("performance-budget.json", {
-    body: Buffer.from(serializedReport),
-    contentType: "application/json",
+    const moving = await sampleAnimationPerformance(page, 4_000);
+    const requiredMovingFps = Math.min(30, baseline.averageFps * .70);
+    const environment = await page.evaluate(() => ({
+      userAgent: navigator.userAgent,
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      deviceMemoryGiB: navigator.deviceMemory ?? null,
+      devicePixelRatio: window.devicePixelRatio,
+    }));
+    const performanceReport = {
+      environment: { ...environment, ci: Boolean(process.env.CI) },
+      motionProof: {
+        requestedThrottlePercent: 72,
+        brakeReleased: true,
+        speedAtSampleStartMph,
+      },
+      baseline,
+      moving,
+      derivedMetrics: {
+        fpsRetention: baseline.averageFps > 0 ? moving.averageFps / baseline.averageFps : 0,
+        p95Inflation: baseline.p95FrameMs > 0 ? moving.p95FrameMs / baseline.p95FrameMs : 0,
+        additionalLongTaskMs: moving.longTaskMs - baseline.longTaskMs,
+        heapEndDeltaMiB: baseline.heapUsedMiB === null || moving.heapUsedMiB === null
+          ? null
+          : moving.heapUsedMiB - baseline.heapUsedMiB,
+      },
+      derivedBudgets: {
+        requiredMovingFps,
+        minimumFrameRetention: .70,
+        maximumP95FrameMs: Math.max(150, baseline.p95FrameMs * 1.75),
+        maximumJankRatio: Math.max(.18, baseline.jankRatio + .10),
+        maximumAdditionalLongTaskMs: 900,
+        maximumHeapMiB: 220,
+        maximumHeapGrowthMiB: 64,
+        maximumDomNodes: 2_500,
+      },
+    };
+    const serializedReport = `${JSON.stringify(performanceReport, null, 2)}\n`;
+
+    // Persist the report outside Playwright's internal attachment structure so
+    // the Actions artifact always exposes the measurements as a plain JSON file.
+    await mkdir("qa-artifacts", { recursive: true });
+    await writeFile("qa-artifacts/performance-budget.json", serializedReport, "utf8");
+    await test.info().attach("performance-budget.json", {
+      body: Buffer.from(serializedReport),
+      contentType: "application/json",
+    });
+    console.log(
+      `[performance] baseline=${baseline.averageFps.toFixed(2)}fps moving=${moving.averageFps.toFixed(2)}fps ` +
+      `retention=${(performanceReport.derivedMetrics.fpsRetention * 100).toFixed(1)}% ` +
+      `speed=${speedAtSampleStartMph}mph p95=${moving.p95FrameMs.toFixed(1)}ms heap=${moving.heapUsedMiB?.toFixed(1) ?? "n/a"}MiB`,
+    );
+
+    // The baseline itself must be healthy enough to make comparison meaningful.
+    expect(baseline.frameCount).toBeGreaterThanOrEqual(20);
+    expect(baseline.averageFps).toBeGreaterThanOrEqual(5);
+
+    // On a normal runner this still requires 30 FPS. On a throttled hosted runner
+    // it requires the moving scene to retain at least 70% of that runner's own
+    // idle six-car cadence rather than failing on infrastructure limitations.
+    expect(moving.averageFps).toBeGreaterThanOrEqual(requiredMovingFps);
+    expect(moving.frameCount).toBeGreaterThanOrEqual(Math.floor(baseline.frameCount * .70));
+    expect(moving.p95FrameMs).toBeLessThanOrEqual(Math.max(150, baseline.p95FrameMs * 1.75));
+    expect(moving.jankRatio).toBeLessThanOrEqual(Math.max(.18, baseline.jankRatio + .10));
+    expect(moving.longTaskMs).toBeLessThanOrEqual(baseline.longTaskMs + 900);
+    expect(moving.domNodes).toBeLessThanOrEqual(2_500);
+    if (moving.heapUsedMiB !== null) expect(moving.heapUsedMiB).toBeLessThanOrEqual(220);
+    if (moving.heapGrowthMiB !== null) expect(moving.heapGrowthMiB).toBeLessThanOrEqual(64);
   });
-  console.log(
-    `[performance] baseline=${baseline.averageFps.toFixed(2)}fps moving=${moving.averageFps.toFixed(2)}fps ` +
-    `retention=${(performanceReport.derivedMetrics.fpsRetention * 100).toFixed(1)}% ` +
-    `speed=${speedAtSampleStartMph}mph p95=${moving.p95FrameMs.toFixed(1)}ms heap=${moving.heapUsedMiB?.toFixed(1) ?? "n/a"}MiB`,
-  );
-
-  // The baseline itself must be healthy enough to make comparison meaningful.
-  expect(baseline.frameCount).toBeGreaterThanOrEqual(20);
-  expect(baseline.averageFps).toBeGreaterThanOrEqual(5);
-
-  // On a normal runner this still requires 30 FPS. On a throttled hosted runner
-  // it requires the moving scene to retain at least 70% of that runner's own
-  // idle six-car cadence rather than failing on infrastructure limitations.
-  expect(moving.averageFps).toBeGreaterThanOrEqual(requiredMovingFps);
-  expect(moving.frameCount).toBeGreaterThanOrEqual(Math.floor(baseline.frameCount * .70));
-  expect(moving.p95FrameMs).toBeLessThanOrEqual(Math.max(150, baseline.p95FrameMs * 1.75));
-  expect(moving.jankRatio).toBeLessThanOrEqual(Math.max(.18, baseline.jankRatio + .10));
-  expect(moving.longTaskMs).toBeLessThanOrEqual(baseline.longTaskMs + 900);
-  expect(moving.domNodes).toBeLessThanOrEqual(2_500);
-  if (moving.heapUsedMiB !== null) expect(moving.heapUsedMiB).toBeLessThanOrEqual(220);
-  if (moving.heapGrowthMiB !== null) expect(moving.heapGrowthMiB).toBeLessThanOrEqual(64);
 });
