@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-test.describe.configure({ mode: "serial" });
-
 async function waitForScene(page) {
   await expect(page.locator(".scene")).toBeVisible();
   await page.waitForFunction(() => [...document.images].every((image) => image.complete));
