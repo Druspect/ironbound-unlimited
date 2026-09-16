@@ -10,6 +10,17 @@ async function verifyLaunchSanding(page, engineId) {
   const engine = page.locator(`[data-engine-sprite="${engineId}"]`);
   await expect(engine).toBeVisible({ timeout: 10_000 });
   await expect(engine).toHaveAttribute("data-sanding", "false");
+  const sander = engine.locator(".automatic-sander");
+  await expect(sander).toHaveCount(1);
+
+  if (engineId === "big-boy-4014") {
+    const underframe = await engine.evaluate((element) => {
+      const style = getComputedStyle(element, "::before");
+      return { backgroundImage: style.backgroundImage, opacity: Number(style.opacity) };
+    });
+    expect(underframe.backgroundImage).not.toBe("none");
+    expect(underframe.opacity).toBeGreaterThan(.7);
+  }
 
   await page.getByRole("button", { name: "Release train brake" }).click();
   await page.getByRole("slider", { name: "Locomotive throttle" }).fill("78");
@@ -19,13 +30,14 @@ async function verifyLaunchSanding(page, engineId) {
     message: `${engineId} never opened the automatic sanders during a strong low-speed launch`,
   }).toBe("true");
 
-  const activeVisual = await engine.evaluate((element) => {
-    const style = getComputedStyle(element, "::before");
+  const activeVisual = await sander.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const engine = element.closest("[data-engine-sprite]");
     return {
       opacity: Number(style.opacity),
       width: Number.parseFloat(style.width),
       height: Number.parseFloat(style.height),
-      intensity: Number.parseFloat(getComputedStyle(element).getPropertyValue("--sanding-intensity")),
+      intensity: Number.parseFloat(engine ? getComputedStyle(engine).getPropertyValue("--sanding-intensity") : "0"),
     };
   });
   expect(activeVisual.opacity).toBeGreaterThan(.25);
@@ -42,7 +54,7 @@ async function verifyLaunchSanding(page, engineId) {
     message: `${engineId} kept sanding after the low-speed launch envelope`,
   }).toBe("false");
 
-  const inactiveOpacity = await engine.evaluate((element) => Number(getComputedStyle(element, "::before").opacity));
+  const inactiveOpacity = await sander.evaluate((element) => Number(getComputedStyle(element).opacity));
   expect(inactiveOpacity).toBe(0);
 }
 
