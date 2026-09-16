@@ -1,0 +1,107 @@
+/*
+ * Production visual polish
+ * ------------------------
+ * Final, geometry-neutral presentation corrections. This file intentionally
+ * does not move wheels, locomotive bodies, rails, platforms, or cab controls.
+ */
+
+/* Running trains should read as railway equipment, not annotated game pieces.
+   Car identity remains available in the carriage store and consist editor. */
+.scene .car-mark {
+  display: none;
+}
+
+/* The starter used to vent a small steam cloud continuously. Keep that effect
+   event-driven instead: cylinder/service steam is plausible while stopped for
+   service and a stronger release is appropriate during a safety event. */
+.engine-sprite-tom-thumb .steam-vent {
+  opacity: 0;
+  animation: none;
+}
+
+.train-wrap.is-servicing .engine-sprite-tom-thumb .steam-vent {
+  opacity: .42;
+  animation: production-service-steam 2.4s ease-in-out infinite;
+}
+
+.experience.is-overloaded .engine-sprite-tom-thumb .steam-vent {
+  opacity: .82;
+  animation: production-service-steam .72s ease-in-out infinite;
+  filter: blur(4px) brightness(1.12);
+}
+
+/* Other locomotives share a restrained low cylinder/service release. This is
+   a presentation cue, not a claim that every class used identical cylinder
+   cock plumbing. It stays below the smokebox and never touches wheel geometry. */
+.engine-sprite-unit:not(.engine-sprite-tom-thumb) {
+  --service-steam-x: 84%;
+  --service-steam-y: 76%;
+}
+
+.engine-sprite-unit:not(.engine-sprite-tom-thumb)::after {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  left: var(--service-steam-x);
+  top: var(--service-steam-y);
+  width: 72px;
+  height: 42px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-18%, -22%) scale(.72);
+  transform-origin: 20% 50%;
+  background:
+    radial-gradient(ellipse at 25% 45%, rgba(248, 246, 236, .62) 0 12%, rgba(226, 230, 225, .28) 34%, transparent 70%),
+    radial-gradient(ellipse at 56% 62%, rgba(238, 239, 232, .32), transparent 64%);
+  filter: blur(3.5px);
+}
+
+.train-wrap.is-servicing .engine-sprite-unit:not(.engine-sprite-tom-thumb)::after {
+  opacity: .46;
+  animation: production-service-steam 2.4s ease-in-out infinite;
+}
+
+.experience.is-overloaded .engine-sprite-unit:not(.engine-sprite-tom-thumb)::after {
+  opacity: .74;
+  animation: production-service-steam .72s ease-in-out infinite;
+  filter: blur(3px) brightness(1.08);
+}
+
+/* Articulated locomotives carry their forward cylinders slightly farther
+   toward the pilot on the normalized sprite canvas. */
+.engine-sprite-nw-1218,
+.engine-sprite-challenger-3985,
+.engine-sprite-big-boy-4014 {
+  --service-steam-x: 87%;
+  --service-steam-y: 77%;
+}
+
+/* The light Atlantic's cylinder mass sits a touch higher than the later road
+   engines, so its service vapor begins correspondingly higher. */
+.engine-sprite-the-flyer-1907 {
+  --service-steam-x: 85%;
+  --service-steam-y: 73%;
+}
+
+@keyframes production-service-steam {
+  0%, 100% { transform: translate(-18%, -22%) scale(.68); }
+  46% { transform: translate(-30%, 8%) scale(1.04); }
+  70% { opacity: .18; }
+}
+
+/* In the permanent golden-hour scene a headlight lens may be visible, but a
+   strong volumetric cone should not read like a night-driving spotlight. */
+.phase-golden .engine-sprite-unit {
+  --headlight-phase: .24;
+}
+
+/* Preserve event information for reduced-motion users without animating vapor. */
+.reduced-motion .engine-sprite-unit::after,
+.reduced-motion .steam-vent,
+@media (prefers-reduced-motion: reduce) {
+  .engine-sprite-unit::after,
+  .steam-vent {
+    animation: none !important;
+  }
+}
