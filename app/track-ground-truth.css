@@ -1,0 +1,121 @@
+/*
+ * Track ground-truth pass
+ * -----------------------
+ * Preserve the calibrated wheel-contact plane, standard gauge reference, and
+ * 32px / 15px timber rhythm from track-realism.css. This layer changes only
+ * the side-view cross-section that previously collapsed into a dark shelf:
+ * slimmer rail sections, visible timber, and a lower granular ballast shoulder.
+ */
+
+.track {
+  --rail-near-profile: 6px;
+  --rail-far-profile: 3px;
+}
+
+/* The old tie-seat shadow became a third continuous horizontal member once the
+   actual rail foot and ballast crown were visible. Real tie seats are discrete,
+   so the timber/fastener texture carries that information instead. */
+.track::after {
+  content: none;
+}
+
+/* Ballast belongs under and around the ties, not up beside the running head.
+   Lowering the crown exposes the timber ends and removes the gray fascia look. */
+.ballast {
+  bottom: 18px;
+  height: 30px;
+  opacity: .9;
+  clip-path: polygon(0 42%, 5% 31%, 16% 22%, 31% 16%, 50% 13%, 69% 16%, 84% 22%, 95% 31%, 100% 42%, 100% 100%, 0 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 48%, rgba(0,0,0,.78) 69%, rgba(0,0,0,.34) 86%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 48%, rgba(0,0,0,.78) 69%, rgba(0,0,0,.34) 86%, transparent 100%);
+  background:
+    radial-gradient(ellipse at 8px 7px, rgba(211, 201, 181, .55) 0 1.1px, transparent 1.48px),
+    radial-gradient(ellipse at 3px 12px, rgba(76, 72, 65, .82) 0 1.3px, transparent 1.68px),
+    radial-gradient(ellipse at 15px 4px, rgba(147, 136, 118, .74) 0 1.22px, transparent 1.62px),
+    radial-gradient(ellipse at 11px 15px, rgba(47, 45, 41, .78) 0 1.1px, transparent 1.5px),
+    linear-gradient(180deg, rgba(126, 119, 106, .78) 0%, rgba(91, 85, 76, .64) 48%, rgba(57, 54, 49, .32) 78%, transparent 100%);
+  background-size: 19px 17px, 23px 19px, 29px 21px, 17px 23px, 100% 100%;
+  background-position: var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, 0 0;
+  box-shadow: inset 0 2px 3px rgba(239, 229, 209, .05);
+}
+
+.ballast::before {
+  top: 5px;
+  bottom: 3px;
+  opacity: .62;
+}
+
+.ballast::after {
+  bottom: 0;
+  height: 5px;
+  opacity: .46;
+}
+
+/* Show more of each timber's top plane. The physical 15px face and 32px pitch
+   remain untouched; only the camera foreshortening is relaxed. */
+.sleepers {
+  height: 44px;
+  bottom: calc(var(--rail-contact-plane) - 18px);
+  transform: translate3d(var(--track-x), 0, 0) skewX(-6deg) perspective(960px) rotateX(30deg);
+  filter: saturate(.9) brightness(1.08);
+}
+
+.sleepers::before {
+  height: 6px;
+  opacity: .82;
+}
+
+/* A rail head should read as one steel section, not several stacked bars. */
+.rail {
+  background:
+    linear-gradient(
+      180deg,
+      #d5d2c9 0 20%,
+      #8b877e 21% 35%,
+      #5a4a3e 36% 69%,
+      #302922 70% 84%,
+      #1b1a19 85% 100%
+    );
+}
+
+.rail::before {
+  height: 1px;
+  background: rgba(238, 234, 219, .5);
+}
+
+.rail::after {
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(20, 18, 17, .66);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .25);
+}
+
+.rail-near {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .34);
+}
+
+/* Slightly stronger perspective separation makes both rails legible without
+   changing the near-rail tire contact plane. */
+.rail-far {
+  bottom: calc(var(--rail-contact-plane) + 13px);
+  opacity: .68;
+  filter: saturate(.72) brightness(.92);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .28);
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .ballast {
+    bottom: 10px;
+    height: 24px;
+  }
+
+  .sleepers {
+    height: 36px;
+    transform: translate3d(var(--track-x), 0, 0) skewX(-5deg) perspective(760px) rotateX(38deg);
+  }
+
+  .rail-far {
+    bottom: calc(var(--rail-contact-plane) + 10px);
+  }
+}
