@@ -24,8 +24,10 @@ test("generated steam loops avoid click-like sample discontinuities", async () =
   for (const filename of loops) {
     const buffer = await readFile(new URL(`../public/assets/audio/${filename}`, import.meta.url));
     const samples = decodePcm16(buffer);
-    const deltas = samples.slice(1).map((sample, index) => Math.abs(sample - samples[index]));
-    const maximumDelta = Math.max(...deltas);
+    let maximumDelta = 0;
+    for (let index = 1; index < samples.length; index += 1) {
+      maximumDelta = Math.max(maximumDelta, Math.abs(samples[index] - samples[index - 1]));
+    }
     assert.ok(maximumDelta < 2_500, `${filename} has a click-like adjacent-sample jump of ${maximumDelta}`);
   }
 });
@@ -35,7 +37,7 @@ test("generated loop seams fade smoothly without silencing the useful signal", a
     const buffer = await readFile(new URL(`../public/assets/audio/${filename}`, import.meta.url));
     const samples = decodePcm16(buffer);
     const edge = [...samples.slice(0, 128), ...samples.slice(-128)];
-    const edgePeak = Math.max(...edge.map(Math.abs));
+    const edgePeak = edge.reduce((peak, sample) => Math.max(peak, Math.abs(sample)), 0);
     const meanAbsolute = samples.reduce((sum, sample) => sum + Math.abs(sample), 0) / samples.length;
 
     assert.ok(edgePeak < 300, `${filename} loop seam peak is too abrupt: ${edgePeak}`);
