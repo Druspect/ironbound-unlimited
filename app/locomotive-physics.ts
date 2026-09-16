@@ -28,6 +28,7 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
   safetySpeedFraction: 0.1,
   minimumSafetyLockSeconds: 18,
   highThrottleThreshold: 82,
+  startingAdhesionFadeSpeedMph: 12,
   accelerationTimeConstant: 2.7,
   decelerationTimeConstant: 7.4,
   serviceBrakeTimeConstant: 2.9,
@@ -39,6 +40,21 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
+
+/**
+ * Starting tractive effort is adhesion-limited. Engine-specific adhesion has
+ * its strongest effect while lifting a consist from rest, then fades smoothly
+ * to neutral by 12 MPH once wheel/rail grip is no longer the dominant launch
+ * constraint. This models the traction benefit that sanding supports without
+ * turning the sander into a separate arcade control or changing line speed.
+ */
+export function startingAdhesionMultiplier(speedMph: number, adhesionFactor = 1) {
+  const adhesion = clamp(adhesionFactor, .75, 1.25);
+  const progress = clamp(speedMph / LOCOMOTIVE_MODEL.startingAdhesionFadeSpeedMph, 0, 1);
+  const smoothProgress = progress * progress * (3 - 2 * progress);
+  const lowSpeedWeight = 1 - smoothProgress;
+  return 1 + (adhesion - 1) * lowSpeedWeight;
+}
 
 /** Fast valve response; pressure and train speed still change continuously. */
 export function advanceBrakePressure(current: number, engaged: boolean, elapsedSeconds: number) {
@@ -170,8 +186,9 @@ export function advanceLocomotive(
   const brakeResponseFactor = clamp(configuration.brakeResponseFactor ?? 1, .8, 1.7);
   const throttleResponseFactor = clamp(configuration.throttleResponseFactor ?? 1, .65, 1.35);
   const brakeRiggingFactor = clamp(configuration.brakeRiggingFactor ?? 1, .7, 1.3);
+  const launchAdhesion = startingAdhesionMultiplier(state.speed, configuration.adhesionFactor);
   const speedTime = targetSpeed >= state.speed
-    ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor)
+    ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor * launchAdhesion)
     : LOCOMOTIVE_MODEL.decelerationTimeConstant +
       (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakeResponseFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
   const speedBlend = 1 - Math.exp(-dt / speedTime);
