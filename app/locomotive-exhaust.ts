@@ -22,8 +22,18 @@ export type ExhaustState = {
 export const MAX_EXHAUST_PARTICLES = 32;
 export const CYLINDER_CLEARING_SPEED_MPH = 8;
 export const CYLINDER_CLEARING_MINIMUM_LOAD = .12;
+/**
+ * page.tsx feeds exhaust motion from the same calibrated rail travel used to
+ * rotate the drivers. Keep this value synchronized with WHEEL_TRAVEL_CALIBRATION;
+ * the contract test deliberately fails if either side drifts.
+ */
+export const EXHAUST_TRAVEL_CALIBRATION = 6.7;
 export const createExhaustState = (): ExhaustState => ({ particles: [], previousTravel: null, beats: 0, idle: 0, seed: 17 });
 export const createExhaustMotion = (): ExhaustMotion => ({ travel: 0, driverRadius: 40, speed: 0, load: .5, paused: true, reducedMotion: false, beatsPerRevolution: 4 });
+
+export function routeTravelFromExhaustMotion(travel: number) {
+  return Math.max(0, Number.isFinite(travel) ? travel : 0) / EXHAUST_TRAVEL_CALIBRATION;
+}
 
 /**
  * Cylinder cocks are represented only during a powered low-speed departure.
