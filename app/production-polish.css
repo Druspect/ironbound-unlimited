@@ -143,19 +143,16 @@
   100% { opacity: 0; transform: translate(-38%, 34%) scale(1.22); }
 }
 
-/* Automatic sanding is a mechanical launch aid, not a dust cloud. Two narrow
-   streams fall from the sand pipes toward the rail immediately ahead of the
-   powered wheelset. The renderer supplies --sanding-intensity from the same
-   adhesion model used by physics. This pseudo-element is presentation-only and
-   cannot alter any calibrated axle or rail coordinate. */
+/* Automatic sanding is a mechanical launch aid, not a dust cloud. The exhaust
+   effects component owns a dedicated child so this layer never collides with
+   the ::before pseudo-element reserved for undercarriage structural fill. */
 .engine-sprite-unit {
   --sander-x: 80%;
   --sander-y: 77%;
   --sanding-intensity: 0;
 }
 
-.engine-sprite-unit::before {
-  content: "";
+.automatic-sander {
   position: absolute;
   z-index: 5;
   left: var(--sander-x);
@@ -175,12 +172,12 @@
   filter: drop-shadow(0 1px 1px rgba(84, 56, 24, .36));
 }
 
-.engine-sprite-unit[data-sanding="true"]::before {
+.engine-sprite-unit[data-sanding="true"] .automatic-sander {
   opacity: clamp(.32, var(--sanding-intensity), .82);
   animation: production-sand-drop .18s linear infinite;
 }
 
-.engine-sprite-unit[data-wheel-slip="true"]::before {
+.engine-sprite-unit[data-wheel-slip="true"] .automatic-sander {
   filter: drop-shadow(0 1px 2px rgba(84, 56, 24, .5)) saturate(1.08);
 }
 
@@ -215,14 +212,14 @@
 /* Preserve event information for reduced-motion users without animating vapor
    or falling grit. The active sanding stream remains visible as a static cue. */
 .reduced-motion .engine-sprite-unit::after,
-.reduced-motion .engine-sprite-unit::before,
+.reduced-motion .automatic-sander,
 .reduced-motion .steam-vent {
   animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .engine-sprite-unit::after,
-  .engine-sprite-unit::before,
+  .automatic-sander,
   .steam-vent {
     animation: none !important;
   }
