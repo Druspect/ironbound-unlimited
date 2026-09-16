@@ -55,6 +55,16 @@
   animation: production-service-steam 2.4s ease-in-out infinite;
 }
 
+/* When live steam is first admitted below 8 MPH, the exhaust controller marks
+   the locomotive as cylinder-clearing. Reuse the low vent rather than adding a
+   generic smoke effect so the departure release stays near rail level and
+   visibly drives downward as condensate/cylinder-cock steam should. */
+.engine-sprite-tom-thumb[data-cylinder-clearing="true"] .steam-vent {
+  opacity: .62;
+  animation: production-cylinder-clearing 1.05s ease-out infinite;
+  filter: blur(4px) brightness(1.08);
+}
+
 .experience.is-overloaded .engine-sprite-tom-thumb .steam-vent {
   opacity: .82;
   animation: production-service-steam .72s ease-in-out infinite;
@@ -93,6 +103,12 @@
   animation: production-service-steam 2.4s ease-in-out infinite;
 }
 
+.engine-sprite-unit[data-cylinder-clearing="true"]:not(.engine-sprite-tom-thumb)::after {
+  opacity: .62;
+  animation: production-cylinder-clearing 1.05s ease-out infinite;
+  filter: blur(3.5px) brightness(1.06);
+}
+
 .experience.is-overloaded .engine-sprite-unit:not(.engine-sprite-tom-thumb)::after {
   opacity: .74;
   animation: production-service-steam .72s ease-in-out infinite;
@@ -119,6 +135,12 @@
   0%, 100% { transform: translate(-18%, -22%) scale(.68); }
   46% { transform: translate(-30%, 8%) scale(1.04); }
   70% { opacity: .18; }
+}
+
+@keyframes production-cylinder-clearing {
+  0% { opacity: .68; transform: translate(-12%, -18%) scale(.58); }
+  52% { opacity: .46; transform: translate(-24%, 12%) scale(.96); }
+  100% { opacity: 0; transform: translate(-38%, 34%) scale(1.22); }
 }
 
 /* In the permanent golden-hour scene a headlight lens may be visible, but a
