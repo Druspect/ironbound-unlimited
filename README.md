@@ -1,107 +1,154 @@
-# vinext-starter
+# Ironbound: Unlimited
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Ironbound: Unlimited is a cinematic browser steam-railway game focused on driving feel, locomotive identity, consist management, station work, and readable controls. The project is intentionally lightweight: gameplay runs client-side, assets are local, and historical data feeds the same operating profiles used by the simulation.
 
-## Prerequisites
+The game mixes documented locomotives with clearly labelled fictional or design-proxy equipment. Historical facts and modeled gameplay values are kept separate where necessary rather than presenting fiction as archival fact.
+
+## Current Game Systems
+
+- 12-locomotive steam roster with class-specific running gear and operating profiles
+- throttle, progressive train brake, grades, boiler load, heat, safety lock, fuel, and water
+- three-to-six-car passenger consists with mass-dependent acceleration, braking, resource use, and speed limits
+- station berthing, progressive servicing, rewards, and a four-station service requirement
+- locomotive store with sourced fact sheets and compatibility rules
+- passenger carriage liveries with one coherent paint scheme across the consist
+- selectable synthesized audio packs with engine-analogue metadata
+- automatic and manual camera modes
+- keyboard and pointer controls with compact-landscape and reduced-motion support
+- browser-side save migration for progression and configuration
+
+## Architecture
+
+The production application lives under `app/`.
+
+Key modules:
+
+- `app/page.tsx` — game orchestration, UI, station flow, save state, and scene composition
+- `app/engine-facts.ts` — sourced locomotive facts and provenance labels
+- `app/steam-operations.ts` — operating profiles, consist mass, fuel/water consumption, and station service
+- `app/locomotive-physics.ts` — throttle, braking, grade response, boiler load, heat, and safety behavior
+- `app/locomotive-catalog.ts` — fleet catalog and runtime sprite geometry
+- `app/locomotive-registration.json` — calibrated sprite/wheel registration data
+- `app/locomotive-exhaust.ts` — travel-driven exhaust particle timing
+- `app/engine-audio-profiles.ts` and `app/audio-packs.ts` — sound provenance and audio-pack behavior
+- `app/carriage-compatibility.ts` — era/family carriage compatibility and save migration
+- `app/train-geometry.ts` — consist/platform/camera layout calculations
+
+Visual corrections are split into focused CSS layers. `app/production-polish.css` is intentionally loaded last and may change presentation only; tests prevent it from redefining the calibrated wheel, rail, and train geometry.
+
+## Historical Accuracy Policy
+
+Documented locomotives should use a primary museum, railroad, preservation organization, or government source whenever a suitable source exists. A source-backed correction belongs in `app/engine-facts.ts`; because operating profiles derive from that file, corrected mass, capacity, service role, or speed data also changes gameplay where appropriate.
+
+The roster currently distinguishes:
+
+- `documented` — presented as a real locomotive identity
+- `documented-inspiration` — mechanically or visually grounded in a documented locomotive without claiming copied media artwork
+- `fictional-proxy` — an Ironbound design informed by period practice, not a historical identity
+
+Do not convert exceptional anecdotal or record speeds into normal operating limits. Do not label synthesized sound as an exact archival recording. Do not infer railroad ownership of generic carriage art unless the source data supports it.
+
+## Visual and Mechanical Invariants
+
+The following are treated as calibrated production geometry:
+
+- wheel arrangement and axle count
+- driver and truck hierarchy
+- wheel-to-rail contact plane
+- track gauge metadata and rail hierarchy
+- locomotive sprite scale and rail inset
+- consist/platform containment
+- carriage truck spacing
+
+Cosmetic work should not move these values without updating the corresponding contracts and browser geometry tests.
+
+## Development
+
+Prerequisites:
 
 - Node.js `>=22.13.0`
-- Linux with `flock`, `curl`, and GNU `timeout`
+- Linux with `flock`, `curl`, and GNU `timeout` for the bounded Sites helper scripts
 
-## Sites Lifecycle
+Install and run locally:
 
-The Sites lifecycle CLI runs the locked dependency install before returning this checkout. Edit the source under `app/`, then checkpoint when a coherent milestone is ready to inspect or share. The remote Sites builder runs `npm run build` against the pushed commit. Do not repeat install or build as a normal pre-checkpoint step.
-
-This starter does not use `wrangler.jsonc`.
-
-`install:ci` is intentionally a single, non-retrying `npm ci`. It refuses a concurrent install for the same project, consumes a matching image-seeded npm cache with `--prefer-offline` while retaining registry fallback for a missing cache object, otherwise downloads and verifies the complete vinext tarball recorded in `package-lock.json`, limits npm to one socket, and terminates a stalled install. `build` applies a short timeout. These helpers target Linux and use GNU `timeout`; they are not native macOS scripts.
-
-Scripts that need writable project-scoped home, npm, XDG, and temporary paths use `scripts/sites-env.sh`. The `dev` and `start` scripts honor the caller's runtime environment and keep Wrangler logs inside the checkout. The generated `.sites-runtime/` directory is disposable and ignored by Git.
-
-## Included Shape
-
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm ci
+npm run dev
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+Production-style checks:
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+Audio assets are generated from the checked-in deterministic generator:
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+```bash
+npm run assets:audio
+```
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+The project uses Vinext/Vite for the browser application and Cloudflare Sites-compatible build tooling. `.sites-runtime/` is disposable and ignored by Git.
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+## QA
 
-## Diagnostic Commands
+Static and simulation contracts live in `tests/`. Browser acceptance tests live in `qa/browser/` and run through GitHub Actions.
 
-- `npm run install:ci`: perform the one bounded lockfile install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: start the built Vinext application
-- `npm test`: build and verify the rendered development-preview metadata
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+Production gates cover, among other things:
 
-Use build commands for targeted diagnosis after a remote failure, not as part of the normal checkpoint path.
+- complete 12-engine fleet identity and Whyte notation
+- fact-sheet/operating-profile reconciliation
+- wheel and axle registration
+- locomotive-specific handling signatures
+- gradual braking and thermal safety behavior
+- consist mass effects
+- fuel/water and station-service boundaries
+- carriage compatibility and save migration
+- track gauge, rail hierarchy, wheel contact, and cab clearance
+- station platform containment
+- compact-landscape layout
+- locomotive headlight registration
+- undercarriage family treatment
+- carriage livery persistence
+- environment-normalized six-car performance budgets
 
-The timeout defaults can be overridden for a controlled canary with `SITES_INSTALL_TIMEOUT`, `SITES_INSTALL_KILL_AFTER`, `SITES_BUILD_TIMEOUT`, and `SITES_BUILD_KILL_AFTER`. A timeout fails the command; the helpers never retry an unchanged install or build.
+Browser runs retain fresh PNG/video/trace evidence for human review. Deterministic geometry and behavior are the automated pass/fail gates; binary screenshots are not self-approved as baselines in CI.
 
-## Learn More
+## Adding a Locomotive
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+A production locomotive is not complete until all of these agree:
+
+1. catalog entry in `app/locomotive-catalog.ts`
+2. sourced or explicitly proxy-labelled fact sheet in `app/engine-facts.ts`
+3. calibrated registration and sprite assets
+4. compatible carriage family assignment
+5. operating and audio provenance profiles
+6. identity/geometry/static contracts
+7. browser inspection at normal and compact landscape sizes
+
+Do not duplicate another locomotive's normalized silhouette or wheel layout merely to make an asset fit.
+
+## Adding or Changing Passenger Cars
+
+Car definitions live in `app/steam-operations.ts`. Compatibility rules live in `app/carriage-compatibility.ts`. Keep baggage/head-end placement and observation/rear placement semantics intact unless the consist model is deliberately redesigned.
+
+Passenger paint is a render-time livery system in `app/carriage-liveries.css`; avoid multiplying bitmap sets for color-only variants.
+
+## Branch and Deployment Model
+
+- `gpt/qa-hardening-six-pack` — active QA/production-hardening branch
+- `sites-source` — deployment source branch
+
+Production changes are validated on the QA branch first. `sites-source` should only be advanced when the QA branch is a clean fast-forward and a publish is intentionally requested.
+
+## Production Principles
+
+- fix visible errors instead of hiding them
+- prefer one authoritative data path over duplicate constants
+- keep historical claims sourced and narrowly worded
+- preserve an older player's readability and control clarity
+- avoid new dependencies for problems that can be solved with existing browser/platform capabilities
+- keep visual effects subordinate to the locomotive, track, and operating feedback
+- retain human-review evidence for graphics and audio because automated uniqueness is not the same as perceptual quality
