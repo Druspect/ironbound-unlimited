@@ -1,0 +1,69 @@
+/*
+ * Biome transition continuity
+ * ---------------------------
+ * Route tiles still advance exactly one viewport per tile. The visual canvas
+ * is extended only into the neighboring tile so biome changes have a broader
+ * crossfade instead of reading like a backdrop swap. World distance, station
+ * positions, track motion, and train geometry remain unchanged.
+ */
+
+.route-tile {
+  --biome-overlap: clamp(600px, 52vw, 760px);
+  --biome-feather: clamp(500px, 44vw, 640px);
+  flex-basis: calc(100vw + var(--biome-overlap));
+  margin-right: calc(-1 * var(--biome-overlap));
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    rgba(0, 0, 0, .08) 7%,
+    #000 var(--biome-feather),
+    #000 calc(100% - var(--biome-feather)),
+    rgba(0, 0, 0, .08) 93%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    rgba(0, 0, 0, .08) 7%,
+    #000 var(--biome-feather),
+    #000 calc(100% - var(--biome-feather)),
+    rgba(0, 0, 0, .08) 93%,
+    transparent 100%
+  );
+}
+
+.route-tile.first-tile {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(100% - var(--biome-feather)),
+    rgba(0, 0, 0, .08) 93%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(100% - var(--biome-feather)),
+    rgba(0, 0, 0, .08) 93%,
+    transparent 100%
+  );
+}
+
+/* The existing transition haze is driven by biomeMix. Broaden and soften it
+   so it conceals residual horizon mismatch without obscuring the scenery. */
+.biome-transition-haze {
+  inset: -3% -4%;
+  filter: blur(8px) saturate(.92);
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(214, 184, 139, .18), transparent 58%),
+    linear-gradient(90deg, rgba(217, 177, 125, .07), rgba(108, 127, 144, .22), rgba(217, 177, 125, .06));
+}
+
+/* Short landscape viewports cannot spare as much off-screen paint, but retain
+   a substantial feather so the transition still reads continuously. */
+@media (max-width: 980px) {
+  .route-tile {
+    --biome-overlap: clamp(420px, 58vw, 600px);
+    --biome-feather: clamp(350px, 48vw, 500px);
+  }
+}
