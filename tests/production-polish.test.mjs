@@ -30,6 +30,12 @@ test("low steam is event-driven instead of permanently venting", () => {
   assert.match(css, /\.experience\.is-overloaded\s+\.engine-sprite-unit:not\(\.engine-sprite-tom-thumb\)::after/);
 });
 
+test("departure cylinder clearing is fleet-wide, low-level, and drives downward", () => {
+  assert.match(css, /\.engine-sprite-tom-thumb\[data-cylinder-clearing="true"\]\s+\.steam-vent\s*\{[\s\S]*?production-cylinder-clearing/);
+  assert.match(css, /\.engine-sprite-unit\[data-cylinder-clearing="true"\]:not\(\.engine-sprite-tom-thumb\)::after\s*\{[\s\S]*?production-cylinder-clearing/);
+  assert.match(css, /@keyframes\s+production-cylinder-clearing\s*\{[\s\S]*?52%\s*\{[\s\S]*?translate\(-24%,\s*12%\)[\s\S]*?100%\s*\{[\s\S]*?translate\(-38%,\s*34%\)/);
+});
+
 test("production polish cannot move calibrated train or track geometry", () => {
   assert.doesNotMatch(css, /--rail-contact-plane|--engine-left|--engine-width|--car-width|\.running-wheel|\.rail-near|\.rail-far|\.track\s*\{/);
   assert.doesNotMatch(css, /\.engine-sprite-frame\s*\{[\s\S]*?(?:left|right|top|bottom|transform)\s*:/);
