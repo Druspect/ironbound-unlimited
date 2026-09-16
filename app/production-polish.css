@@ -11,6 +11,37 @@
   display: none;
 }
 
+/* CURRENT AREA already identifies the biome at the top of the scene. Repeating
+   the same name in a second terrain card adds HUD clutter and steals scenery. */
+.right-hud .biome-card {
+  display: none;
+}
+
+/* Keep camera choice available for the requested zoom-in/out behavior, but make
+   all four existing modes readable for an older player instead of tiny icons. */
+.zoom-card {
+  padding: 10px 9px 9px;
+}
+
+.zoom-card > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.zoom-card button {
+  min-height: 42px;
+  padding: 7px 4px 6px;
+  font-size: 17px;
+}
+
+.zoom-card button small {
+  margin-top: 4px;
+  font-size: 9.5px;
+  line-height: 1.1;
+  letter-spacing: .045em;
+}
+
 /* The starter used to vent a small steam cloud continuously. Keep that effect
    event-driven instead: cylinder/service steam is plausible while stopped for
    service and a stronger release is appropriate during a safety event. */
