@@ -32,7 +32,6 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
 
     const engineId = canvas.closest<HTMLElement>("[data-engine-sprite]")?.dataset.engineSprite ?? "tom-thumb";
     const audioProfile = engineAudioProfileFor(engineId);
-    motion.current.beatsPerRevolution = audioProfile.beatsPerDriverRevolution;
     canvas.dataset.exhaustCharacter = audioProfile.exhaustCharacter;
     canvas.dataset.exhaustBeatsPerRevolution = String(audioProfile.beatsPerDriverRevolution);
 
@@ -59,9 +58,12 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
     let previous = performance.now();
 
     const draw = (now: number) => {
-      motion.current.beatsPerRevolution = audioProfile.beatsPerDriverRevolution;
-      stepExhaust(state, motion.current, (now - previous) / 1000);
-      const beatEvents = stepExhaustAudio(audioState, motion.current, audioProfile.beatsPerDriverRevolution);
+      const currentMotion: ExhaustMotion = {
+        ...motion.current,
+        beatsPerRevolution: audioProfile.beatsPerDriverRevolution,
+      };
+      stepExhaust(state, currentMotion, (now - previous) / 1000);
+      const beatEvents = stepExhaustAudio(audioState, currentMotion, audioProfile.beatsPerDriverRevolution);
       if (beatEvents > 0) {
         mechanicalEvents += beatEvents;
         canvas.dataset.exhaustAudioEvents = String(mechanicalEvents);
@@ -76,7 +78,7 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
             voice.pause();
             voice.currentTime = 0;
             voice.playbackRate = 1;
-            voice.volume = exhaustBeatGain(audioProfile, motion.current);
+            voice.volume = exhaustBeatGain(audioProfile, currentMotion);
             void voice.play().catch(() => undefined);
           }
         }
