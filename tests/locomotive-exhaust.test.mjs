@@ -1,8 +1,30 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createExhaustState, createExhaustMotion, stepExhaust, MAX_EXHAUST_PARTICLES } from "../app/locomotive-exhaust.ts";
+import {
+  createExhaustState,
+  createExhaustMotion,
+  stepExhaust,
+  isCylinderClearing,
+  MAX_EXHAUST_PARTICLES,
+  CYLINDER_CLEARING_SPEED_MPH,
+  CYLINDER_CLEARING_MINIMUM_LOAD,
+} from "../app/locomotive-exhaust.ts";
 
 const running = () => ({ ...createExhaustMotion(), paused: false, speed: 40, driverRadius: 30 });
+
+test("cylinder clearing only exists under live steam below eight MPH", () => {
+  const departure = {
+    ...createExhaustMotion(),
+    paused: false,
+    speed: 0,
+    load: CYLINDER_CLEARING_MINIMUM_LOAD,
+  };
+  assert.equal(isCylinderClearing(departure), true);
+  assert.equal(isCylinderClearing({ ...departure, speed: CYLINDER_CLEARING_SPEED_MPH - .001 }), true);
+  assert.equal(isCylinderClearing({ ...departure, speed: CYLINDER_CLEARING_SPEED_MPH }), false);
+  assert.equal(isCylinderClearing({ ...departure, load: CYLINDER_CLEARING_MINIMUM_LOAD - .001 }), false);
+  assert.equal(isCylinderClearing({ ...departure, paused: true }), false);
+});
 
 test("puffs start at the stack tip, not a generic engine offset", () => {
   const state = createExhaustState();
