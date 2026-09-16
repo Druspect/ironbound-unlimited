@@ -1,0 +1,90 @@
+/*
+ * Fleet undercarriage reconciliation
+ * ---------------------------------
+ * Axles, wheel diameters, rods and rail contact are already registered in the
+ * fixed sprite sheets. This layer only restores the dark structural mass that
+ * should be visible through transparent shell gaps. Nothing here moves a tire,
+ * changes engine scale, or alters the rail plane.
+ *
+ * Families:
+ *   rigid road      Southern 4501, PRR 1361, NKP 765, ATSF 3751,
+ *                   N&W 611, UP 844, Polar Express 1225
+ *   articulated     N&W 1218, Challenger 3985, Big Boy 4014
+ *   heritage light  The Flyer 1907
+ * Ironbound No. 1 keeps its dedicated starter reconciliation layer.
+ */
+
+/* Keep the structural fill behind the baked wheel/rod artwork. */
+.engine-sprite-frame {
+  z-index: 2;
+}
+
+.engine-sprite-unit:not(.engine-sprite-tom-thumb)::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  opacity: .84;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .58));
+}
+
+/* A conventional rigid locomotive has a continuous main frame over the
+   powered wheelbase and a separate, lighter tender frame. The gradients are
+   deliberately low-contrast: they fill daylight without painting over rods. */
+.engine-sprite-southern-4501::before,
+.engine-sprite-prr-1361::before,
+.engine-sprite-nkp-765::before,
+.engine-sprite-atsf-3751::before,
+.engine-sprite-nw-611::before,
+.engine-sprite-up-844::before,
+.engine-sprite-polar-express-1225::before {
+  background:
+    linear-gradient(180deg, rgba(68, 70, 69, .88), rgba(19, 22, 22, .96)) 3% 80% / 29% 6% no-repeat,
+    linear-gradient(180deg, rgba(77, 79, 77, .9), rgba(17, 20, 20, .98)) 35% 77% / 62% 7% no-repeat,
+    repeating-linear-gradient(90deg, rgba(20, 23, 23, .72) 0 11px, rgba(73, 75, 72, .56) 11px 14px, rgba(20, 23, 23, .72) 14px 25px) 35% 83% / 62% 5% no-repeat;
+}
+
+/* The Atlantic is visibly lighter than the later road locomotives. Its frame
+   stays shallow and open rather than receiving the heavy modern spine. */
+.engine-sprite-the-flyer-1907::before {
+  opacity: .72;
+  background:
+    linear-gradient(180deg, rgba(82, 74, 62, .8), rgba(30, 27, 23, .94)) 4% 80% / 28% 5% no-repeat,
+    linear-gradient(180deg, rgba(73, 67, 58, .84), rgba(24, 23, 21, .96)) 36% 79% / 59% 5.5% no-repeat;
+}
+
+/* Articulated locomotives are two powered engine beds under one boiler. Never
+   bridge them with one rigid slab: the center break and pin are intentional. */
+.engine-sprite-nw-1218::before,
+.engine-sprite-challenger-3985::before,
+.engine-sprite-big-boy-4014::before {
+  opacity: .88;
+  background:
+    linear-gradient(180deg, rgba(67, 69, 68, .84), rgba(18, 21, 21, .96)) 3% 80% / 28% 6% no-repeat,
+    linear-gradient(180deg, rgba(76, 78, 76, .92), rgba(16, 19, 19, .99)) 34% 78% / 28% 7% no-repeat,
+    radial-gradient(circle, rgba(126, 121, 104, .9) 0 22%, rgba(39, 42, 41, .96) 24% 58%, transparent 61%) 64% 81% / 13px 13px no-repeat,
+    linear-gradient(180deg, rgba(76, 78, 76, .92), rgba(16, 19, 19, .99)) 67% 78% / 30% 7% no-repeat,
+    repeating-linear-gradient(90deg, rgba(20, 23, 23, .64) 0 10px, rgba(74, 76, 74, .5) 10px 13px, rgba(20, 23, 23, .64) 13px 23px) 34% 84% / 28% 4.5% no-repeat,
+    repeating-linear-gradient(90deg, rgba(20, 23, 23, .64) 0 10px, rgba(74, 76, 74, .5) 10px 13px, rgba(20, 23, 23, .64) 13px 23px) 67% 84% / 30% 4.5% no-repeat;
+}
+
+/* Big Boy's longer drawbar is intentional. Keep its tender frame independent
+   so the existing coupling extension remains visible rather than becoming a
+   solid bridge. */
+.engine-sprite-big-boy-4014::before {
+  background:
+    linear-gradient(180deg, rgba(67, 69, 68, .84), rgba(18, 21, 21, .96)) 2% 81% / 27% 6% no-repeat,
+    linear-gradient(180deg, rgba(76, 78, 76, .92), rgba(16, 19, 19, .99)) 36% 78% / 25% 7% no-repeat,
+    radial-gradient(circle, rgba(126, 121, 104, .9) 0 22%, rgba(39, 42, 41, .96) 24% 58%, transparent 61%) 63.5% 81% / 13px 13px no-repeat,
+    linear-gradient(180deg, rgba(76, 78, 76, .92), rgba(16, 19, 19, .99)) 66% 78% / 30% 7% no-repeat,
+    repeating-linear-gradient(90deg, rgba(20, 23, 23, .64) 0 10px, rgba(74, 76, 74, .5) 10px 13px, rgba(20, 23, 23, .64) 13px 23px) 36% 84% / 25% 4.5% no-repeat,
+    repeating-linear-gradient(90deg, rgba(20, 23, 23, .64) 0 10px, rgba(74, 76, 74, .5) 10px 13px, rgba(20, 23, 23, .64) 13px 23px) 66% 84% / 30% 4.5% no-repeat;
+}
+
+/* Do not let the reconciliation turn into a heavy black bar on short screens. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .engine-sprite-unit:not(.engine-sprite-tom-thumb)::before {
+    opacity: .74;
+  }
+}
