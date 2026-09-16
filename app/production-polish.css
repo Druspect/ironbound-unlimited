@@ -143,20 +143,86 @@
   100% { opacity: 0; transform: translate(-38%, 34%) scale(1.22); }
 }
 
+/* Automatic sanding is a mechanical launch aid, not a dust cloud. Two narrow
+   streams fall from the sand pipes toward the rail immediately ahead of the
+   powered wheelset. The renderer supplies --sanding-intensity from the same
+   adhesion model used by physics. This pseudo-element is presentation-only and
+   cannot alter any calibrated axle or rail coordinate. */
+.engine-sprite-unit {
+  --sander-x: 80%;
+  --sander-y: 77%;
+  --sanding-intensity: 0;
+}
+
+.engine-sprite-unit::before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  left: var(--sander-x);
+  top: var(--sander-y);
+  width: 48px;
+  height: 38px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -8%);
+  transform-origin: 50% 0;
+  background:
+    linear-gradient(104deg, transparent 0 28%, rgba(211, 179, 119, .15) 31%, rgba(218, 185, 124, .88) 36% 39%, rgba(180, 145, 89, .42) 43%, transparent 48%),
+    linear-gradient(76deg, transparent 0 53%, rgba(211, 179, 119, .12) 56%, rgba(218, 185, 124, .82) 61% 64%, rgba(180, 145, 89, .38) 68%, transparent 73%),
+    radial-gradient(circle at 36% 82%, rgba(218, 185, 124, .66) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 64% 91%, rgba(199, 163, 104, .55) 0 1px, transparent 1.7px);
+  background-size: 100% 100%, 100% 100%, 11px 9px, 13px 10px;
+  filter: drop-shadow(0 1px 1px rgba(84, 56, 24, .36));
+}
+
+.engine-sprite-unit[data-sanding="true"]::before {
+  opacity: clamp(.32, var(--sanding-intensity), .82);
+  animation: production-sand-drop .18s linear infinite;
+}
+
+.engine-sprite-unit[data-wheel-slip="true"]::before {
+  filter: drop-shadow(0 1px 2px rgba(84, 56, 24, .5)) saturate(1.08);
+}
+
+.engine-sprite-tom-thumb {
+  --sander-x: 73%;
+  --sander-y: 78%;
+}
+
+.engine-sprite-nw-1218,
+.engine-sprite-challenger-3985,
+.engine-sprite-big-boy-4014 {
+  --sander-x: 86%;
+  --sander-y: 80%;
+}
+
+.engine-sprite-the-flyer-1907 {
+  --sander-x: 79%;
+  --sander-y: 75%;
+}
+
+@keyframes production-sand-drop {
+  0% { background-position: 0 0, 0 0, 0 0, 0 0; transform: translate(-50%, -8%); }
+  100% { background-position: 0 0, 0 0, 0 9px, 0 10px; transform: translate(-50%, -5%); }
+}
+
 /* In the permanent golden-hour scene a headlight lens may be visible, but a
    strong volumetric cone should not read like a night-driving spotlight. */
 .phase-golden .engine-sprite-unit {
   --headlight-phase: .24;
 }
 
-/* Preserve event information for reduced-motion users without animating vapor. */
+/* Preserve event information for reduced-motion users without animating vapor
+   or falling grit. The active sanding stream remains visible as a static cue. */
 .reduced-motion .engine-sprite-unit::after,
+.reduced-motion .engine-sprite-unit::before,
 .reduced-motion .steam-vent {
   animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .engine-sprite-unit::after,
+  .engine-sprite-unit::before,
   .steam-vent {
     animation: none !important;
   }
