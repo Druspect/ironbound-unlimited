@@ -13,39 +13,84 @@ function randomFactory(seed) {
   };
 }
 
-function pulse(time, cadence, width = 0.075) {
-  const phase = (time * cadence) % 1;
-  return Math.exp(-phase / width);
+/*
+ * A steam beat must begin and end near zero. The old exponential pulse jumped
+ * from its decayed tail directly back to 1 at every cadence boundary, which
+ * created the click/snap that was audible in the original packs.
+ */
+function eventEnvelope(time, cadence, attackSeconds = 0.024, decaySeconds = 0.17, offsetSeconds = 0) {
+  const period = 1 / cadence;
+  const shifted = time + offsetSeconds;
+  const phaseSeconds = ((shifted % period) + period) % period;
+  const attack = 1 - Math.exp(-phaseSeconds / Math.max(0.001, attackSeconds));
+  const decay = Math.exp(-phaseSeconds / Math.max(0.001, decaySeconds));
+  return attack * decay;
+}
+
+function smoothStep(value) {
+  const clamped = Math.max(0, Math.min(1, value));
+  return clamped * clamped * (3 - 2 * clamped);
 }
 
 function renderPack(kind) {
   const samples = new Int16Array(frames);
   const noise = randomFactory(0x1b0a5d + kind * 1907);
-  let filteredNoise = 0;
+  let softNoise = 0;
+  let windNoise = 0;
+
   for (let index = 0; index < frames; index += 1) {
     const time = index / sampleRate;
     const rawNoise = noise();
-    filteredNoise = filteredNoise * 0.985 + rawNoise * 0.015;
+    softNoise = softNoise * 0.94 + rawNoise * 0.06;
+    windNoise = windNoise * 0.992 + rawNoise * 0.008;
     let value = 0;
 
     if (kind === 0) {
-      const chuff = pulse(time, 2.4) * (Math.sin(time * Math.PI * 2 * 72) * 0.55 + rawNoise * 0.28);
-      const railJoint = pulse(time + 0.02, 1.2, 0.013) * Math.sin(time * Math.PI * 2 * 690) * 0.12;
-      value = chuff * 0.48 + railJoint + filteredNoise * 0.32;
+      // Warm four-beat road exhaust: low mechanical body plus broad steam hiss.
+      const envelope = eventEnvelope(time, 2.4, 0.026, 0.18);
+      const exhaustBody = Math.sin(time * Math.PI * 2 * 68) * 0.42 +
+        Math.sin(time * Math.PI * 2 * 104) * 0.12 + softNoise * 0.34;
+      const railEnvelope = eventEnvelope(time, 1.2, 0.009, 0.055, 0.03);
+      const railJoint = railEnvelope * Math.sin(time * Math.PI * 2 * 360) * 0.045;
+      value = envelope * exhaustBody * 0.58 + railJoint + windNoise * 0.12;
     } else if (kind === 1) {
-      const direct = pulse(time, 1.82) * (Math.sin(time * Math.PI * 2 * 54) * 0.62 + rawNoise * 0.23);
-      const echo = pulse(Math.max(0, time - 0.34), 1.82, 0.12) * Math.sin(time * Math.PI * 2 * 49) * 0.19;
-      const joint = pulse(time, 0.91, 0.014) * Math.sin(time * Math.PI * 2 * 510) * 0.15;
-      value = direct * 0.52 + echo + joint + filteredNoise * 0.25;
+      // Heavy articulated analogue: slower, deeper beat with a soft valley echo.
+      const directEnvelope = eventEnvelope(time, 1.82, 0.032, 0.24);
+      const echoEnvelope = eventEnvelope(time, 1.82, 0.045, 0.31, -0.31);
+      const direct = directEnvelope * (
+        Math.sin(time * Math.PI * 2 * 49) * 0.48 +
+        Math.sin(time * Math.PI * 2 * 78) * 0.16 + softNoise * 0.29
+      );
+      const echo = echoEnvelope * (
+        Math.sin(time * Math.PI * 2 * 43) * 0.16 + windNoise * 0.08
+      );
+      const railEnvelope = eventEnvelope(time, 0.91, 0.012, 0.07, 0.07);
+      const railJoint = railEnvelope * Math.sin(time * Math.PI * 2 * 285) * 0.04;
+      value = direct * 0.63 + echo + railJoint + windNoise * 0.10;
     } else {
-      const chuff = pulse(time, 2.05, 0.11) * (Math.sin(time * Math.PI * 2 * 61) * 0.35 + rawNoise * 0.14);
-      const wind = filteredNoise * 0.62 + Math.sin(time * Math.PI * 2 * 0.17) * filteredNoise * 0.18;
-      const bellEnvelope = Math.max(0, 1 - ((time + 8) % 10) / 1.8);
-      const bell = Math.sin(time * Math.PI * 2 * 784) * bellEnvelope * 0.07;
-      value = chuff * 0.45 + wind * 0.33 + bell;
+      // Winter excursion analogue: muted exhaust, moving air, and a distant bell.
+      const envelope = eventEnvelope(time, 2.05, 0.035, 0.23);
+      const chuff = envelope * (
+        Math.sin(time * Math.PI * 2 * 57) * 0.30 + softNoise * 0.19
+      );
+      const wind = windNoise * 0.52 + Math.sin(time * Math.PI * 2 * 0.17) * windNoise * 0.12;
+      const bellEnvelope = eventEnvelope(time, 0.1, 0.025, 1.0, -2.0);
+      const bell = (
+        Math.sin(time * Math.PI * 2 * 784) * 0.052 +
+        Math.sin(time * Math.PI * 2 * 1176) * 0.018
+      ) * bellEnvelope;
+      value = chuff * 0.58 + wind * 0.24 + bell;
     }
 
-    const fade = Math.min(1, index / 900, (frames - index - 1) / 900);
+    // Gentle saturation prevents isolated peaks from becoming sharp digital
+    // transients while retaining the low-frequency body of the exhaust beat.
+    value = Math.tanh(value * 1.15) * 0.82;
+
+    // Silence the file seam with a smooth, short crossfade-shaped edge so the
+    // HTMLAudioElement can loop without a discontinuity at the ten-second wrap.
+    const edgeSamples = Math.round(sampleRate * 0.08);
+    const edge = Math.min(1, index / edgeSamples, (frames - index - 1) / edgeSamples);
+    const fade = smoothStep(edge);
     samples[index] = Math.round(Math.max(-1, Math.min(1, value * fade)) * 32767);
   }
   return samples;
