@@ -52,11 +52,15 @@
   filter: var(--carriage-livery-filter) brightness(1.08) drop-shadow(0 0 8px rgba(237, 190, 105, .15));
 }
 
+/* This control is global so the paint selection persists outside the store,
+   but it only becomes visible in the carriage department. Keep it below the
+   sticky department tabs and make the decorative shell click-through so it
+   can never trap navigation or carriage controls behind it. */
 .carriage-livery-control {
   display: none;
   position: fixed;
   z-index: 180;
-  top: 158px;
+  top: 248px;
   right: max(36px, calc((100vw - min(1180px, 96vw)) / 2 + 26px));
   width: min(240px, 42vw);
   gap: 7px;
@@ -64,6 +68,7 @@
   border: 1px solid rgba(210, 155, 74, .48);
   background: rgba(8, 10, 11, .96);
   box-shadow: 0 12px 30px rgba(0, 0, 0, .46);
+  pointer-events: none;
 }
 
 body:has(#carriage-store-heading) .carriage-livery-control {
@@ -101,6 +106,7 @@ body:has(#carriage-store-heading) .carriage-livery-control {
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .carriage-livery-control small {
@@ -111,7 +117,7 @@ body:has(#carriage-store-heading) .carriage-livery-control {
 
 @media (max-width: 760px), (orientation: landscape) and (max-height: 560px) {
   .carriage-livery-control {
-    top: 116px;
+    top: 186px;
     right: 18px;
     width: min(220px, 48vw);
     padding: 8px 10px;
