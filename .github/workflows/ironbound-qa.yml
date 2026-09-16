@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
-      - gpt/audio-ground-truth
   pull_request:
     branches:
       - sites-source
