@@ -6,6 +6,7 @@ export type ExhaustMotion = {
   load: number;
   paused: boolean;
   reducedMotion: boolean;
+  beatsPerRevolution: number;
 };
 export type ExhaustParticle = {
   age: number; life: number; x: number; y: number;
@@ -20,7 +21,7 @@ export type ExhaustState = {
 };
 export const MAX_EXHAUST_PARTICLES = 32;
 export const createExhaustState = (): ExhaustState => ({ particles: [], previousTravel: null, beats: 0, idle: 0, seed: 17 });
-export const createExhaustMotion = (): ExhaustMotion => ({ travel: 0, driverRadius: 40, speed: 0, load: .5, paused: true, reducedMotion: false });
+export const createExhaustMotion = (): ExhaustMotion => ({ travel: 0, driverRadius: 40, speed: 0, load: .5, paused: true, reducedMotion: false, beatsPerRevolution: 4 });
 
 function random(state: ExhaustState) {
   state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;
@@ -39,8 +40,11 @@ export function stepExhaust(state: ExhaustState, motion: ExhaustMotion, elapsed:
     particle.y += particle.vy * dt;
   }
   state.particles = state.particles.filter((particle) => particle.age < particle.life);
-  // Four exhaust beats per driving-wheel revolution; reduced motion keeps two.
-  state.beats += deltaTravel / (2 * Math.PI * Math.max(1, motion.driverRadius)) * (gentle ? 2 : 4);
+  const registeredBeats = Math.max(1, motion.beatsPerRevolution || 4);
+  // Reduced-motion mode lowers visible particle density without changing the
+  // underlying mechanical cadence used by the audio scheduler.
+  const visualBeats = gentle ? Math.max(2, registeredBeats / 2) : registeredBeats;
+  state.beats += deltaTravel / (2 * Math.PI * Math.max(1, motion.driverRadius)) * visualBeats;
   const moving = motion.speed > 2;
   state.idle = moving ? 0 : state.idle + dt;
   let births = Math.floor(state.beats);
