@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LOCOMOTIVES, STARTER_LOCOMOTIVE_ID } from "../app/locomotive-catalog.ts";
-import { ACTIVE_LOCOMOTIVES, FLEET_REVIEW_UNLOCKED, canEquipLocomotive, resolveEquippedLocomotive, selectLocomotive } from "../app/fleet-access.ts";
+import { ACTIVE_LOCOMOTIVES, FLEET_REVIEW_UNLOCKED, canEquipLocomotive, isFleetReviewEnabled, resolveEquippedLocomotive, selectLocomotive } from "../app/fleet-access.ts";
 
 test("the complete twelve-engine fleet is present while public progression stays earned", () => {
   assert.equal(LOCOMOTIVES.length, 12);
@@ -16,6 +16,20 @@ test("the complete twelve-engine fleet is present while public progression stays
     assert.equal(selected.bonds, save.bonds);
     assert.deepEqual(selected.ownedEngines, save.ownedEngines);
     assert.equal(resolveEquippedLocomotive(engine.id, save.ownedEngines, true), engine.id);
+  }
+});
+
+test("session review query exposes every locomotive without granting ownership", () => {
+  assert.equal(isFleetReviewEnabled("?reviewFleet=1"), true);
+  assert.equal(isFleetReviewEnabled("?reviewFleet=0"), false);
+  assert.equal(isFleetReviewEnabled(""), false);
+
+  const save = { bonds: 0, ownedEngines: [STARTER_LOCOMOTIVE_ID], equippedEngine: STARTER_LOCOMOTIVE_ID };
+  for (const engine of ACTIVE_LOCOMOTIVES) {
+    const selected = selectLocomotive(save, engine.id, isFleetReviewEnabled("?reviewFleet=1"));
+    assert.equal(selected.equippedEngine, engine.id);
+    assert.equal(selected.bonds, 0, `${engine.id} review mode must not spend bonds`);
+    assert.deepEqual(selected.ownedEngines, [STARTER_LOCOMOTIVE_ID], `${engine.id} review mode must not grant permanent ownership`);
   }
 });
 
