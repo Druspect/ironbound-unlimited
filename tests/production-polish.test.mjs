@@ -16,6 +16,13 @@ test("running consist no longer carries floating arcade car labels", () => {
   assert.match(css, /\.scene\s+\.car-mark\s*\{[\s\S]*?display:\s*none/);
 });
 
+test("duplicate terrain HUD is removed while camera controls remain readable", () => {
+  assert.match(css, /\.right-hud\s+\.biome-card\s*\{[\s\S]*?display:\s*none/);
+  assert.match(css, /\.zoom-card\s*>\s*div\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,/);
+  assert.match(css, /\.zoom-card\s+button\s*\{[\s\S]*?min-height:\s*42px/);
+  assert.match(css, /\.zoom-card\s+button\s+small\s*\{[\s\S]*?font-size:\s*9\.5px/);
+});
+
 test("low steam is event-driven instead of permanently venting", () => {
   assert.match(css, /\.engine-sprite-tom-thumb\s+\.steam-vent\s*\{[\s\S]*?opacity:\s*0[\s\S]*?animation:\s*none/);
   assert.match(css, /\.train-wrap\.is-servicing\s+\.engine-sprite-tom-thumb\s+\.steam-vent/);
