@@ -36,12 +36,14 @@ test("departure cylinder clearing is fleet-wide, low-level, and drives downward"
   assert.match(css, /@keyframes\s+production-cylinder-clearing[\s\S]*?translate\(-38%,\s*34%\)/);
 });
 
-test("automatic sanding renders narrow rail-level streams without moving running gear", () => {
-  assert.match(css, /\.engine-sprite-unit\[data-sanding="true"\]::before\s*\{[\s\S]*?opacity:\s*clamp\(/);
+test("automatic sanding renders narrow rail-level streams without stealing the underframe pseudo", () => {
+  assert.match(css, /\.automatic-sander\s*\{[\s\S]*?width:\s*48px[\s\S]*?height:\s*38px/);
+  assert.match(css, /\.engine-sprite-unit\[data-sanding="true"\]\s+\.automatic-sander\s*\{[\s\S]*?opacity:\s*clamp\(/);
   assert.match(css, /@keyframes\s+production-sand-drop/);
   assert.match(css, /--sander-x:\s*86%/);
   assert.match(css, /--sander-y:\s*80%/);
-  assert.match(css, /\.engine-sprite-unit\[data-wheel-slip="true"\]::before/);
+  assert.match(css, /\.engine-sprite-unit\[data-wheel-slip="true"\]\s+\.automatic-sander/);
+  assert.doesNotMatch(css, /\.engine-sprite-unit(?::not\([^)]*\))?::before\s*\{/);
 });
 
 test("production polish cannot move calibrated train or track geometry", () => {
@@ -52,6 +54,6 @@ test("production polish cannot move calibrated train or track geometry", () => {
 test("daylight headlight treatment remains restrained and reduced motion remains supported", () => {
   assert.match(css, /\.phase-golden\s+\.engine-sprite-unit\s*\{[\s\S]*?--headlight-phase:\s*\.24/);
   assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
-  assert.match(css, /\.engine-sprite-unit::before/);
+  assert.match(css, /\.automatic-sander/);
   assert.match(css, /animation:\s*none\s*!important/);
 });
