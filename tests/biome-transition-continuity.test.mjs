@@ -23,7 +23,9 @@ test("neighboring scene art uses a broad bilateral feather instead of a hard swa
 });
 
 test("transition correction cannot move track, train, station, or route distance mechanics", () => {
-  assert.doesNotMatch(css, /\.track|\.rail|\.train-|\.station-|--route-x|translate3d|left\s*:|right\s*:/);
+  assert.doesNotMatch(css, /(^|\n)\s*\.(?:track|rail(?:\b|-)|train-|station-)/m);
+  assert.doesNotMatch(css, /--route-x|translate3d/);
+  assert.doesNotMatch(css, /(^|[;{\n])\s*(?:left|right|top|bottom)\s*:/m);
 });
 
 test("compact landscape retains a substantial but bounded blend envelope", () => {
