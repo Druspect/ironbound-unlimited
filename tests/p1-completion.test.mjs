@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { AUDIO_PACKS, DEFAULT_AUDIO_PACK, audioPackFor, isAudioPackId, soundscapeMix } from "../app/audio-packs.ts";
@@ -20,6 +20,7 @@ test("all three audio packs are unique, valid, and selectable", () => {
   for (const pack of AUDIO_PACKS) {
     assert.equal(audioPackFor(pack.id), pack);
     assert.ok(pack.baseVolume >= 0.25 && pack.baseVolume <= 0.4);
+    assert.ok(pack.speedPitchRange >= 0.03 && pack.speedPitchRange <= 0.1, `${pack.id} should preserve its natural timbre across speed`);
     assert.match(pack.loopAsset, /^\/assets\/audio\/[a-z-]+-loop\.wav$/);
   }
 });
@@ -34,24 +35,27 @@ test("audio mixing follows motion, work, service, and pause boundaries", () => {
     assert.ok(service.volume > idle.volume, `${pack.id} service ambience`);
     assert.ok(working.volume > idle.volume, `${pack.id} working volume`);
     assert.ok(highball.playbackRate > working.playbackRate, `${pack.id} speed pitch`);
-    assert.ok(highball.volume <= 0.5 && highball.playbackRate <= 1.1, `${pack.id} safe mix ceiling`);
+    assert.ok(highball.volume <= 0.5 && highball.playbackRate <= 1.05, `${pack.id} safe mix ceiling`);
+    assert.ok(idle.playbackRate >= 0.94, `${pack.id} should not be heavily pitch-shifted at low speed`);
     assert.equal(paused.volume, 0, `${pack.id} pause silence`);
   }
 });
 
-test("each generated soundscape is a distinct loopable PCM wave", async () => {
+test("each generated soundscape is a distinct long-form loopable PCM wave", async () => {
   const hashes = new Set();
   for (const pack of AUDIO_PACKS) {
     const file = new URL(`../public${pack.loopAsset}`, import.meta.url);
     const bytes = await readFile(file);
-    const info = await stat(file);
     assert.equal(bytes.toString("ascii", 0, 4), "RIFF");
     assert.equal(bytes.toString("ascii", 8, 12), "WAVE");
     assert.equal(bytes.readUInt16LE(20), 1, `${pack.id} PCM encoding`);
     assert.equal(bytes.readUInt16LE(22), 1, `${pack.id} mono channel`);
-    assert.equal(bytes.readUInt32LE(24), 22050, `${pack.id} sample rate`);
+    const sampleRate = bytes.readUInt32LE(24);
+    assert.equal(sampleRate, 22050, `${pack.id} sample rate`);
     assert.equal(bytes.readUInt16LE(34), 16, `${pack.id} bit depth`);
-    assert.ok(info.size > 400_000 && info.size < 500_000, `${pack.id} loop size ${info.size}`);
+    const dataBytes = bytes.readUInt32LE(40);
+    const seconds = dataBytes / 2 / sampleRate;
+    assert.ok(seconds >= 15 && seconds <= 17, `${pack.id} should use a long loop to make the seam infrequent: ${seconds.toFixed(2)}s`);
     hashes.add(createHash("sha256").update(bytes).digest("hex"));
   }
   assert.equal(hashes.size, AUDIO_PACKS.length, "each sound pack needs different source audio");
@@ -63,9 +67,9 @@ test("every station has original high-detail alpha-safe service artwork", async 
   for (const name of names) {
     const file = new URL(`../public/assets/stations/service/v1/${name}.webp`, import.meta.url);
     const bytes = await readFile(file);
-    const info = await stat(file);
-    assert.deepEqual(webpDimensions(bytes), { width: 1774, height: 887, alpha: true }, name);
-    assert.ok(info.size >= 200_000 && info.size <= 350_000, `${name} optimized size ${info.size}`);
+    const info = webpDimensions(bytes);
+    assert.deepEqual(info, { width: 1774, height: 887, alpha: true }, name);
+    assert.ok(bytes.length >= 200_000 && bytes.length <= 350_000, `${name} optimized size ${bytes.length}`);
     hashes.add(createHash("sha256").update(bytes).digest("hex"));
   }
   assert.equal(hashes.size, names.length, "station service scenes must not be recolors or duplicate files");
