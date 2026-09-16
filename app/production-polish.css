@@ -98,7 +98,10 @@
 
 /* Preserve event information for reduced-motion users without animating vapor. */
 .reduced-motion .engine-sprite-unit::after,
-.reduced-motion .steam-vent,
+.reduced-motion .steam-vent {
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .engine-sprite-unit::after,
   .steam-vent {
