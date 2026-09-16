@@ -20,8 +20,21 @@ export type ExhaustState = {
   seed: number;
 };
 export const MAX_EXHAUST_PARTICLES = 32;
+export const CYLINDER_CLEARING_SPEED_MPH = 8;
+export const CYLINDER_CLEARING_MINIMUM_LOAD = .12;
 export const createExhaustState = (): ExhaustState => ({ particles: [], previousTravel: null, beats: 0, idle: 0, seed: 17 });
 export const createExhaustMotion = (): ExhaustMotion => ({ travel: 0, driverRadius: 40, speed: 0, load: .5, paused: true, reducedMotion: false, beatsPerRevolution: 4 });
+
+/**
+ * Cylinder cocks are represented only during a powered low-speed departure.
+ * The effect disappears once the locomotive is rolling and never appears while
+ * paused or with the regulator effectively closed.
+ */
+export function isCylinderClearing(motion: Pick<ExhaustMotion, "speed" | "load" | "paused">) {
+  return !motion.paused &&
+    motion.load >= CYLINDER_CLEARING_MINIMUM_LOAD &&
+    motion.speed < CYLINDER_CLEARING_SPEED_MPH;
+}
 
 function random(state: ExhaustState) {
   state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;
