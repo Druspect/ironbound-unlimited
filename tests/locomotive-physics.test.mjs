@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   advanceBrakePressure,
   advanceLocomotive,
+  automaticSandingState,
   boilerEquilibrium,
   LOCOMOTIVE_MODEL,
   startingAdhesionMultiplier,
@@ -162,6 +163,27 @@ test("starting adhesion is strongest at rest and fades smoothly by twelve MPH", 
   assert.ok(lowAtSix < 1 && lowAtSix > .84);
   assert.equal(startingAdhesionMultiplier(LOCOMOTIVE_MODEL.startingAdhesionFadeSpeedMph, 1.12), 1);
   assert.equal(startingAdhesionMultiplier(40, .84), 1);
+});
+
+test("automatic sanding engages only under meaningful low-speed steam", () => {
+  const launch = automaticSandingState(0, 70, 0, 1);
+  assert.equal(launch.active, true);
+  assert.ok(launch.intensity > .5 && launch.intensity <= 1);
+  assert.ok(launch.tractionMultiplier > 1);
+
+  assert.equal(automaticSandingState(0, 45, 0, 1).active, false, "light regulator does not waste sand");
+  assert.equal(automaticSandingState(LOCOMOTIVE_MODEL.sandingCutoutSpeedMph, 100, 3, .84).active, false, "sanders cut out once the launch envelope ends");
+  assert.equal(automaticSandingState(25, 100, 3, .84).tractionMultiplier, 1, "line-speed physics cannot receive a sanding boost");
+});
+
+test("sanding reduces but does not erase wheel-slip risk on a hard uphill start", () => {
+  const difficult = automaticSandingState(0, 100, 3.5, .84);
+  const easy = automaticSandingState(0, 70, 0, 1.12);
+  assert.equal(difficult.active, true);
+  assert.ok(difficult.slipRisk > .9, "poor adhesion and full steam should approach the adhesion limit");
+  assert.ok(difficult.residualSlip > 0 && difficult.residualSlip < difficult.slipRisk, "sand mitigates rather than magically deletes slip");
+  assert.ok(difficult.tractionMultiplier > 1 && difficult.tractionMultiplier < 1.15, "sand boost stays bounded");
+  assert.equal(easy.slipRisk, 0, "a sure-footed moderate launch should not invent wheel slip");
 });
 
 test("adhesion changes launch traction without changing flat-road line speed", () => {
