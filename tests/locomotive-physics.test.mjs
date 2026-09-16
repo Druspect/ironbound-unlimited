@@ -6,6 +6,7 @@ import {
   advanceLocomotive,
   boilerEquilibrium,
   LOCOMOTIVE_MODEL,
+  startingAdhesionMultiplier,
   targetSpeedForThrottle,
 } from "../app/locomotive-physics.ts";
 
@@ -150,6 +151,48 @@ test("the safety lock caps demand at ten percent and cannot clear early", () => 
 test("climbing increases steam demand and reduces attainable speed", () => {
   assert.ok(boilerEquilibrium(70, false, 2.5) > boilerEquilibrium(70, false, -2.5));
   assert.ok(targetSpeedForThrottle(70, false, 2.5) < targetSpeedForThrottle(70, false, -2.5));
+});
+
+test("starting adhesion is strongest at rest and fades smoothly by twelve MPH", () => {
+  assert.equal(startingAdhesionMultiplier(0, 1.12), 1.12);
+  assert.equal(startingAdhesionMultiplier(0, .84), .84);
+  const highAtSix = startingAdhesionMultiplier(6, 1.12);
+  const lowAtSix = startingAdhesionMultiplier(6, .84);
+  assert.ok(highAtSix > 1 && highAtSix < 1.12);
+  assert.ok(lowAtSix < 1 && lowAtSix > .84);
+  assert.equal(startingAdhesionMultiplier(LOCOMOTIVE_MODEL.startingAdhesionFadeSpeedMph, 1.12), 1);
+  assert.equal(startingAdhesionMultiplier(40, .84), 1);
+});
+
+test("adhesion changes launch traction without changing flat-road line speed", () => {
+  const initial = { speed: 0, boilerLoad: 42, heat: 0, overloaded: false, safetyLockSeconds: 0, distance: 0 };
+  const launch = (adhesionFactor) => {
+    let state = initial;
+    for (let elapsed = 0; elapsed < .6; elapsed += .05) {
+      state = advanceLocomotive(state, 70, .05, 0, 0, {
+        maximumSpeed: 80,
+        accelerationFactor: .72,
+        throttleResponseFactor: .92,
+        adhesionFactor,
+      });
+    }
+    return state;
+  };
+
+  const sureFooted = launch(1.12);
+  const lightFooted = launch(.84);
+  assert.ok(sureFooted.speed > lightFooted.speed + .5, "better adhesion must lift the same heavy train more decisively from rest");
+
+  assert.equal(
+    targetSpeedForThrottle(70, false, 0, { maximumSpeed: 80, adhesionFactor: 1.12 }),
+    targetSpeedForThrottle(70, false, 0, { maximumSpeed: 80, adhesionFactor: .84 }),
+    "adhesion cannot become a hidden top-speed upgrade on level track",
+  );
+
+  const rolling = { ...initial, speed: 20 };
+  const highRolling = advanceLocomotive(rolling, 70, .1, 0, 0, { maximumSpeed: 80, adhesionFactor: 1.12 });
+  const lowRolling = advanceLocomotive(rolling, 70, .1, 0, 0, { maximumSpeed: 80, adhesionFactor: .84 });
+  assert.ok(Math.abs(highRolling.speed - lowRolling.speed) < 1e-10, "launch adhesion must be neutral once the train is rolling");
 });
 
 test("locomotive profiles set real speed ceilings and consist response", () => {
