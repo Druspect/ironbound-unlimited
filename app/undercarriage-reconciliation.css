@@ -25,7 +25,6 @@
   z-index: 0;
   inset: 0;
   pointer-events: none;
-  opacity: .84;
   filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .58));
 }
 
@@ -39,6 +38,7 @@
 .engine-sprite-nw-611::before,
 .engine-sprite-up-844::before,
 .engine-sprite-polar-express-1225::before {
+  opacity: .84;
   background:
     linear-gradient(180deg, rgba(68, 70, 69, .88), rgba(19, 22, 22, .96)) 3% 80% / 29% 6% no-repeat,
     linear-gradient(180deg, rgba(77, 79, 77, .9), rgba(17, 20, 20, .98)) 35% 77% / 62% 7% no-repeat,
