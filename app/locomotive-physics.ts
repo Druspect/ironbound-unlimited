@@ -18,6 +18,14 @@ export type LocomotivePhysicsConfiguration = {
   brakeRiggingFactor?: number;
 };
 
+export type AutomaticSandingState = {
+  active: boolean;
+  intensity: number;
+  slipRisk: number;
+  residualSlip: number;
+  tractionMultiplier: number;
+};
+
 export const LOCOMOTIVE_MODEL = Object.freeze({
   gradePercent: 0.8,
   maximumSpeed: 92,
@@ -29,6 +37,10 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
   minimumSafetyLockSeconds: 18,
   highThrottleThreshold: 82,
   startingAdhesionFadeSpeedMph: 12,
+  sandingCutoutSpeedMph: 10,
+  sandingThrottleThreshold: 52,
+  sandingMaximumTractionBoost: 0.14,
+  wheelSlipPenalty: 0.12,
   accelerationTimeConstant: 2.7,
   decelerationTimeConstant: 7.4,
   serviceBrakeTimeConstant: 2.9,
@@ -41,19 +53,63 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
+const smoothstep = (value: number) => {
+  const t = clamp(value, 0, 1);
+  return t * t * (3 - 2 * t);
+};
+
 /**
  * Starting tractive effort is adhesion-limited. Engine-specific adhesion has
  * its strongest effect while lifting a consist from rest, then fades smoothly
  * to neutral by 12 MPH once wheel/rail grip is no longer the dominant launch
- * constraint. This models the traction benefit that sanding supports without
- * turning the sander into a separate arcade control or changing line speed.
+ * constraint.
  */
 export function startingAdhesionMultiplier(speedMph: number, adhesionFactor = 1) {
   const adhesion = clamp(adhesionFactor, .75, 1.25);
   const progress = clamp(speedMph / LOCOMOTIVE_MODEL.startingAdhesionFadeSpeedMph, 0, 1);
-  const smoothProgress = progress * progress * (3 - 2 * progress);
-  const lowSpeedWeight = 1 - smoothProgress;
+  const lowSpeedWeight = 1 - smoothstep(progress);
   return 1 + (adhesion - 1) * lowSpeedWeight;
+}
+
+/**
+ * Steam locomotives use sand on the rail when a strong low-speed application
+ * approaches the available wheel/rail adhesion. The game handles that as an
+ * automatic engineer action instead of another cab button: substantial steam
+ * below 10 MPH opens the sanders, improving the launch while still leaving a
+ * bounded residual slip penalty when demand is extreme. The entire effect is
+ * gone at line speed, so sanding can never become a hidden top-speed upgrade.
+ */
+export function automaticSandingState(
+  speedMph: number,
+  throttle: number,
+  gradePercent = LOCOMOTIVE_MODEL.gradePercent,
+  adhesionFactor = 1,
+): AutomaticSandingState {
+  const speed = Math.max(0, speedMph);
+  const regulator = clamp(throttle, 0, 100);
+  const adhesion = clamp(adhesionFactor, .75, 1.25);
+  const speedProgress = clamp(speed / LOCOMOTIVE_MODEL.sandingCutoutSpeedMph, 0, 1);
+  const lowSpeedWeight = 1 - smoothstep(speedProgress);
+  const throttleDemand = clamp((regulator - 35) / 65, 0, 1);
+  const uphillDemand = 1 + clamp(gradePercent, 0, 3.5) * .08;
+  const demand = throttleDemand * lowSpeedWeight * uphillDemand;
+  const normalizedGrip = clamp((adhesion - .75) / .5, 0, 1);
+  const availableGrip = .52 + normalizedGrip * .28;
+  const slipRisk = clamp((demand - availableGrip) / .30, 0, 1);
+  const active = speed < LOCOMOTIVE_MODEL.sandingCutoutSpeedMph &&
+    regulator >= LOCOMOTIVE_MODEL.sandingThrottleThreshold &&
+    demand >= .30;
+  const intensity = active
+    ? clamp((.38 + demand * .42 + slipRisk * .30) * lowSpeedWeight, 0, 1)
+    : 0;
+  const residualSlip = active ? slipRisk * (1 - intensity * .72) : slipRisk;
+  const tractionMultiplier = Math.max(
+    .8,
+    (1 + intensity * LOCOMOTIVE_MODEL.sandingMaximumTractionBoost) *
+      (1 - residualSlip * LOCOMOTIVE_MODEL.wheelSlipPenalty),
+  );
+
+  return { active, intensity, slipRisk, residualSlip, tractionMultiplier };
 }
 
 /** Fast valve response; pressure and train speed still change continuously. */
@@ -186,7 +242,8 @@ export function advanceLocomotive(
   const brakeResponseFactor = clamp(configuration.brakeResponseFactor ?? 1, .8, 1.7);
   const throttleResponseFactor = clamp(configuration.throttleResponseFactor ?? 1, .65, 1.35);
   const brakeRiggingFactor = clamp(configuration.brakeRiggingFactor ?? 1, .7, 1.3);
-  const launchAdhesion = startingAdhesionMultiplier(state.speed, configuration.adhesionFactor);
+  const sanding = automaticSandingState(state.speed, throttle, gradePercent, configuration.adhesionFactor);
+  const launchAdhesion = startingAdhesionMultiplier(state.speed, configuration.adhesionFactor) * sanding.tractionMultiplier;
   const speedTime = targetSpeed >= state.speed
     ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor * launchAdhesion)
     : LOCOMOTIVE_MODEL.decelerationTimeConstant +
