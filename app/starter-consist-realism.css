@@ -1,17 +1,56 @@
 /*
  * Starter consist realism
  * -----------------------
- * Ironbound No. 1 uses the original separate tender body as a correction layer
- * over the flattened animation sheet. The registered wheel and rail geometry is
- * intentionally untouched: only the tender's visible body mass and the drawbar
- * continuity are corrected here.
+ * Ironbound No. 1 was authored from separate locomotive and tender components,
+ * but the flattened runtime sheet left too much visual drawbar space between
+ * them and made the tender much smaller than the adjoining passenger stock.
+ *
+ * Keep the registered vertical axle/rail geometry intact. The locomotive half
+ * moves toward the tender while a duplicated tender section offsets by the same
+ * amount in the opposite direction, so the tender remains coupled to the last
+ * passenger car and every tire keeps its existing rail contact height.
  */
 
+/* Close the excessive tender-to-locomotive drawbar gap. This translation is
+   horizontal only; the original vertical motion/rail inset expression is kept. */
+.engine-sprite-tom-thumb {
+  transform: translate3d(-7%, calc(var(--locomotive-lift, 0px) + var(--sprite-rail-inset)), 0);
+}
+
+/* The primary animation layer now carries the locomotive section. A slight
+   overlap at the section boundary avoids a visible cut through the rear frame. */
+.engine-sprite-tom-thumb .engine-sprite-frame {
+  clip-path: polygon(29% 0, 100% 0, 100% 100%, 29% 100%);
+}
+
+/* Re-render the registered tender and its animated trucks from the same frame,
+   offsetting it by +7%. Because the parent moved -7%, its world-space position
+   is unchanged while the locomotive closes the unrealistic empty drawbar gap. */
+.engine-sprite-tom-thumb::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background-image: url("/assets/locomotive-shop/v3/sprites/tom-thumb.webp");
+  background-repeat: no-repeat;
+  background-size: var(--sprite-sheet-width, 800%) var(--sprite-sheet-height, 400%);
+  background-position: var(--engine-sprite-x, 0%) var(--engine-sprite-y, 0%);
+  clip-path: polygon(0 0, 31% 0, 31% 100%, 0 100%);
+  transform: translateX(7%);
+  filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .55));
+  pointer-events: none;
+  will-change: background-position;
+}
+
+/* Restore the tender body mass without scaling its wheelset. The original
+   separate tender art is overlaid above the registered animated trucks. At the
+   normal desktop scale this puts the tender at roughly two-thirds of a coach
+   body height instead of the previous toy-cart proportion. */
 .engine-sprite-tom-thumb::before {
   content: "";
   position: absolute;
   z-index: 5;
-  left: 0;
+  left: 7%;
   bottom: 7.65%;
   width: 32%;
   height: 47%;
@@ -20,29 +59,8 @@
   pointer-events: none;
 }
 
-/* A steam locomotive and tender are joined by a drawbar, and the tender then
-   couples to the train. The flattened starter art had mathematical adjacency
-   but too little visible hardware between the large masses, making the tender
-   look like a separate cart. This member sits behind the body artwork and spans
-   both connection zones without moving any vehicle or axle. */
-.engine-sprite-tom-thumb::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  left: -2.5%;
-  bottom: 15.5%;
-  width: 39%;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #8f7654 0%, #42372c 40%, #171819 100%);
-  box-shadow:
-    0 2px 2px rgba(0, 0, 0, .72),
-    inset 0 1px rgba(231, 207, 166, .26);
-  pointer-events: none;
-}
-
-/* Keep the correction useful on the compact landscape layout without letting
-   the enlarged tender body invade the control deck. */
+/* Keep the correction useful on short landscape layouts without letting the
+   enlarged tender body invade the control deck. */
 @media (orientation: landscape) and (max-height: 560px) {
   .engine-sprite-tom-thumb::before {
     height: 44%;
