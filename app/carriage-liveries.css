@@ -3,7 +3,9 @@
  * ---------------------------
  * Keep one audited carriage artwork set and recolor it at render time. This
  * avoids multiplying bitmap assets while allowing a coherent consist palette.
- * The default remains Pullman green for existing saves.
+ * Each color first neutralizes the source paint hue, then applies the selected
+ * railway livery. That prevents different carriage source art from drifting
+ * into blue/purple/red variants when one consist color is selected.
  */
 
 :root {
@@ -12,32 +14,32 @@
 }
 
 :root[data-carriage-livery="pullman-green"] {
-  --carriage-livery-filter: saturate(1.02) brightness(.98) contrast(1.02);
+  --carriage-livery-filter: grayscale(1) sepia(.92) saturate(2.25) hue-rotate(72deg) brightness(.72) contrast(1.12);
   --carriage-livery-swatch: #334c39;
 }
 
 :root[data-carriage-livery="tuscan-red"] {
-  --carriage-livery-filter: hue-rotate(228deg) saturate(1.22) brightness(.78) contrast(1.1);
+  --carriage-livery-filter: grayscale(1) sepia(.95) saturate(2.65) hue-rotate(315deg) brightness(.72) contrast(1.14);
   --carriage-livery-swatch: #783c3b;
 }
 
 :root[data-carriage-livery="coach-brown"] {
-  --carriage-livery-filter: sepia(.38) saturate(1.18) hue-rotate(346deg) brightness(.76) contrast(1.08);
+  --carriage-livery-filter: grayscale(1) sepia(.92) saturate(1.55) hue-rotate(344deg) brightness(.7) contrast(1.12);
   --carriage-livery-swatch: #6b4b35;
 }
 
 :root[data-carriage-livery="midnight-blue"] {
-  --carriage-livery-filter: hue-rotate(108deg) saturate(1.2) brightness(.76) contrast(1.08);
+  --carriage-livery-filter: grayscale(1) sepia(.88) saturate(2.5) hue-rotate(168deg) brightness(.68) contrast(1.15);
   --carriage-livery-swatch: #30445f;
 }
 
 :root[data-carriage-livery="oxide-red"] {
-  --carriage-livery-filter: hue-rotate(238deg) saturate(.88) brightness(.7) contrast(1.12);
+  --carriage-livery-filter: grayscale(1) sepia(.96) saturate(2.15) hue-rotate(326deg) brightness(.68) contrast(1.15);
   --carriage-livery-swatch: #864532;
 }
 
 :root[data-carriage-livery="silver-gray"] {
-  --carriage-livery-filter: grayscale(.82) saturate(.28) brightness(1.02) contrast(1.1);
+  --carriage-livery-filter: grayscale(1) saturate(0) brightness(.9) contrast(1.15);
   --carriage-livery-swatch: #92989a;
 }
 
