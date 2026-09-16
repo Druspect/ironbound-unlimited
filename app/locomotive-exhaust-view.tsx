@@ -9,11 +9,8 @@ import {
   exhaustOneShotAsset,
   stepExhaustAudio,
 } from "./exhaust-audio";
-import { createExhaustState, stepExhaust } from "./locomotive-exhaust";
+import { createExhaustState, isCylinderClearing, stepExhaust } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
-
-const CYLINDER_CLEARING_SPEED_MPH = 8;
-const CYLINDER_CLEARING_MINIMUM_LOAD = .12;
 
 function persistedSoundEnabled() {
   try {
@@ -66,9 +63,7 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         ...motion.current,
         beatsPerRevolution: audioProfile.beatsPerDriverRevolution,
       };
-      const cylinderClearing = !currentMotion.paused &&
-        currentMotion.load >= CYLINDER_CLEARING_MINIMUM_LOAD &&
-        currentMotion.speed < CYLINDER_CLEARING_SPEED_MPH;
+      const cylinderClearing = isCylinderClearing(currentMotion);
       if (engineElement) {
         const nextCylinderState = cylinderClearing ? "true" : "false";
         if (engineElement.dataset.cylinderClearing !== nextCylinderState) {
