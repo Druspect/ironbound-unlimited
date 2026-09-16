@@ -18,6 +18,12 @@ if [[ ! -x "${vinext}" ]]; then
   exit 69
 fi
 
+# Audio loops are deterministic generated assets. Regenerate them on every
+# production build so sound-quality fixes reach the deployed bundle without
+# relying on binary file writes through the repository automation layer.
+echo "Generating deterministic steam audio assets..."
+node "${script_dir}/generate-audio-packs.mjs"
+
 echo "Running bounded vinext build..."
 timeout \
   --signal=TERM \
