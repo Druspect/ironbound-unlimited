@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import CarriageLiveryControl from "./carriage-livery-control";
 import "./globals.css";
 import "./compact-landscape.css";
 import "./input-accessibility.css";
@@ -6,6 +7,8 @@ import "./track-realism.css";
 import "./starter-consist-realism.css";
 import "./track-ground-truth.css";
 import "./headlight-realism.css";
+import "./undercarriage-reconciliation.css";
+import "./carriage-liveries.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ironbound-unlimited.geologistic.chatgpt.site"),
@@ -34,7 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="preload" as="image" type="image/webp" href="/assets/high-plains.webp" />
       </head>
-      <body>{children}</body>
+      <body><CarriageLiveryControl />{children}</body>
     </html>
   );
 }
