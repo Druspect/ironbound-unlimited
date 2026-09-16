@@ -14,29 +14,29 @@ export const AUDIO_PACKS: readonly AudioPack[] = [
   {
     id: "heritage-steam",
     name: "Heritage Steam",
-    tagline: "Synthesized class-analogue soundscape",
-    detail: "Warm exhaust beats, rail joints, live steam, and an Ironbound whistle. This is designed audio, not an archival recording of a specific locomotive.",
+    tagline: "Open road-steam pressure and rail rhythm",
+    detail: "Broad steam exhaust releases, restrained rail joints, live valve hiss, and an Ironbound whistle. This is designed class-analogue audio, not an archival recording of a specific locomotive.",
     loopAsset: "/assets/audio/heritage-steam-loop.wav",
     baseVolume: 0.36,
-    speedPitchRange: 0.32,
+    speedPitchRange: 0.08,
   },
   {
     id: "mountain-echo",
     name: "Mountain Echo",
-    tagline: "Synthesized heavy-steam analogue",
-    detail: "Deeper exhaust, long-valley reflections, harder rail joints, and station air. Articulated and freight engines use this as a class analogue, not an exact recording.",
+    tagline: "Heavy articulated pressure and valley reflection",
+    detail: "Offset heavy-steam exhaust beds, low valley reflections, and subdued mechanical noise. Articulated and freight engines use this as a class analogue, not an exact recording.",
     loopAsset: "/assets/audio/mountain-echo-loop.wav",
-    baseVolume: 0.34,
-    speedPitchRange: 0.27,
+    baseVolume: 0.35,
+    speedPitchRange: 0.06,
   },
   {
     id: "winter-limited",
     name: "Winter Limited",
-    tagline: "Synthesized 1225-inspired winter ambience",
-    detail: "Snow-muted exhaust, winter wind, restrained clatter, and a distant bell. Mechanically inspired by Berkshire excursion service; no film or archival audio is claimed.",
+    tagline: "Muffled excursion steam, winter air, distant bell",
+    detail: "Snow-muted exhaust beneath moving winter air with a sparse distant bell. Mechanically inspired by Berkshire excursion service; no film or archival audio is claimed.",
     loopAsset: "/assets/audio/winter-limited-loop.wav",
-    baseVolume: 0.30,
-    speedPitchRange: 0.22,
+    baseVolume: 0.32,
+    speedPitchRange: 0.04,
   },
 ] as const;
 
@@ -55,12 +55,14 @@ export function soundscapeMix(
   state: { speedMph: number; throttle: number; paused: boolean; servicing: boolean },
 ) {
   const pack = audioPackFor(packId);
-  if (state.paused) return { volume: 0, playbackRate: 0.72 };
+  if (state.paused) return { volume: 0, playbackRate: 0.96 };
   const speed = Math.min(1, Math.max(0, state.speedMph / 70));
   const working = Math.min(1, Math.max(0, state.throttle / 100));
   const activity = Math.max(speed * 0.82, working * 0.48, state.servicing ? 0.34 : 0.05);
   return {
     volume: Math.min(0.5, pack.baseVolume * (0.22 + activity * 0.78)),
-    playbackRate: 0.72 + speed * pack.speedPitchRange,
+    // Keep the pack's acoustic identity intact. Speed changes movement energy;
+    // it no longer pitch-shifts the entire railway ambience by nearly an octave.
+    playbackRate: 0.96 + speed * pack.speedPitchRange,
   };
 }
