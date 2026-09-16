@@ -10,6 +10,7 @@ import "./headlight-realism.css";
 import "./undercarriage-reconciliation.css";
 import "./carriage-liveries.css";
 import "./production-polish.css";
+import "./animation-continuity.css";
 
 const productionQaQueryGuard = `(() => {
   const url = new URL(window.location.href);

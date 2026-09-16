@@ -1,0 +1,52 @@
+/*
+ * Locomotive animation continuity
+ * ------------------------------
+ * The audited sprite sheets already carry 32 unique wheel/rod poses. This
+ * layer adds a tiny continuous suspension response between those discrete
+ * poses using the same driver-wheel angle that advances the sheet. The motion
+ * remains sub-pixel vertically so the calibrated tire/rail contact is not
+ * visually broken.
+ */
+
+.engine-sprite-unit {
+  --phase-surge-amplitude: .28px;
+  --phase-rise-amplitude: .16px;
+  --phase-rock-amplitude: .012deg;
+}
+
+.engine-sprite-frame {
+  --phase-surge: calc(sin(var(--driver-wheel-angle, 0deg)) * var(--phase-surge-amplitude));
+  --phase-rise: calc(cos(var(--driver-wheel-angle, 0deg)) * var(--phase-rise-amplitude));
+  --phase-rock: calc(sin(calc(var(--driver-wheel-angle, 0deg) * 2)) * var(--phase-rock-amplitude));
+  transform: translate3d(var(--phase-surge), var(--phase-rise), 0) rotate(var(--phase-rock));
+  transform-origin: 68% 82%;
+  backface-visibility: hidden;
+  will-change: background-position, transform;
+}
+
+/* Large articulated beds should feel heavy rather than twitchy. */
+.engine-sprite-nw-1218,
+.engine-sprite-challenger-3985,
+.engine-sprite-big-boy-4014 {
+  --phase-surge-amplitude: .18px;
+  --phase-rise-amplitude: .10px;
+  --phase-rock-amplitude: .006deg;
+}
+
+/* The lighter Atlantic can carry a little more visible suspension response. */
+.engine-sprite-the-flyer-1907 {
+  --phase-surge-amplitude: .32px;
+  --phase-rise-amplitude: .18px;
+  --phase-rock-amplitude: .015deg;
+}
+
+/* Preserve accessibility and the existing reduced-motion contract. */
+.reduced-motion .engine-sprite-frame {
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .engine-sprite-frame {
+    transform: none !important;
+  }
+}
