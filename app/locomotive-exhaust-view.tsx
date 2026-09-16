@@ -10,8 +10,9 @@ import {
   stepExhaustAudio,
 } from "./exhaust-audio";
 import { automaticSandingState } from "./locomotive-physics";
-import { createExhaustState, isCylinderClearing, stepExhaust } from "./locomotive-exhaust";
+import { createExhaustState, isCylinderClearing, routeTravelFromExhaustMotion, stepExhaust } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
+import { sampleRouteProfile } from "./route-profile";
 import { operatingProfileFor } from "./steam-operations";
 
 function persistedSoundEnabled() {
@@ -67,12 +68,14 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         beatsPerRevolution: audioProfile.beatsPerDriverRevolution,
       };
       const cylinderClearing = isCylinderClearing(currentMotion);
+      const routeTravel = routeTravelFromExhaustMotion(currentMotion.travel);
+      const routeGradePercent = sampleRouteProfile(routeTravel).gradePercent;
       const sanding = currentMotion.paused
         ? { active: false, intensity: 0, slipRisk: 0, residualSlip: 0, tractionMultiplier: 1 }
         : automaticSandingState(
           currentMotion.speed,
           currentMotion.load * 100,
-          0,
+          routeGradePercent,
           operatingProfile.adhesionFactor,
         );
       if (engineElement) {
@@ -88,6 +91,7 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         if (engineElement.dataset.wheelSlip !== nextSlipState) {
           engineElement.dataset.wheelSlip = nextSlipState;
         }
+        engineElement.dataset.sandingGrade = routeGradePercent.toFixed(3);
         engineElement.style.setProperty("--sanding-intensity", sanding.intensity.toFixed(3));
       }
 
@@ -141,6 +145,7 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         delete engineElement.dataset.cylinderClearing;
         delete engineElement.dataset.sanding;
         delete engineElement.dataset.wheelSlip;
+        delete engineElement.dataset.sandingGrade;
         engineElement.style.removeProperty("--sanding-intensity");
       }
       texture.onload = null;
