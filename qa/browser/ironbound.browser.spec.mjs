@@ -155,12 +155,24 @@ test("station berthing and track perspective match the approved visual baseline"
   await page.setViewportSize({ width: 1365, height: 768 });
   await page.goto("/?qaEngine=tom-thumb&qaCars=6&qaStation=0");
   await waitForScene(page);
-  await freezeVisualMotion(page);
 
   const station = page.locator('.station-world[data-station-index="0"]');
   const cars = page.locator(".consist-car");
-  await expect(station).toBeVisible();
   await expect(cars).toHaveCount(6);
+
+  // qaStation is staged through the same runtime frame that positions normal
+  // stations. Wait until that frame has actually centered Cinder Flats and the
+  // React station card has entered its platform state before freezing motion.
+  // This removes the first-frame race without introducing a test-only render path.
+  await expect.poll(async () => station.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const opacity = Number(getComputedStyle(element).opacity);
+    const stationCenter = box.left + box.width / 2;
+    return opacity >= .95 && Math.abs(stationCenter - window.innerWidth * .40) <= 2;
+  }), { timeout: 10_000, message: "Cinder Flats must be fully staged before visual capture" }).toBe(true);
+  await expect(page.locator(".station-card")).toHaveClass(/at-platform/);
+  await expect(station).toBeVisible();
+  await freezeVisualMotion(page);
 
   const geometry = await page.evaluate(() => {
     const platform = document.querySelector('.station-world[data-station-index="0"]')?.getBoundingClientRect();
