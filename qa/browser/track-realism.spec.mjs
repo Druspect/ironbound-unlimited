@@ -96,18 +96,18 @@ test.describe("track realism gate", () => {
     expect(section.cab.top - section.far.top).toBeGreaterThanOrEqual(28);
 
     // Locator screenshots scroll elements into view; fixed UI can then cover
-    // the target and produce a false "track" image of the header. Capture the
-    // track's current viewport rectangle instead, clipped to the visible scene,
-    // so evidence and baseline represent its real gameplay composition.
+    // the target and produce a false "track" image. Capture the track's current
+    // viewport rectangle and stop one pixel above the fixed cab so the evidence
+    // contains only train/rail/timber/ballast geometry.
     const trackBox = await page.locator(".track").boundingBox();
     expect(trackBox).not.toBeNull();
     const x = Math.max(0, trackBox.x);
     const y = Math.max(0, trackBox.y);
     const right = Math.min(viewport.width, trackBox.x + trackBox.width);
-    const bottom = Math.min(viewport.height, trackBox.y + trackBox.height);
+    const bottom = Math.min(viewport.height, trackBox.y + trackBox.height, section.cab.top - 1);
     const clip = { x, y, width: right - x, height: bottom - y };
     expect(clip.width).toBeGreaterThan(1000);
-    expect(clip.height).toBeGreaterThan(50);
+    expect(clip.height).toBeGreaterThan(40);
 
     const trackEvidence = await page.screenshot({
       animations: "disabled",
@@ -119,9 +119,9 @@ test.describe("track realism gate", () => {
       contentType: "image/png",
     });
 
-    // Keep a track-only baseline in addition to the full station composition.
-    // This makes tie/ballast/rail-profile regressions visible even when they
-    // occupy too few pixels to dominate the whole-scene screenshot diff.
+    // Keep a track-only baseline in addition to the station composition. This
+    // makes tie/ballast/rail-profile regressions visible even when they occupy
+    // too few pixels to dominate the broader railway screenshot diff.
     await expect(page).toHaveScreenshot("track-section-1365x768.png", {
       animations: "disabled",
       caret: "hide",
