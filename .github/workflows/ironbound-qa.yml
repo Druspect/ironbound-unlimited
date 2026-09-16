@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
+      - gpt/cylinder-clearing-events
   pull_request:
     branches:
       - sites-source
