@@ -30,8 +30,9 @@ export default function CarriageLiveryControl() {
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     const restored = isCarriageLiveryId(saved) ? saved : DEFAULT_LIVERY;
-    setLivery(restored);
     applyLivery(restored);
+    const frame = window.requestAnimationFrame(() => setLivery(restored));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const changeLivery = (next: CarriageLiveryId) => {
