@@ -1,0 +1,50 @@
+/*
+ * Starter consist realism
+ * -----------------------
+ * Ironbound No. 1 uses the original separate tender body as a correction layer
+ * over the flattened animation sheet. The registered wheel and rail geometry is
+ * intentionally untouched: only the tender's visible body mass and the drawbar
+ * continuity are corrected here.
+ */
+
+.engine-sprite-tom-thumb::before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  bottom: 7.65%;
+  width: 32%;
+  height: 47%;
+  background: url("/assets/train-v2-tender.webp") left bottom / 100% 100% no-repeat;
+  filter: drop-shadow(0 6px 4px rgba(0, 0, 0, .54));
+  pointer-events: none;
+}
+
+/* A steam locomotive and tender are joined by a drawbar, and the tender then
+   couples to the train. The flattened starter art had mathematical adjacency
+   but too little visible hardware between the large masses, making the tender
+   look like a separate cart. This member sits behind the body artwork and spans
+   both connection zones without moving any vehicle or axle. */
+.engine-sprite-tom-thumb::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: -2.5%;
+  bottom: 15.5%;
+  width: 39%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8f7654 0%, #42372c 40%, #171819 100%);
+  box-shadow:
+    0 2px 2px rgba(0, 0, 0, .72),
+    inset 0 1px rgba(231, 207, 166, .26);
+  pointer-events: none;
+}
+
+/* Keep the correction useful on the compact landscape layout without letting
+   the enlarged tender body invade the control deck. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .engine-sprite-tom-thumb::before {
+    height: 44%;
+  }
+}
