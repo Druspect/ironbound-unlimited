@@ -11,6 +11,10 @@ function number(name) {
   return Number(match[1]);
 }
 
+function rule(selector) {
+  return css.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\s*\\{([\\s\\S]*?)\\n\\}`))?.[1] ?? "";
+}
+
 test("ground-truth track layer is applied after all earlier scene geometry", () => {
   const base = layout.indexOf('import "./track-realism.css"');
   const starter = layout.indexOf('import "./starter-consist-realism.css"');
@@ -26,12 +30,24 @@ test("rail sections are slimmer without moving the calibrated contact plane", ()
     "ground-truth layer must inherit, not redefine, the calibrated wheel contact plane");
 });
 
-test("ballast is a lower shoulder rather than an opaque fascia", () => {
-  const ballast = css.match(/\.ballast\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+test("ballast is a lower granular shoulder rather than an opaque fascia", () => {
+  const ballast = rule(".ballast");
   assert.match(ballast, /height:\s*30px/);
+  assert.match(ballast, /opacity:\s*\.78/);
   assert.match(ballast, /transparent 100%/);
   assert.match(ballast, /mask-image:\s*linear-gradient/);
+  assert.match(ballast, /box-shadow:\s*none/);
   assert.ok(number("--rail-near-profile") < 9);
+});
+
+test("far rail recedes behind discrete timber instead of forming a second stripe", () => {
+  const sleepers = rule(".sleepers");
+  const far = rule(".rail-far");
+  const near = rule(".rail-near");
+  assert.match(sleepers, /z-index:\s*2/);
+  assert.match(far, /z-index:\s*1/);
+  assert.match(near, /z-index:\s*3/);
+  assert.match(far, /opacity:\s*\.48/);
 });
 
 test("extra full-width tie-seat bar is removed while timber rhythm remains inherited", () => {
