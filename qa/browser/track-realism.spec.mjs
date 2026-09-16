@@ -59,6 +59,7 @@ test.describe("track realism gate", () => {
         sleeperZ: Number.parseInt(getComputedStyle(sleepers).zIndex, 10),
         nearRailZ: Number.parseInt(getComputedStyle(near).zIndex, 10),
         ballastZ: Number.parseInt(getComputedStyle(ballast).zIndex, 10),
+        tieSeatShadowDisabled: getComputedStyle(track, "::after").content === "none",
       };
     });
 
@@ -70,35 +71,32 @@ test.describe("track realism gate", () => {
     expect(section.tieFacePx).toBe(15);
     expect(section.motionPeriodPx % section.tiePitchPx).toBe(0);
 
-    expect(section.near.height).toBeCloseTo(9, 1);
-    expect(section.far.height).toBeCloseTo(4, 1);
-    expect(section.railTopSeparation).toBeGreaterThanOrEqual(7);
-    expect(section.railTopSeparation).toBeLessThanOrEqual(16);
+    // Ground-truth cross-section: the near running section remains heavier than
+    // the perspective rail, but neither is thick enough to read as a shelf.
+    expect(section.near.height).toBeCloseTo(6, 1);
+    expect(section.far.height).toBeCloseTo(3, 1);
+    expect(section.railTopSeparation).toBeGreaterThanOrEqual(14);
+    expect(section.railTopSeparation).toBeLessThanOrEqual(18);
     expect(section.maxWheelGap).toBeLessThanOrEqual(.75);
+    expect(section.tieSeatShadowDisabled).toBe(true);
 
-    expect(section.sleepers.height).toBeGreaterThan(18);
-    expect(section.ballast.height).toBeGreaterThanOrEqual(38);
-    expect(section.ballast.height).toBeLessThanOrEqual(50);
-    // The ballast element starts below the far running head and no higher than
-    // the lower edge of the near rail profile. Half a CSS pixel is allowed for
-    // browser subpixel rounding while remaining tighter than the wheel-contact
-    // tolerance and far below any visible geometry error.
+    expect(section.sleepers.height).toBeGreaterThan(20);
+    expect(section.ballast.height).toBeGreaterThanOrEqual(28);
+    expect(section.ballast.height).toBeLessThanOrEqual(32);
+    // Ballast must begin materially below the near running surface. This is the
+    // key anti-shelf invariant: rail and timber remain readable above the crown.
     expect(section.ballast.top).toBeGreaterThan(section.far.top);
-    expect(section.ballast.top).toBeGreaterThanOrEqual(section.near.top - .5);
-    expect(section.ballast.top).toBeLessThanOrEqual(section.near.bottom + 2);
+    expect(section.ballast.top).toBeGreaterThanOrEqual(section.near.bottom + 5);
+    expect(section.ballast.top).toBeLessThanOrEqual(section.near.bottom + 16);
     expect(section.ballastZ).toBeLessThan(section.sleeperZ);
     expect(section.sleeperZ).toBeLessThan(section.nearRailZ);
 
-    // The control console must not mask the physical rail section. This gate
-    // protects a readable band of rail, timber and ballast without changing
-    // the calibrated wheel contact surface.
+    // The control console must not mask the physical rail section.
     expect(section.cab.top - section.near.bottom).toBeGreaterThanOrEqual(18);
     expect(section.cab.top - section.far.top).toBeGreaterThanOrEqual(28);
 
-    // Locator screenshots scroll elements into view; fixed UI can then cover
-    // the target and produce a false "track" image. Capture the track's current
-    // viewport rectangle and stop one pixel above the fixed cab so the evidence
-    // contains only train/rail/timber/ballast geometry.
+    // Capture only the visible physical railway above the fixed cab. The PNG is
+    // retained as human-review evidence even while baseline promotion is pending.
     const trackBox = await page.locator(".track").boundingBox();
     expect(trackBox).not.toBeNull();
     const x = Math.max(0, trackBox.x);
@@ -119,9 +117,6 @@ test.describe("track realism gate", () => {
       contentType: "image/png",
     });
 
-    // Keep a track-only baseline in addition to the station composition. This
-    // makes tie/ballast/rail-profile regressions visible even when they occupy
-    // too few pixels to dominate the broader railway screenshot diff.
     await expect(page).toHaveScreenshot("track-section-1365x768.png", {
       animations: "disabled",
       caret: "hide",
