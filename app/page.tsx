@@ -177,6 +177,7 @@ export default function Home() {
   const pausedRef = useRef(paused);
   const brakeRef = useRef(brakeEngaged);
   const brakePressureRef = useRef(brakePressure);
+  const brakeCylinderPressureRef = useRef(0);
   const speedRef = useRef(speed);
   const boilerRef = useRef(boilerLoad);
   const heatRef = useRef(heat);
@@ -549,6 +550,7 @@ export default function Home() {
           overloaded: overloadRef.current,
           safetyLockSeconds: safetyLockRef.current,
           distance: distanceRef.current,
+          brakeCylinderPressure: brakeCylinderPressureRef.current,
         }, throttleRef.current, elapsedSeconds, gradeRef.current, brakePressureRef.current, {
           maximumSpeed: operatingProfile.maximumSpeedMph * consistMetrics.maximumSpeedFactor,
           accelerationFactor: consistMetrics.accelerationFactor,
@@ -566,6 +568,7 @@ export default function Home() {
         overloadRef.current = next.overloaded;
         safetyLockRef.current = next.safetyLockSeconds;
         distanceRef.current = next.distance;
+        brakeCylinderPressureRef.current = next.brakeCylinderPressure ?? 0;
 
         const nextResources = advanceSteamResources(
           steamResourcesRef.current,
@@ -977,6 +980,7 @@ export default function Home() {
     overloadRef.current = false;
     safetyLockRef.current = 0;
     brakePressureRef.current = 1;
+    brakeCylinderPressureRef.current = 1;
     brakeRef.current = true;
     throttleRef.current = 0;
     safeDrivingRef.current = createSafeDrivingProgress();
