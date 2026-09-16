@@ -12,6 +12,9 @@ import {
 import { createExhaustState, stepExhaust } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
 
+const CYLINDER_CLEARING_SPEED_MPH = 8;
+const CYLINDER_CLEARING_MINIMUM_LOAD = .12;
+
 function persistedSoundEnabled() {
   try {
     const raw = window.localStorage.getItem("ironbound-save-v4");
@@ -30,7 +33,8 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
 
-    const engineId = canvas.closest<HTMLElement>("[data-engine-sprite]")?.dataset.engineSprite ?? "tom-thumb";
+    const engineElement = canvas.closest<HTMLElement>("[data-engine-sprite]");
+    const engineId = engineElement?.dataset.engineSprite ?? "tom-thumb";
     const audioProfile = engineAudioProfileFor(engineId);
     canvas.dataset.exhaustCharacter = audioProfile.exhaustCharacter;
     canvas.dataset.exhaustBeatsPerRevolution = String(audioProfile.beatsPerDriverRevolution);
@@ -62,6 +66,16 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         ...motion.current,
         beatsPerRevolution: audioProfile.beatsPerDriverRevolution,
       };
+      const cylinderClearing = !currentMotion.paused &&
+        currentMotion.load >= CYLINDER_CLEARING_MINIMUM_LOAD &&
+        currentMotion.speed < CYLINDER_CLEARING_SPEED_MPH;
+      if (engineElement) {
+        const nextCylinderState = cylinderClearing ? "true" : "false";
+        if (engineElement.dataset.cylinderClearing !== nextCylinderState) {
+          engineElement.dataset.cylinderClearing = nextCylinderState;
+        }
+      }
+
       stepExhaust(state, currentMotion, (now - previous) / 1000);
       const beatEvents = stepExhaustAudio(audioState, currentMotion, audioProfile.beatsPerDriverRevolution);
       if (beatEvents > 0) {
@@ -108,6 +122,7 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
     frame = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(frame);
+      if (engineElement) delete engineElement.dataset.cylinderClearing;
       texture.onload = null;
       texture.onerror = null;
       for (const voice of voices) {
