@@ -152,5 +152,8 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
       }
     };
   }, [motion]);
-  return <canvas className="exhaust-smoke" width={540} height={420} ref={canvasRef} aria-hidden="true" />;
+  return <>
+    <canvas className="exhaust-smoke" width={540} height={420} ref={canvasRef} aria-hidden="true" />
+    <i className="automatic-sander" aria-hidden="true" />
+  </>;
 }
