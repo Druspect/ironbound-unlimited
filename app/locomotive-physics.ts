@@ -5,6 +5,7 @@ export type LocomotiveState = {
   overloaded: boolean;
   safetyLockSeconds: number;
   distance: number;
+  brakeCylinderPressure?: number;
 };
 
 export type LocomotivePhysicsConfiguration = {
@@ -46,6 +47,8 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
   serviceBrakeTimeConstant: 2.9,
   brakeApplicationTimeConstant: 0.32,
   brakeReleaseTimeConstant: 0.24,
+  brakeCylinderApplicationTimeConstant: 0.42,
+  brakeCylinderReleaseTimeConstant: 0.58,
   brakingGradeResponsePerPercent: 0.055,
   brakingGradeTimeMinimum: 0.75,
   brakingGradeTimeMaximum: 1.25,
@@ -115,7 +118,7 @@ export function automaticSandingState(
   return { active, intensity, slipRisk, residualSlip, tractionMultiplier };
 }
 
-/** Fast valve response; pressure and train speed still change continuously. */
+/** Fast engineer-valve response; the distributed trainline responds separately. */
 export function advanceBrakePressure(current: number, engaged: boolean, elapsedSeconds: number) {
   const dt = clamp(elapsedSeconds, 0, .1);
   const target = engaged ? 1 : 0;
@@ -238,11 +241,23 @@ export function advanceLocomotive(
     overloaded = false;
   }
 
-  const brakePressure = clamp(brakeApplication, 0, 1);
+  const commandedBrakePressure = clamp(brakeApplication, 0, 1);
+  const brakeResponseFactor = clamp(configuration.brakeResponseFactor ?? 1, .8, 1.7);
+  const previousBrakeCylinderPressure = clamp(state.brakeCylinderPressure ?? 0, 0, 1);
+  const brakeCylinderTimeConstant = (
+    commandedBrakePressure >= previousBrakeCylinderPressure
+      ? LOCOMOTIVE_MODEL.brakeCylinderApplicationTimeConstant
+      : LOCOMOTIVE_MODEL.brakeCylinderReleaseTimeConstant
+  ) * brakeResponseFactor;
+  const brakeCylinderBlend = 1 - Math.exp(-dt / brakeCylinderTimeConstant);
+  const brakePressure = clamp(
+    previousBrakeCylinderPressure + (commandedBrakePressure - previousBrakeCylinderPressure) * brakeCylinderBlend,
+    0,
+    1,
+  );
   const poweredTarget = targetSpeedForThrottle(throttle, overloaded, gradePercent, configuration);
   const targetSpeed = brakePressure > 0.001 ? 0 : poweredTarget;
   const accelerationFactor = clamp(configuration.accelerationFactor ?? 1, .45, 1.8);
-  const brakeResponseFactor = clamp(configuration.brakeResponseFactor ?? 1, .8, 1.7);
   const throttleResponseFactor = clamp(configuration.throttleResponseFactor ?? 1, .65, 1.35);
   const brakeRiggingFactor = clamp(configuration.brakeRiggingFactor ?? 1, .7, 1.3);
   const sanding = automaticSandingState(state.speed, throttle, gradePercent, configuration.adhesionFactor);
@@ -263,7 +278,7 @@ export function advanceLocomotive(
   const speedTime = targetSpeed >= state.speed
     ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor * launchAdhesion)
     : LOCOMOTIVE_MODEL.decelerationTimeConstant +
-      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakeResponseFactor * brakingGradeTimeFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
+      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakingGradeTimeFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
   const speedBlend = 1 - Math.exp(-dt / speedTime);
   const rollingSpeed = clamp(
     state.speed + (targetSpeed - state.speed) * speedBlend,
@@ -281,6 +296,7 @@ export function advanceLocomotive(
     heat,
     overloaded,
     safetyLockSeconds,
+    brakeCylinderPressure: brakePressure,
     distance: state.distance + ((state.speed + speed) * 0.5) * dt / 3600,
   };
 }
