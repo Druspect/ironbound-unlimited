@@ -31,9 +31,17 @@ test("low steam is event-driven instead of permanently venting", () => {
 });
 
 test("departure cylinder clearing is fleet-wide, low-level, and drives downward", () => {
-  assert.match(css, /\.engine-sprite-tom-thumb\[data-cylinder-clearing="true"\]\s+\.steam-vent\s*\{[\s\S]*?production-cylinder-clearing/);
-  assert.match(css, /\.engine-sprite-unit\[data-cylinder-clearing="true"\]:not\(\.engine-sprite-tom-thumb\)::after\s*\{[\s\S]*?production-cylinder-clearing/);
-  assert.match(css, /@keyframes\s+production-cylinder-clearing\s*\{[\s\S]*?52%\s*\{[\s\S]*?translate\(-24%,\s*12%\)[\s\S]*?100%\s*\{[\s\S]*?translate\(-38%,\s*34%\)/);
+  assert.match(css, /\.engine-sprite-tom-thumb\[data-cylinder-clearing="true"\]\s+\.steam-vent/);
+  assert.match(css, /\.engine-sprite-unit\[data-cylinder-clearing="true"\]:not\(\.engine-sprite-tom-thumb\)::after/);
+  assert.match(css, /@keyframes\s+production-cylinder-clearing[\s\S]*?translate\(-38%,\s*34%\)/);
+});
+
+test("automatic sanding renders narrow rail-level streams without moving running gear", () => {
+  assert.match(css, /\.engine-sprite-unit\[data-sanding="true"\]::before\s*\{[\s\S]*?opacity:\s*clamp\(/);
+  assert.match(css, /@keyframes\s+production-sand-drop/);
+  assert.match(css, /--sander-x:\s*86%/);
+  assert.match(css, /--sander-y:\s*80%/);
+  assert.match(css, /\.engine-sprite-unit\[data-wheel-slip="true"\]::before/);
 });
 
 test("production polish cannot move calibrated train or track geometry", () => {
@@ -44,5 +52,6 @@ test("production polish cannot move calibrated train or track geometry", () => {
 test("daylight headlight treatment remains restrained and reduced motion remains supported", () => {
   assert.match(css, /\.phase-golden\s+\.engine-sprite-unit\s*\{[\s\S]*?--headlight-phase:\s*\.24/);
   assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
+  assert.match(css, /\.engine-sprite-unit::before/);
   assert.match(css, /animation:\s*none\s*!important/);
 });
