@@ -46,6 +46,9 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
   serviceBrakeTimeConstant: 2.9,
   brakeApplicationTimeConstant: 0.32,
   brakeReleaseTimeConstant: 0.24,
+  brakingGradeResponsePerPercent: 0.055,
+  brakingGradeTimeMinimum: 0.75,
+  brakingGradeTimeMaximum: 1.25,
   thermalTimeConstant: 8.5,
   reliefTimeConstant: 3.4,
 });
@@ -244,10 +247,23 @@ export function advanceLocomotive(
   const brakeRiggingFactor = clamp(configuration.brakeRiggingFactor ?? 1, .7, 1.3);
   const sanding = automaticSandingState(state.speed, throttle, gradePercent, configuration.adhesionFactor);
   const launchAdhesion = startingAdhesionMultiplier(state.speed, configuration.adhesionFactor) * sanding.tractionMultiplier;
+  // Once a service-brake application drives the powered target to zero, route
+  // grade still has to influence the stop. Positive grade assists braking and
+  // negative grade works against it. Expressing that gravitational effect as a
+  // bounded modifier on the service-brake time constant preserves the existing
+  // 0% grade calibration exactly while preventing steep route segments from
+  // becoming either irrelevant or uncontrollable.
+  const brakingGradeTimeFactor = brakePressure > 0.001
+    ? clamp(
+      1 - clamp(gradePercent, -3.5, 3.5) * LOCOMOTIVE_MODEL.brakingGradeResponsePerPercent,
+      LOCOMOTIVE_MODEL.brakingGradeTimeMinimum,
+      LOCOMOTIVE_MODEL.brakingGradeTimeMaximum,
+    )
+    : 1;
   const speedTime = targetSpeed >= state.speed
     ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor * launchAdhesion)
     : LOCOMOTIVE_MODEL.decelerationTimeConstant +
-      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakeResponseFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
+      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakeResponseFactor * brakingGradeTimeFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
   const speedBlend = 1 - Math.exp(-dt / speedTime);
   const rollingSpeed = clamp(
     state.speed + (targetSpeed - state.speed) * speedBlend,
