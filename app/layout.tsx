@@ -11,6 +11,15 @@ import "./undercarriage-reconciliation.css";
 import "./carriage-liveries.css";
 import "./production-polish.css";
 
+const productionQaQueryGuard = `(() => {
+  const url = new URL(window.location.href);
+  let changed = false;
+  for (const key of ["qaSuite", "qaEngine", "qaCars", "qaStation", "qaService", "qaFailure"]) {
+    if (url.searchParams.delete(key)) changed = true;
+  }
+  if (changed) history.replaceState(null, "", url.pathname + url.search + url.hash);
+})();`;
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://ironbound-unlimited.geologistic.chatgpt.site"),
   title: "Ironbound: Unlimited",
@@ -37,6 +46,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <head>
         <link rel="preload" as="image" type="image/webp" href="/assets/high-plains.webp" />
+        {process.env.NODE_ENV === "production" && (
+          <script dangerouslySetInnerHTML={{ __html: productionQaQueryGuard }} />
+        )}
       </head>
       <body><CarriageLiveryControl />{children}</body>
     </html>
