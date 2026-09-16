@@ -9,8 +9,10 @@ import {
   exhaustOneShotAsset,
   stepExhaustAudio,
 } from "./exhaust-audio";
+import { automaticSandingState } from "./locomotive-physics";
 import { createExhaustState, isCylinderClearing, stepExhaust } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
+import { operatingProfileFor } from "./steam-operations";
 
 function persistedSoundEnabled() {
   try {
@@ -33,6 +35,7 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
     const engineElement = canvas.closest<HTMLElement>("[data-engine-sprite]");
     const engineId = engineElement?.dataset.engineSprite ?? "tom-thumb";
     const audioProfile = engineAudioProfileFor(engineId);
+    const operatingProfile = operatingProfileFor(engineId);
     canvas.dataset.exhaustCharacter = audioProfile.exhaustCharacter;
     canvas.dataset.exhaustBeatsPerRevolution = String(audioProfile.beatsPerDriverRevolution);
 
@@ -64,11 +67,28 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         beatsPerRevolution: audioProfile.beatsPerDriverRevolution,
       };
       const cylinderClearing = isCylinderClearing(currentMotion);
+      const sanding = currentMotion.paused
+        ? { active: false, intensity: 0, slipRisk: 0, residualSlip: 0, tractionMultiplier: 1 }
+        : automaticSandingState(
+          currentMotion.speed,
+          currentMotion.load * 100,
+          0,
+          operatingProfile.adhesionFactor,
+        );
       if (engineElement) {
         const nextCylinderState = cylinderClearing ? "true" : "false";
         if (engineElement.dataset.cylinderClearing !== nextCylinderState) {
           engineElement.dataset.cylinderClearing = nextCylinderState;
         }
+        const nextSandingState = sanding.active ? "true" : "false";
+        if (engineElement.dataset.sanding !== nextSandingState) {
+          engineElement.dataset.sanding = nextSandingState;
+        }
+        const nextSlipState = sanding.residualSlip >= .12 ? "true" : "false";
+        if (engineElement.dataset.wheelSlip !== nextSlipState) {
+          engineElement.dataset.wheelSlip = nextSlipState;
+        }
+        engineElement.style.setProperty("--sanding-intensity", sanding.intensity.toFixed(3));
       }
 
       stepExhaust(state, currentMotion, (now - previous) / 1000);
@@ -117,7 +137,12 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
     frame = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(frame);
-      if (engineElement) delete engineElement.dataset.cylinderClearing;
+      if (engineElement) {
+        delete engineElement.dataset.cylinderClearing;
+        delete engineElement.dataset.sanding;
+        delete engineElement.dataset.wheelSlip;
+        engineElement.style.removeProperty("--sanding-intensity");
+      }
       texture.onload = null;
       texture.onerror = null;
       for (const voice of voices) {
