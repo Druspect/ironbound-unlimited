@@ -14,6 +14,7 @@ const ENGINES = [
   "polar-express-1225",
 ];
 
+const ALL_ENGINES = ["tom-thumb", ...ENGINES];
 const ARTICULATED = new Set(["nw-1218", "challenger-3985", "big-boy-4014"]);
 
 async function waitForEngine(page, engineId) {
@@ -22,8 +23,54 @@ async function waitForEngine(page, engineId) {
   return engine;
 }
 
+async function readSpeed(page) {
+  const text = await page.locator(".speed-reading strong").textContent();
+  return Number(text ?? 0);
+}
+
 test.describe("fleet polish", () => {
   test.describe.configure({ retries: 0 });
+
+  test("every locomotive releases its brake, accepts steam, and accelerates", async ({ page }) => {
+    await page.setViewportSize({ width: 1365, height: 768 });
+
+    for (const engineId of ALL_ENGINES) {
+      await page.goto(`/?qaEngine=${engineId}&qaCars=3`);
+      await waitForEngine(page, engineId);
+      await expect(page.getByRole("button", { name: "Release train brake" })).toBeVisible();
+      await page.getByRole("button", { name: "Release train brake" }).click();
+      await page.getByRole("slider", { name: "Locomotive throttle" }).fill("58");
+      await expect.poll(() => readSpeed(page), {
+        timeout: 8_000,
+        message: `${engineId} never accelerated after brake release and working steam`,
+      }).toBeGreaterThan(0);
+      await expect(page.getByRole("slider", { name: "Locomotive throttle" })).toHaveAttribute("aria-valuetext", "WORKING STEAM");
+    }
+  });
+
+  test("reviewFleet session lets Dad inspect all engines without granting permanent ownership", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/?reviewFleet=1");
+    await page.getByRole("button", { name: "OPEN STORE" }).click();
+    await expect(page.locator(".engine-card")).toHaveCount(12);
+
+    const engineButtons = page.locator(".engine-card > button");
+    await expect(engineButtons).toHaveCount(12);
+    expect(await engineButtons.evaluateAll((buttons) => buttons.filter((button) => button.disabled).length)).toBe(0);
+
+    const bigBoy = page.locator('.engine-card:has(img[src*="big-boy-4014.webp"])');
+    await bigBoy.locator(":scope > button").click();
+    await expect(bigBoy).toHaveClass(/equipped/);
+    await expect(page.locator(".shop-balance strong")).toHaveText("0");
+    await page.getByRole("button", { name: "Return to railway" }).click();
+    await waitForEngine(page, "big-boy-4014");
+
+    // Review selection is intentionally not ownership. Removing the query and
+    // reloading the saved game must fall back to the starter at zero bonds.
+    await page.goto("/");
+    await page.getByRole("button", { name: "BEGIN RUN" }).click();
+    await waitForEngine(page, "tom-thumb");
+  });
 
   test("every non-starter locomotive receives family-correct structural underframe mass", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1365, height: 768 });
