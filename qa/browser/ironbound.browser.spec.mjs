@@ -187,10 +187,11 @@ test("station berthing and track perspective match the approved visual baseline"
   expect(geometry.platform.left).toBeLessThanOrEqual(geometry.train.left + 2);
   expect(geometry.platform.right).toBeGreaterThanOrEqual(geometry.train.right - 2);
 
-  // Visual regression is intentionally scoped to the railway subject rather
-  // than live HUD meters. The fixed viewport crop still catches station, train,
-  // platform and track movement while excluding timing-driven controls below.
-  const clip = { x: 16, y: 180, width: 1333, height: 378 };
+  // The screenshot is the berth band itself: platform edge, six-car consist,
+  // locomotive running gear and physical track. Full platform containment is
+  // separately hard-gated above, so scenery and live HUD pixels cannot dilute
+  // this regression signal.
+  const clip = { x: 16, y: 440, width: 1333, height: 118 };
   const evidence = await page.screenshot({ animations: "disabled", caret: "hide", clip });
   await testInfo.attach("station-berthing-current", {
     body: evidence,
