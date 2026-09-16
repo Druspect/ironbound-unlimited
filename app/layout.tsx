@@ -5,6 +5,7 @@ import "./input-accessibility.css";
 import "./track-realism.css";
 import "./starter-consist-realism.css";
 import "./track-ground-truth.css";
+import "./headlight-realism.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ironbound-unlimited.geologistic.chatgpt.site"),
