@@ -1,0 +1,192 @@
+/*
+ * Locomotive headlight realism
+ * ----------------------------
+ * The original starter effect used a large glowing orb as the visible source.
+ * Real locomotive headlights read as a compact lens/housing with most of the
+ * visible energy projected forward. This layer gives every running locomotive
+ * one directional beam while leaving sprite, wheel, smoke, and track geometry
+ * untouched.
+ */
+
+/* The starter's legacy light remains in the DOM because its whistle and steam
+   siblings share that render path. Suppress only the obsolete orb/beam node. */
+.headlight-system {
+  display: none;
+}
+
+.engine-sprite-unit {
+  --headlight-x: 94%;
+  --headlight-y: 30%;
+  --headlight-lens-size: 7px;
+  --headlight-beam-length: 410px;
+  --headlight-beam-spread: 76px;
+  --headlight-intensity: .9;
+  --headlight-phase: .34;
+  overflow: visible;
+}
+
+.phase-blue .engine-sprite-unit {
+  --headlight-phase: .62;
+}
+
+.phase-night .engine-sprite-unit {
+  --headlight-phase: 1;
+}
+
+.engine-sprite-frame {
+  overflow: visible;
+}
+
+/* Small glass lens and metal rim. The source is intentionally compact so it
+   reads as mounted hardware rather than a floating luminous ball. */
+.engine-sprite-frame::before {
+  content: "";
+  position: absolute;
+  z-index: 8;
+  left: calc(var(--headlight-x) - var(--headlight-lens-size) / 2);
+  top: calc(var(--headlight-y) - var(--headlight-lens-size) / 2);
+  width: var(--headlight-lens-size);
+  height: var(--headlight-lens-size);
+  border: 1px solid rgba(116, 90, 49, .92);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 42% 38%, #fffdf3 0 20%, #ffe6a1 21% 42%, #c89b4e 43% 57%, #4c3d27 58% 74%, #171613 75% 100%);
+  box-shadow:
+    0 0 2px rgba(255, 245, 211, .9),
+    0 0 5px rgba(255, 213, 124, .42);
+  opacity: calc(.72 + var(--headlight-phase) * .28);
+  pointer-events: none;
+}
+
+/* Forward light cone. The near end is narrow and the far end opens gradually;
+   a longitudinal mask removes the old rectangular/fog-bank appearance. */
+.engine-sprite-frame::after {
+  content: "";
+  position: absolute;
+  z-index: 7;
+  left: calc(var(--headlight-x) + 2px);
+  top: calc(var(--headlight-y) - var(--headlight-beam-spread) / 2);
+  width: var(--headlight-beam-length);
+  height: var(--headlight-beam-spread);
+  clip-path: polygon(0 46%, 100% 4%, 100% 96%, 0 54%);
+  background:
+    radial-gradient(ellipse at 0 50%, rgba(255, 247, 220, .32) 0 3%, rgba(255, 232, 168, .17) 21%, rgba(255, 219, 132, .07) 54%, transparent 82%),
+    linear-gradient(90deg, rgba(255, 239, 190, .18), rgba(255, 226, 149, .08) 48%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, .92) 18%, rgba(0, 0, 0, .54) 67%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, .92) 18%, rgba(0, 0, 0, .54) 67%, transparent 100%);
+  filter: blur(2px);
+  mix-blend-mode: screen;
+  opacity: calc(var(--headlight-intensity) * var(--headlight-phase));
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* Per-class lamp sockets. These are visual registration values on the common
+   runtime sprite canvas, not body/wheel transforms. Beam strength and reach are
+   tuned by locomotive class so small engines do not project Big Boy-sized light. */
+.engine-sprite-tom-thumb {
+  --headlight-x: 92.8%;
+  --headlight-y: 26.5%;
+  --headlight-lens-size: 7px;
+  --headlight-beam-length: 340px;
+  --headlight-beam-spread: 66px;
+  --headlight-intensity: .82;
+}
+
+.engine-sprite-southern-4501 {
+  --headlight-x: 94.4%;
+  --headlight-y: 36%;
+  --headlight-beam-length: 400px;
+  --headlight-beam-spread: 72px;
+  --headlight-intensity: .88;
+}
+
+.engine-sprite-prr-1361 {
+  --headlight-x: 94.2%;
+  --headlight-y: 32%;
+  --headlight-beam-length: 430px;
+  --headlight-beam-spread: 74px;
+  --headlight-intensity: .92;
+}
+
+.engine-sprite-nkp-765 {
+  --headlight-x: 94.6%;
+  --headlight-y: 34%;
+  --headlight-beam-length: 440px;
+  --headlight-beam-spread: 78px;
+  --headlight-intensity: .94;
+}
+
+.engine-sprite-atsf-3751 {
+  --headlight-x: 94.4%;
+  --headlight-y: 31.5%;
+  --headlight-beam-length: 455px;
+  --headlight-beam-spread: 80px;
+  --headlight-intensity: .96;
+}
+
+.engine-sprite-nw-611 {
+  --headlight-x: 94.5%;
+  --headlight-y: 31%;
+  --headlight-beam-length: 465px;
+  --headlight-beam-spread: 82px;
+  --headlight-intensity: .98;
+}
+
+.engine-sprite-up-844 {
+  --headlight-x: 94.3%;
+  --headlight-y: 30%;
+  --headlight-beam-length: 470px;
+  --headlight-beam-spread: 84px;
+  --headlight-intensity: 1;
+}
+
+.engine-sprite-nw-1218 {
+  --headlight-x: 94.6%;
+  --headlight-y: 31%;
+  --headlight-beam-length: 485px;
+  --headlight-beam-spread: 86px;
+  --headlight-intensity: 1;
+}
+
+.engine-sprite-challenger-3985 {
+  --headlight-x: 94.7%;
+  --headlight-y: 30%;
+  --headlight-beam-length: 500px;
+  --headlight-beam-spread: 90px;
+  --headlight-intensity: 1;
+}
+
+.engine-sprite-big-boy-4014 {
+  --headlight-x: 95%;
+  --headlight-y: 30%;
+  --headlight-beam-length: 520px;
+  --headlight-beam-spread: 94px;
+  --headlight-intensity: 1;
+}
+
+.engine-sprite-the-flyer-1907 {
+  --headlight-x: 94.1%;
+  --headlight-y: 29%;
+  --headlight-beam-length: 425px;
+  --headlight-beam-spread: 72px;
+  --headlight-intensity: .9;
+}
+
+.engine-sprite-polar-express-1225 {
+  --headlight-x: 94.6%;
+  --headlight-y: 32%;
+  --headlight-beam-length: 455px;
+  --headlight-beam-spread: 82px;
+  --headlight-intensity: .98;
+}
+
+/* Short landscape screens scale the train down heavily. Keep the lens crisp and
+   shorten the projected volume so it does not wash over the control deck. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .engine-sprite-unit {
+    --headlight-lens-size: 6px;
+    --headlight-beam-length: 300px;
+    --headlight-beam-spread: 58px;
+  }
+}
