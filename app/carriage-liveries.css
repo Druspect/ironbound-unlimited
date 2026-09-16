@@ -1,0 +1,119 @@
+/*
+ * Passenger carriage liveries
+ * ---------------------------
+ * Keep one audited carriage artwork set and recolor it at render time. This
+ * avoids multiplying bitmap assets while allowing a coherent consist palette.
+ * The default remains Pullman green for existing saves.
+ */
+
+:root {
+  --carriage-livery-filter: none;
+  --carriage-livery-swatch: #334c39;
+}
+
+:root[data-carriage-livery="pullman-green"] {
+  --carriage-livery-filter: saturate(1.02) brightness(.98) contrast(1.02);
+  --carriage-livery-swatch: #334c39;
+}
+
+:root[data-carriage-livery="tuscan-red"] {
+  --carriage-livery-filter: hue-rotate(228deg) saturate(1.22) brightness(.78) contrast(1.1);
+  --carriage-livery-swatch: #783c3b;
+}
+
+:root[data-carriage-livery="coach-brown"] {
+  --carriage-livery-filter: sepia(.38) saturate(1.18) hue-rotate(346deg) brightness(.76) contrast(1.08);
+  --carriage-livery-swatch: #6b4b35;
+}
+
+:root[data-carriage-livery="midnight-blue"] {
+  --carriage-livery-filter: hue-rotate(108deg) saturate(1.2) brightness(.76) contrast(1.08);
+  --carriage-livery-swatch: #30445f;
+}
+
+:root[data-carriage-livery="oxide-red"] {
+  --carriage-livery-filter: hue-rotate(238deg) saturate(.88) brightness(.7) contrast(1.12);
+  --carriage-livery-swatch: #864532;
+}
+
+:root[data-carriage-livery="silver-gray"] {
+  --carriage-livery-filter: grayscale(.82) saturate(.28) brightness(1.02) contrast(1.1);
+  --carriage-livery-swatch: #92989a;
+}
+
+.passenger-body,
+.consist-car-preview img {
+  filter: var(--carriage-livery-filter);
+  transition: filter 180ms ease;
+}
+
+/* Preserve the chosen paint while retaining the existing station-service glow. */
+.train-wrap.is-servicing .passenger-body {
+  filter: var(--carriage-livery-filter) brightness(1.08) drop-shadow(0 0 8px rgba(237, 190, 105, .15));
+}
+
+.carriage-livery-control {
+  display: none;
+  position: fixed;
+  z-index: 180;
+  top: 158px;
+  right: max(36px, calc((100vw - min(1180px, 96vw)) / 2 + 26px));
+  width: min(240px, 42vw);
+  gap: 7px;
+  padding: 11px 13px;
+  border: 1px solid rgba(210, 155, 74, .48);
+  background: rgba(8, 10, 11, .96);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .46);
+}
+
+body:has(#carriage-store-heading) .carriage-livery-control {
+  display: grid;
+}
+
+.carriage-livery-control > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brass);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.carriage-livery-control > span::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: 50%;
+  background: var(--carriage-livery-swatch);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .18);
+}
+
+.carriage-livery-control select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid rgba(243, 234, 215, .22);
+  background: #111516;
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.carriage-livery-control small {
+  color: rgba(243, 234, 215, .54);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+@media (max-width: 760px), (orientation: landscape) and (max-height: 560px) {
+  .carriage-livery-control {
+    top: 116px;
+    right: 18px;
+    width: min(220px, 48vw);
+    padding: 8px 10px;
+  }
+}
