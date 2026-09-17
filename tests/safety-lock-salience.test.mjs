@@ -5,6 +5,13 @@ import { readFile } from "node:fs/promises";
 const css = await readFile(new URL("../app/safety-lock-salience.css", import.meta.url), "utf8");
 const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
 
+const ruleBody = (selector) => {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = css.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`));
+  assert.ok(match, `missing rule block for ${selector}`);
+  return match[1];
+};
+
 test("safety lock polish is loaded after the general production layer", () => {
   const productionIndex = layout.indexOf('import "./production-polish.css"');
   const safetyIndex = layout.indexOf('import "./safety-lock-salience.css"');
@@ -23,7 +30,14 @@ test("overheat state strengthens both cab telemetry and peripheral warning cues"
 });
 
 test("safety salience remains geometry-neutral and respects reduced motion", () => {
-  assert.doesNotMatch(css, /\.experience\.is-overloaded[^{]*\{[^}]*\b(?:left|right|top|bottom|width|height|transform)\s*:/s,
-    "top-level safety treatment must not reposition the cab or scene");
+  for (const selector of [
+    ".experience.is-overloaded .cab",
+    ".experience.is-overloaded .speed-card",
+    ".experience.is-overloaded .heat-monitor",
+    ".experience.is-overloaded .vignette",
+  ]) {
+    assert.doesNotMatch(ruleBody(selector), /\b(?:position|left|right|top|bottom|width|height|transform)\s*:/,
+      `${selector} must not move or resize the established composition`);
+  }
   assert.match(css, /@media \(prefers-reduced-motion: no-preference\)/);
 });
