@@ -267,6 +267,127 @@
   50% { opacity: 1; transform: scale(1.08); }
 }
 
+/* Platform overspeed correction: when a train reaches the berth too fast, the
+   instruction is a blocking operational condition, not secondary flavor text.
+   This selector intentionally clears itself as soon as service progress begins. */
+.station-card.at-platform:has(.service-steps):not(:has(.service-steps .active)) {
+  border-left-width: 4px;
+  border-left-color: #f19a73;
+  background: linear-gradient(90deg, rgba(92, 31, 22, .78), rgba(34, 13, 11, .38) 74%, transparent);
+  box-shadow: -10px 0 28px rgba(222, 121, 83, .18);
+}
+
+.station-card.at-platform:has(.service-steps):not(:has(.service-steps .active)) > .eyebrow {
+  color: #f7b08d;
+}
+
+.station-card.at-platform:has(.service-steps):not(:has(.service-steps .active)) > small {
+  min-height: 0;
+  margin-top: 8px;
+  color: #fff0e7;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .84);
+}
+
+.station-card.at-platform:has(.service-steps):not(:has(.service-steps .active)) .service-steps span {
+  border-color: rgba(242, 154, 115, .26);
+}
+
+/* Store legibility: normal cards were the smallest secondary typography in the
+   production audit. Raise the baseline without expanding the three-column
+   layout, then use the expanded card's full width for a proper fact sheet. */
+.engine-card-copy > small {
+  font-size: 11.5px;
+}
+
+.engine-card-copy h3 {
+  font-size: 20px;
+  line-height: 1.12;
+}
+
+.engine-card-copy p {
+  font-size: 14px;
+  line-height: 1.42;
+}
+
+.engine-card-copy p b {
+  font-size: 19px;
+}
+
+.engine-card-copy em {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.engine-fact-sheet summary {
+  font-size: 12.5px;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-card-copy {
+  padding: 18px 24px 22px;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet {
+  margin-top: 14px;
+  padding-top: 13px;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet > p {
+  max-width: 980px;
+  margin: 12px 0 16px;
+  color: rgba(243, 234, 215, .76);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 30px;
+  row-gap: 0;
+  margin-bottom: 14px;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet dl div {
+  grid-template-columns: minmax(145px, .9fr) minmax(0, 1.1fr);
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(243, 234, 215, .09);
+  font-size: 13.5px;
+  line-height: 1.42;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet dt {
+  color: rgba(243, 234, 215, .58);
+  font-weight: 800;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet dd {
+  color: #fff8eb;
+}
+
+.engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet a {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+@media (max-width: 820px) {
+  .engine-card:has(.engine-fact-sheet[open]) .engine-preview {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .engine-card:has(.engine-fact-sheet[open]) .engine-fact-sheet dl {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Preserve event information for reduced-motion users without animating vapor,
    falling grit, or safety indicators. */
 .reduced-motion .engine-sprite-unit::after,
