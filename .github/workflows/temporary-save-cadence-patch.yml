@@ -23,12 +23,8 @@ jobs:
 
           path = Path('app/page.tsx')
           text = path.read_text()
-          start_anchor = '''  useEffect(() => {
-            if (!saveReady || visualQaModeRef.current) return;'''.replace('            ', '    ', 1)
-          end_anchor = '''
-
-  useEffect(() => {
-    document.documentElement.style.setProperty("--user-ui-scale"'''
+          start_anchor = '  useEffect(() => {\n    if (!saveReady || visualQaModeRef.current) return;\n'
+          end_anchor = '\n\n  useEffect(() => {\n    document.documentElement.style.setProperty("--user-ui-scale"'
           start = text.find(start_anchor)
           end = text.find(end_anchor, start)
           assert start >= 0, 'save effect start anchor missing'
