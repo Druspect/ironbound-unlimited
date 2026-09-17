@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CarriageLiveryControl from "./carriage-livery-control";
+import TouchOrientationGuard from "./touch-orientation-guard";
 import "./globals.css";
 import "./compact-landscape.css";
 import "./input-accessibility.css";
@@ -12,6 +13,7 @@ import "./carriage-liveries.css";
 import "./production-polish.css";
 import "./animation-continuity.css";
 import "./biome-transition-continuity.css";
+import "./touch-orientation-guard.css";
 
 const productionQaQueryGuard = `(() => {
   const url = new URL(window.location.href);
@@ -52,7 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <script dangerouslySetInnerHTML={{ __html: productionQaQueryGuard }} />
         )}
       </head>
-      <body><CarriageLiveryControl />{children}</body>
+      <body><CarriageLiveryControl /><TouchOrientationGuard />{children}</body>
     </html>
   );
 }
