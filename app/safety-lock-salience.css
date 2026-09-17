@@ -1,0 +1,79 @@
+/*
+ * Safety-lock salience
+ * --------------------
+ * Make a boiler governor intervention immediately recognizable without adding
+ * a modal, changing cab geometry, or covering the locomotive and route.
+ */
+.experience.is-overloaded .cab {
+  border-color: rgba(222,121,83,.62);
+  box-shadow:
+    inset 0 1px rgba(242,177,143,.3),
+    0 18px 48px rgba(0,0,0,.5),
+    0 0 24px rgba(183,94,58,.12);
+}
+
+.experience.is-overloaded .speed-card {
+  border-right-color: #f19a73;
+  background: linear-gradient(270deg, rgba(79,25,19,.68), rgba(28,12,11,.34) 72%, transparent);
+  box-shadow: inset -8px 0 18px rgba(222,121,83,.08);
+}
+
+.experience.is-overloaded .speed-card .eyebrow,
+.experience.is-overloaded .speed-card .status-line {
+  color: #ffd7c4;
+}
+
+.experience.is-overloaded .speed-card .status-line {
+  border-top-color: rgba(242,154,115,.62);
+  font-weight: 900;
+  letter-spacing: .095em;
+}
+
+.experience.is-overloaded .speed-card .status-line i {
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  background: #f19a73;
+  box-shadow: 0 0 14px rgba(242,154,115,.9);
+}
+
+.experience.is-overloaded .heat-monitor {
+  outline: 1px solid rgba(242,154,115,.68);
+  outline-offset: 4px;
+  background: linear-gradient(90deg, rgba(183,94,58,.10), rgba(222,121,83,.035));
+  box-shadow: 0 0 18px rgba(183,94,58,.14);
+}
+
+.experience.is-overloaded .heat-monitor small,
+.experience.is-overloaded .heat-monitor strong {
+  color: #ffd2bd;
+  text-shadow: 0 0 10px rgba(222,121,83,.34);
+}
+
+.experience.is-overloaded .heat-monitor > div {
+  height: 7px;
+  background: rgba(77,23,19,.55);
+  box-shadow: inset 0 0 0 1px rgba(242,154,115,.76), 0 0 16px rgba(222,121,83,.34);
+}
+
+.experience.is-overloaded .heat-monitor > div i {
+  background: linear-gradient(90deg, #d08b42, #de7953 52%, #f19a73);
+  box-shadow: 0 0 12px rgba(242,154,115,.55);
+}
+
+.experience.is-overloaded .vignette {
+  box-shadow:
+    inset 0 0 140px rgba(4,6,7,.52),
+    inset 0 0 100px rgba(126,35,25,.16);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .experience.is-overloaded .speed-card .status-line i {
+    animation: safety-lock-indicator-pulse 1.15s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes safety-lock-indicator-pulse {
+  from { opacity: .72; box-shadow: 0 0 8px rgba(242,154,115,.55); }
+  to { opacity: 1; box-shadow: 0 0 18px rgba(242,154,115,1); }
+}
