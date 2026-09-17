@@ -32,6 +32,13 @@ test.describe("fleet polish", () => {
   test.describe.configure({ retries: 0 });
 
   test("every locomotive releases its brake, accepts steam, and accelerates", async ({ page }) => {
+    // This is intentionally one fleet-wide journey so every engine is exercised
+    // under the same fresh browser context. Trainline propagation now gives each
+    // locomotive a real brake-release interval, so the aggregate sweep needs a
+    // larger wall-clock budget than Playwright's generic 45-second default. The
+    // per-engine poll remains capped at eight seconds, preserving the actual
+    // regression boundary for a locomotive that fails to release or accelerate.
+    test.setTimeout(120_000);
     await page.setViewportSize({ width: 1365, height: 768 });
 
     for (const engineId of ALL_ENGINES) {
