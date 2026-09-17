@@ -52,6 +52,9 @@ export const LOCOMOTIVE_MODEL = Object.freeze({
   brakingGradeResponsePerPercent: 0.055,
   brakingGradeTimeMinimum: 0.75,
   brakingGradeTimeMaximum: 1.25,
+  locomotiveBrakeAuthorityMaximum: 0.72,
+  locomotiveBrakeAuthorityMinimum: 0.30,
+  locomotiveBrakeAuthorityFalloffPerResponse: 0.65,
   thermalTimeConstant: 8.5,
   reliefTimeConstant: 3.4,
 });
@@ -260,6 +263,19 @@ export function advanceLocomotive(
   const accelerationFactor = clamp(configuration.accelerationFactor ?? 1, .45, 1.8);
   const throttleResponseFactor = clamp(configuration.throttleResponseFactor ?? 1, .65, 1.35);
   const brakeRiggingFactor = clamp(configuration.brakeRiggingFactor ?? 1, .7, 1.3);
+  // Locomotive rigging should distinguish engines without pretending that the
+  // locomotive alone supplies every brake shoe in a passenger train. As the
+  // consist-response factor rises with added mass and cars, the locomotive's
+  // individual rigging has progressively less authority over total braking.
+  // A short train keeps meaningful engine character; a long train converges
+  // toward the neutral braking contribution of its independently braked cars.
+  const locomotiveBrakeAuthority = clamp(
+    LOCOMOTIVE_MODEL.locomotiveBrakeAuthorityMaximum -
+      Math.max(0, brakeResponseFactor - .9) * LOCOMOTIVE_MODEL.locomotiveBrakeAuthorityFalloffPerResponse,
+    LOCOMOTIVE_MODEL.locomotiveBrakeAuthorityMinimum,
+    LOCOMOTIVE_MODEL.locomotiveBrakeAuthorityMaximum,
+  );
+  const effectiveBrakeRiggingFactor = 1 + (brakeRiggingFactor - 1) * locomotiveBrakeAuthority;
   const sanding = automaticSandingState(state.speed, throttle, gradePercent, configuration.adhesionFactor);
   const launchAdhesion = startingAdhesionMultiplier(state.speed, configuration.adhesionFactor) * sanding.tractionMultiplier;
   // Once a service-brake application drives the powered target to zero, route
@@ -278,7 +294,7 @@ export function advanceLocomotive(
   const speedTime = targetSpeed >= state.speed
     ? LOCOMOTIVE_MODEL.accelerationTimeConstant / (accelerationFactor * throttleResponseFactor * launchAdhesion)
     : LOCOMOTIVE_MODEL.decelerationTimeConstant +
-      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakingGradeTimeFactor / brakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
+      (LOCOMOTIVE_MODEL.serviceBrakeTimeConstant * brakingGradeTimeFactor / effectiveBrakeRiggingFactor - LOCOMOTIVE_MODEL.decelerationTimeConstant) * brakePressure;
   const speedBlend = 1 - Math.exp(-dt / speedTime);
   const rollingSpeed = clamp(
     state.speed + (targetSpeed - state.speed) * speedBlend,
