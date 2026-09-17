@@ -32,6 +32,12 @@ test.describe("fleet polish", () => {
   test.describe.configure({ retries: 0 });
 
   test("every locomotive releases its brake, accepts steam, and accelerates", async ({ page }) => {
+    // This journey intentionally exercises all twelve locomotives serially.
+    // Brake-cylinder propagation adds a real release interval to every engine,
+    // so the default 45-second per-test ceiling can expire based on fleet size
+    // rather than a locomotive failure. Keep each engine's 8-second assertion
+    // strict while giving the complete roster enough aggregate wall-clock time.
+    test.setTimeout(90_000);
     await page.setViewportSize({ width: 1365, height: 768 });
 
     for (const engineId of ALL_ENGINES) {
