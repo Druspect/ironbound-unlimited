@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
+      - gpt/consist-brake-authority-reconciliation
   pull_request:
     branches:
       - sites-source
