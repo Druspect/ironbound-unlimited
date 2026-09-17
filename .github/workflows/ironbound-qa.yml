@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
-      - gpt/safety-lock-visual-salience
   pull_request:
     branches:
       - sites-source
