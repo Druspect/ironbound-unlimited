@@ -23,6 +23,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path('app/page.tsx')
           text = path.read_text()
@@ -32,59 +33,79 @@ jobs:
           assert old in text, 'save run type anchor missing'
           text = text.replace(old, new, 1)
 
-          old = '''              servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));
-              brakeRef.current = parsed.run.brakeEngaged !== false;
-              steamResourcesRef.current = restoredResources;'''
-          new = '''              servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));
-              const restoredBrakeEngaged = parsed.run.brakeEngaged !== false;
-              const restoredBrakePressure = clamp(
-                finiteOr(parsed.run.brakePressure, restoredBrakeEngaged ? 1 : 0),
-                0,
-                1,
-              );
-              const restoredBrakeCylinderPressure = clamp(
-                finiteOr(parsed.run.brakeCylinderPressure, restoredBrakePressure),
-                0,
-                1,
-              );
-              brakeRef.current = restoredBrakeEngaged;
-              brakePressureRef.current = restoredBrakePressure;
-              brakeCylinderPressureRef.current = restoredBrakeCylinderPressure;
-              steamResourcesRef.current = restoredResources;'''
-          assert old in text, 'brake restore anchor missing'
-          text = text.replace(old, new, 1)
+          pattern = re.compile(
+              r'(?P<i>^[ \t]+)servicedStationRef\.current = Math\.max\(-1, Math\.floor\(finiteOr\(parsed\.run\.servicedStationSequence, -1\)\)\);\n'
+              r'(?P=i)brakeRef\.current = parsed\.run\.brakeEngaged !== false;\n'
+              r'(?P=i)steamResourcesRef\.current = restoredResources;',
+              re.MULTILINE,
+          )
+          replacement = (
+              r'\g<i>servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));\n'
+              r'\g<i>const restoredBrakeEngaged = parsed.run.brakeEngaged !== false;\n'
+              r'\g<i>const restoredBrakePressure = clamp(\n'
+              r'\g<i>  finiteOr(parsed.run.brakePressure, restoredBrakeEngaged ? 1 : 0),\n'
+              r'\g<i>  0,\n'
+              r'\g<i>  1,\n'
+              r'\g<i>);\n'
+              r'\g<i>const restoredBrakeCylinderPressure = clamp(\n'
+              r'\g<i>  finiteOr(parsed.run.brakeCylinderPressure, restoredBrakePressure),\n'
+              r'\g<i>  0,\n'
+              r'\g<i>  1,\n'
+              r'\g<i>);\n'
+              r'\g<i>brakeRef.current = restoredBrakeEngaged;\n'
+              r'\g<i>brakePressureRef.current = restoredBrakePressure;\n'
+              r'\g<i>brakeCylinderPressureRef.current = restoredBrakeCylinderPressure;\n'
+              r'\g<i>steamResourcesRef.current = restoredResources;'
+          )
+          text, count = pattern.subn(replacement, text, count=1)
+          assert count == 1, 'brake restore anchor missing'
 
-          old = '''              setDistance(restoredDistance);
-              setBrakeEngaged(brakeRef.current);
-              setSteamResources(restoredResources);'''
-          new = '''              setDistance(restoredDistance);
-              setBrakeEngaged(restoredBrakeEngaged);
-              setBrakePressure(restoredBrakePressure);
-              setSteamResources(restoredResources);'''
-          assert old in text, 'brake restore state anchor missing'
-          text = text.replace(old, new, 1)
+          pattern = re.compile(
+              r'(?P<i>^[ \t]+)setDistance\(restoredDistance\);\n'
+              r'(?P=i)setBrakeEngaged\(brakeRef\.current\);\n'
+              r'(?P=i)setSteamResources\(restoredResources\);',
+              re.MULTILINE,
+          )
+          replacement = (
+              r'\g<i>setDistance(restoredDistance);\n'
+              r'\g<i>setBrakeEngaged(restoredBrakeEngaged);\n'
+              r'\g<i>setBrakePressure(restoredBrakePressure);\n'
+              r'\g<i>setSteamResources(restoredResources);'
+          )
+          text, count = pattern.subn(replacement, text, count=1)
+          assert count == 1, 'brake restore state anchor missing'
 
-          old = '''          visualTravel: visualTravelRef.current,
-          brakeEngaged,
-          fuel: steamResources.fuel,'''
-          new = '''          visualTravel: visualTravelRef.current,
-          brakeEngaged,
-          brakePressure: brakePressureRef.current,
-          brakeCylinderPressure: brakeCylinderPressureRef.current,
-          fuel: steamResources.fuel,'''
-          assert old in text, 'brake save anchor missing'
-          text = text.replace(old, new, 1)
+          pattern = re.compile(
+              r'(?P<i>^[ \t]+)visualTravel: visualTravelRef\.current,\n'
+              r'(?P=i)brakeEngaged,\n'
+              r'(?P=i)fuel: steamResources\.fuel,',
+              re.MULTILINE,
+          )
+          replacement = (
+              r'\g<i>visualTravel: visualTravelRef.current,\n'
+              r'\g<i>brakeEngaged,\n'
+              r'\g<i>brakePressure: brakePressureRef.current,\n'
+              r'\g<i>brakeCylinderPressure: brakeCylinderPressureRef.current,\n'
+              r'\g<i>fuel: steamResources.fuel,'
+          )
+          text, count = pattern.subn(replacement, text, count=1)
+          assert count == 1, 'brake save anchor missing'
 
-          old = '''              aria-label={brakeEngaged ? "Release train brake" : "Apply train brake"}
-              aria-pressed={brakeEngaged}
-              onClick={brake}'''
-          new = '''              aria-label={brakeEngaged ? "Release train brake" : "Apply train brake"}
-              aria-pressed={brakeEngaged}
-              data-brake-line-pressure={brakePressure.toFixed(4)}
-              data-brake-cylinder-pressure={brakeCylinderPressureRef.current.toFixed(4)}
-              onClick={brake}'''
-          assert old in text, 'brake button telemetry anchor missing'
-          text = text.replace(old, new, 1)
+          pattern = re.compile(
+              r'(?P<i>^[ \t]+)aria-label=\{brakeEngaged \? "Release train brake" : "Apply train brake"\}\n'
+              r'(?P=i)aria-pressed=\{brakeEngaged\}\n'
+              r'(?P=i)onClick=\{brake\}',
+              re.MULTILINE,
+          )
+          replacement = (
+              r'\g<i>aria-label={brakeEngaged ? "Release train brake" : "Apply train brake"}\n'
+              r'\g<i>aria-pressed={brakeEngaged}\n'
+              r'\g<i>data-brake-line-pressure={brakePressure.toFixed(4)}\n'
+              r'\g<i>data-brake-cylinder-pressure={brakeCylinderPressureRef.current.toFixed(4)}\n'
+              r'\g<i>onClick={brake}'
+          )
+          text, count = pattern.subn(replacement, text, count=1)
+          assert count == 1, 'brake button telemetry anchor missing'
 
           path.write_text(text)
           PY
