@@ -643,6 +643,8 @@ export default function Home() {
       );
       const root = experienceRef.current;
       if (root) {
+        root.dataset.brakeLinePressure = brakePressureRef.current.toFixed(4);
+        root.dataset.brakeCylinderPressure = brakeCylinderPressureRef.current.toFixed(4);
         const fullTilePosition = visualTravelRef.current / TILE_TRAVEL;
         const routeTilePosition = fullTilePosition % ROUTE_TILE_COUNT;
         const currentTile = Math.floor(routeTilePosition);
@@ -1288,7 +1290,6 @@ export default function Home() {
               aria-label={brakeEngaged ? "Release train brake" : "Apply train brake"}
               aria-pressed={brakeEngaged}
               data-brake-line-pressure={brakePressure.toFixed(4)}
-              data-brake-cylinder-pressure={brakeCylinderPressureRef.current.toFixed(4)}
               onClick={brake}
             ><strong>BRAKE</strong></button>
           </div>
