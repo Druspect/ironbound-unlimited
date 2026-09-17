@@ -480,26 +480,53 @@ export default function Home() {
 
   useEffect(() => {
     if (!saveReady || visualQaModeRef.current) return;
-    const timer = window.setTimeout(() => {
-      localStorage.setItem("ironbound-save-v4", JSON.stringify({
-        bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack,
-        run: {
-          throttle, speed, boilerLoad, heat, distance,
-          visualTravel: visualTravelRef.current,
-          brakeEngaged,
-          brakePressure: brakePressureRef.current,
-          brakeCylinderPressure: brakeCylinderPressureRef.current,
-          fuel: steamResources.fuel,
-          water: steamResources.water,
-          stationsWithoutService: steamResources.stationsWithoutService,
-          failure: runFailure,
-          claimedStops: Array.from(claimedStopsRef.current).slice(-24),
-          servicedStationSequence: servicedStationRef.current,
-        },
-      }));
-    }, 350);
-    return () => window.clearTimeout(timer);
-  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, throttle, speed, boilerLoad, heat, distance, brakeEngaged, steamResources, runFailure, saveReady]);
+
+    const persistRun = () => {
+      const liveResources = steamResourcesRef.current;
+      try {
+        localStorage.setItem("ironbound-save-v4", JSON.stringify({
+          bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack,
+          run: {
+            throttle: throttleRef.current,
+            speed: speedRef.current,
+            boilerLoad: boilerRef.current,
+            heat: heatRef.current,
+            distance: distanceRef.current,
+            visualTravel: visualTravelRef.current,
+            brakeEngaged: brakeRef.current,
+            brakePressure: brakePressureRef.current,
+            brakeCylinderPressure: brakeCylinderPressureRef.current,
+            fuel: liveResources.fuel,
+            water: liveResources.water,
+            stationsWithoutService: liveResources.stationsWithoutService,
+            failure: runFailureRef.current,
+            claimedStops: Array.from(claimedStopsRef.current).slice(-24),
+            servicedStationSequence: servicedStationRef.current,
+          },
+        }));
+      } catch {
+        // Storage can be unavailable in private/restricted browser contexts.
+      }
+    };
+
+    // Live simulation values are refs updated every frame, so a fixed cadence
+    // cannot be starved by the 150 ms HUD render loop like the former debounce.
+    persistRun();
+    const timer = window.setInterval(persistRun, 1000);
+    const flushOnPageHide = () => persistRun();
+    const flushWhenHidden = () => {
+      if (document.visibilityState === "hidden") persistRun();
+    };
+    window.addEventListener("pagehide", flushOnPageHide);
+    document.addEventListener("visibilitychange", flushWhenHidden);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("pagehide", flushOnPageHide);
+      document.removeEventListener("visibilitychange", flushWhenHidden);
+      persistRun();
+    };
+  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, saveReady]);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--user-ui-scale", String(settings.uiScale / 100));
