@@ -1,0 +1,114 @@
+html.touch-portrait-blocked,
+html.touch-portrait-blocked body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.touch-orientation-guard {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 34px 28px calc(34px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 50% 32%, rgba(210,155,74,.16), transparent 33%),
+    linear-gradient(150deg, rgba(15,18,18,.995), rgba(5,7,8,.995));
+  color: var(--paper, #f3ead7);
+  text-align: center;
+}
+
+.touch-orientation-guard::before {
+  content: "";
+  position: absolute;
+  inset: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  pointer-events: none;
+  border: 1px solid rgba(210,155,74,.38);
+  box-shadow: inset 0 0 90px rgba(0,0,0,.48);
+}
+
+.orientation-guard-mark {
+  position: relative;
+  width: 116px;
+  height: 74px;
+  margin-bottom: 10px;
+  border: 3px solid rgba(243,234,215,.82);
+  border-radius: 12px;
+  transform: rotate(-90deg);
+  box-shadow: 0 0 0 1px rgba(210,155,74,.28), 0 18px 42px rgba(0,0,0,.42);
+}
+
+.orientation-guard-mark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(243,234,215,.72);
+  transform: translateX(-50%);
+}
+
+.orientation-guard-mark span {
+  position: absolute;
+  inset: 13px 16px;
+  border: 1px solid rgba(210,155,74,.62);
+  background: linear-gradient(90deg, rgba(210,155,74,.08), rgba(210,155,74,.2), rgba(210,155,74,.08));
+}
+
+.orientation-guard-kicker {
+  color: var(--brass, #d29b4a);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .28em;
+}
+
+.touch-orientation-guard h1 {
+  margin: 0;
+  max-width: 520px;
+  font: 700 clamp(38px, 10vw, 64px)/.95 Georgia, serif;
+  letter-spacing: .01em;
+}
+
+.touch-orientation-guard p {
+  max-width: 500px;
+  margin: 2px 0 10px;
+  color: rgba(243,234,215,.74);
+  font: 18px/1.5 Georgia, serif;
+}
+
+.orientation-guard-hint {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 13px;
+  border: 1px solid rgba(210,155,74,.32);
+  background: rgba(210,155,74,.08);
+  color: var(--brass, #d29b4a);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .15em;
+}
+
+.orientation-guard-hint i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .orientation-guard-mark {
+    animation: orientation-guard-nudge 2.6s ease-in-out infinite;
+  }
+}
+
+@keyframes orientation-guard-nudge {
+  0%, 72%, 100% { transform: rotate(-90deg); }
+  84% { transform: rotate(-82deg); }
+  92% { transform: rotate(-96deg); }
+}
