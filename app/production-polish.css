@@ -209,18 +209,78 @@
   --headlight-phase: .24;
 }
 
-/* Preserve event information for reduced-motion users without animating vapor
-   or falling grit. The active sanding stream remains visible as a static cue. */
+/* Safety-lock presentation: the governor is already enforced by the physics,
+   but the production audit showed that the visual state was too easy to miss.
+   Strengthen the existing in-cab cues without adding a modal or moving controls. */
+.experience.is-overloaded .speed-card {
+  border-right-color: rgba(242, 154, 115, .96);
+  background: linear-gradient(270deg, rgba(77, 24, 18, .72), rgba(25, 10, 9, .34) 72%, transparent);
+  box-shadow: 10px 0 28px rgba(222, 121, 83, .16);
+}
+
+.experience.is-overloaded .status-line {
+  color: #fff0e7;
+  border-top-color: rgba(242, 154, 115, .48);
+  font-weight: 900;
+  letter-spacing: .11em;
+}
+
+.experience.is-overloaded .status-line i {
+  width: 8px;
+  height: 8px;
+  background: #f19a73;
+  box-shadow: 0 0 12px rgba(241, 154, 115, .8);
+  animation: production-safety-pulse 1.05s ease-in-out infinite;
+}
+
+.experience.is-overloaded .heat-monitor {
+  margin-top: 7px;
+  padding: 7px 8px 8px;
+  border: 1px solid rgba(242, 154, 115, .62);
+  background: linear-gradient(90deg, rgba(112, 32, 21, .34), rgba(67, 19, 14, .16));
+  box-shadow: inset 0 0 20px rgba(222, 121, 83, .08), 0 0 18px rgba(222, 121, 83, .12);
+}
+
+.experience.is-overloaded .heat-monitor small,
+.experience.is-overloaded .heat-monitor strong {
+  color: #fff0e7;
+}
+
+.experience.is-overloaded .heat-monitor strong {
+  font-size: 13px;
+  letter-spacing: .13em;
+  text-shadow: 0 0 12px rgba(241, 154, 115, .56);
+}
+
+.experience.is-overloaded .heat-monitor > div {
+  height: 8px;
+  background: rgba(38, 8, 6, .72);
+  box-shadow: inset 0 0 0 1px rgba(242, 154, 115, .66), 0 0 14px rgba(222, 121, 83, .24);
+}
+
+.experience.is-overloaded .heat-monitor > div i {
+  background: linear-gradient(90deg, #d29b4a, #de7953 58%, #f0a07d);
+}
+
+@keyframes production-safety-pulse {
+  0%, 100% { opacity: .7; transform: scale(.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+/* Preserve event information for reduced-motion users without animating vapor,
+   falling grit, or safety indicators. */
 .reduced-motion .engine-sprite-unit::after,
 .reduced-motion .automatic-sander,
-.reduced-motion .steam-vent {
+.reduced-motion .steam-vent,
+.reduced-motion .status-line i {
   animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .engine-sprite-unit::after,
   .automatic-sander,
-  .steam-vent {
+  .steam-vent,
+  .status-line i {
     animation: none !important;
   }
 }
