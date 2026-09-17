@@ -24,17 +24,18 @@ test("moving-run autosave preserves live trainline and cylinder pressure across 
 
   await page.getByRole("button", { name: "Apply train brake" }).click();
   const brake = page.locator(".brake-button");
+  const experience = page.locator(".experience");
   await expect.poll(async () => Number(await brake.getAttribute("data-brake-line-pressure")), {
     timeout: 4_000,
   }).toBeGreaterThan(.45);
-  await expect.poll(async () => Number(await brake.getAttribute("data-brake-cylinder-pressure")), {
+  await expect.poll(async () => Number(await experience.getAttribute("data-brake-cylinder-pressure")), {
     timeout: 4_000,
   }).toBeGreaterThan(.18);
 
-  const beforeReload = await brake.evaluate((element) => ({
-    line: Number(element.getAttribute("data-brake-line-pressure")),
-    cylinder: Number(element.getAttribute("data-brake-cylinder-pressure")),
-  }));
+  const beforeReload = {
+    line: Number(await brake.getAttribute("data-brake-line-pressure")),
+    cylinder: Number(await experience.getAttribute("data-brake-cylinder-pressure")),
+  };
 
   // The production saver must write while the train is still moving; this is
   // specifically the condition that the former debounce could postpone forever.
@@ -57,18 +58,19 @@ test("moving-run autosave preserves live trainline and cylinder pressure across 
 
   await page.reload();
   const restoredBrake = page.locator(".brake-button");
+  const restoredExperience = page.locator(".experience");
   await expect(restoredBrake).toHaveAttribute("aria-pressed", "true");
   await expect.poll(async () => Number(await restoredBrake.getAttribute("data-brake-line-pressure")), {
     timeout: 4_000,
   }).toBeGreaterThan(.35);
-  await expect.poll(async () => Number(await restoredBrake.getAttribute("data-brake-cylinder-pressure")), {
+  await expect.poll(async () => Number(await restoredExperience.getAttribute("data-brake-cylinder-pressure")), {
     timeout: 4_000,
   }).toBeGreaterThan(.12);
 
-  const restored = await restoredBrake.evaluate((element) => ({
-    line: Number(element.getAttribute("data-brake-line-pressure")),
-    cylinder: Number(element.getAttribute("data-brake-cylinder-pressure")),
-  }));
+  const restored = {
+    line: Number(await restoredBrake.getAttribute("data-brake-line-pressure")),
+    cylinder: Number(await restoredExperience.getAttribute("data-brake-cylinder-pressure")),
+  };
   expect(Math.abs(restored.line - saved.brakePressure)).toBeLessThan(.03);
   expect(Math.abs(restored.cylinder - saved.brakeCylinderPressure)).toBeLessThan(.03);
 });
@@ -94,7 +96,8 @@ test("legacy saves with a set brake restore to a safely held train", async ({ pa
   await page.goto("/");
 
   const brake = page.locator(".brake-button");
+  const experience = page.locator(".experience");
   await expect(brake).toHaveAttribute("aria-pressed", "true");
   await expect(brake).toHaveAttribute("data-brake-line-pressure", "1.0000");
-  await expect(brake).toHaveAttribute("data-brake-cylinder-pressure", "1.0000");
+  await expect(experience).toHaveAttribute("data-brake-cylinder-pressure", "1.0000");
 });
