@@ -1,0 +1,98 @@
+name: Temporary production remediation patch
+
+on:
+  push:
+    branches:
+      - gpt/production-remediation-four-pack
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt/production-remediation-four-pack
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Persist live brake state through saves
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('app/page.tsx')
+          text = path.read_text()
+
+          old = 'brakeEngaged?: boolean; fuel?: number; coal?: number; water?: number;'
+          new = 'brakeEngaged?: boolean; brakePressure?: number; brakeCylinderPressure?: number; fuel?: number; coal?: number; water?: number;'
+          assert old in text, 'save run type anchor missing'
+          text = text.replace(old, new, 1)
+
+          old = '''              servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));
+              brakeRef.current = parsed.run.brakeEngaged !== false;
+              steamResourcesRef.current = restoredResources;'''
+          new = '''              servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));
+              const restoredBrakeEngaged = parsed.run.brakeEngaged !== false;
+              const restoredBrakePressure = clamp(
+                finiteOr(parsed.run.brakePressure, restoredBrakeEngaged ? 1 : 0),
+                0,
+                1,
+              );
+              const restoredBrakeCylinderPressure = clamp(
+                finiteOr(parsed.run.brakeCylinderPressure, restoredBrakePressure),
+                0,
+                1,
+              );
+              brakeRef.current = restoredBrakeEngaged;
+              brakePressureRef.current = restoredBrakePressure;
+              brakeCylinderPressureRef.current = restoredBrakeCylinderPressure;
+              steamResourcesRef.current = restoredResources;'''
+          assert old in text, 'brake restore anchor missing'
+          text = text.replace(old, new, 1)
+
+          old = '''              setDistance(restoredDistance);
+              setBrakeEngaged(brakeRef.current);
+              setSteamResources(restoredResources);'''
+          new = '''              setDistance(restoredDistance);
+              setBrakeEngaged(restoredBrakeEngaged);
+              setBrakePressure(restoredBrakePressure);
+              setSteamResources(restoredResources);'''
+          assert old in text, 'brake restore state anchor missing'
+          text = text.replace(old, new, 1)
+
+          old = '''          visualTravel: visualTravelRef.current,
+          brakeEngaged,
+          fuel: steamResources.fuel,'''
+          new = '''          visualTravel: visualTravelRef.current,
+          brakeEngaged,
+          brakePressure: brakePressureRef.current,
+          brakeCylinderPressure: brakeCylinderPressureRef.current,
+          fuel: steamResources.fuel,'''
+          assert old in text, 'brake save anchor missing'
+          text = text.replace(old, new, 1)
+
+          old = '''              aria-label={brakeEngaged ? "Release train brake" : "Apply train brake"}
+              aria-pressed={brakeEngaged}
+              onClick={brake}'''
+          new = '''              aria-label={brakeEngaged ? "Release train brake" : "Apply train brake"}
+              aria-pressed={brakeEngaged}
+              data-brake-line-pressure={brakePressure.toFixed(4)}
+              data-brake-cylinder-pressure={brakeCylinderPressureRef.current.toFixed(4)}
+              onClick={brake}'''
+          assert old in text, 'brake button telemetry anchor missing'
+          text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+          git diff --check
+      - name: Commit patched runtime
+        run: |
+          git config user.name "Dolostone AI"
+          git config user.email "22435112+Druspect@users.noreply.github.com"
+          git add app/page.tsx
+          git commit -m "state: preserve live brake pressure across reloads"
+          git push origin HEAD:gpt/production-remediation-four-pack
