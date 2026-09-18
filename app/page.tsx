@@ -318,7 +318,7 @@ export default function Home() {
         } else if (!browserAcceptanceRequested) {
           const saved = localStorage.getItem("ironbound-save-v4") ?? localStorage.getItem("ironbound-save-v3") ?? localStorage.getItem("ironbound-save-v2") ?? localStorage.getItem("ironbound-save-v1");
           if (saved) {
-            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; selectedAudioPack?: AudioPackId; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null; claimedStops?: string[]; servicedStationSequence?: number } };
+            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; selectedAudioPack?: AudioPackId; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; brakePressure?: number; brakeCylinderPressure?: number; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null; claimedStops?: string[]; servicedStationSequence?: number } };
             if (typeof parsed.bonds === "number") setBonds(Math.max(0, parsed.bonds));
             const owned = Array.from(new Set([STARTER_LOCOMOTIVE_ID, ...(Array.isArray(parsed.ownedEngines) ? parsed.ownedEngines.filter((id) => LOCOMOTIVES.some((engine) => engine.id === id)) : [])]));
             setOwnedEngines(owned);
@@ -372,7 +372,20 @@ export default function Home() {
                   .slice(-24),
               );
               servicedStationRef.current = Math.max(-1, Math.floor(finiteOr(parsed.run.servicedStationSequence, -1)));
-              brakeRef.current = parsed.run.brakeEngaged !== false;
+              const restoredBrakeEngaged = parsed.run.brakeEngaged !== false;
+              const restoredBrakePressure = clamp(
+                finiteOr(parsed.run.brakePressure, restoredBrakeEngaged ? 1 : 0),
+                0,
+                1,
+              );
+              const restoredBrakeCylinderPressure = clamp(
+                finiteOr(parsed.run.brakeCylinderPressure, restoredBrakePressure),
+                0,
+                1,
+              );
+              brakeRef.current = restoredBrakeEngaged;
+              brakePressureRef.current = restoredBrakePressure;
+              brakeCylinderPressureRef.current = restoredBrakeCylinderPressure;
               steamResourcesRef.current = restoredResources;
               runFailureRef.current = restoredFailure;
               setThrottle(restoredThrottle);
@@ -380,7 +393,8 @@ export default function Home() {
               setBoilerLoad(restoredBoiler);
               setHeat(restoredHeat);
               setDistance(restoredDistance);
-              setBrakeEngaged(brakeRef.current);
+              setBrakeEngaged(restoredBrakeEngaged);
+              setBrakePressure(restoredBrakePressure);
               setSteamResources(restoredResources);
               setRunFailure(restoredFailure);
             }
@@ -473,24 +487,53 @@ export default function Home() {
 
   useEffect(() => {
     if (!saveReady || visualQaModeRef.current) return;
-    const timer = window.setTimeout(() => {
-      localStorage.setItem("ironbound-save-v4", JSON.stringify({
-        bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack,
-        run: {
-          throttle, speed, boilerLoad, heat, distance,
-          visualTravel: visualTravelRef.current,
-          brakeEngaged,
-          fuel: steamResources.fuel,
-          water: steamResources.water,
-          stationsWithoutService: steamResources.stationsWithoutService,
-          failure: runFailure,
-          claimedStops: Array.from(claimedStopsRef.current).slice(-24),
-          servicedStationSequence: servicedStationRef.current,
-        },
-      }));
-    }, 350);
-    return () => window.clearTimeout(timer);
-  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, throttle, speed, boilerLoad, heat, distance, brakeEngaged, steamResources, runFailure, saveReady]);
+
+    const persistRun = () => {
+      const liveResources = steamResourcesRef.current;
+      try {
+        localStorage.setItem("ironbound-save-v4", JSON.stringify({
+          bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack,
+          run: {
+            throttle: throttleRef.current,
+            speed: speedRef.current,
+            boilerLoad: boilerRef.current,
+            heat: heatRef.current,
+            distance: distanceRef.current,
+            visualTravel: visualTravelRef.current,
+            brakeEngaged: brakeRef.current,
+            brakePressure: brakePressureRef.current,
+            brakeCylinderPressure: brakeCylinderPressureRef.current,
+            fuel: liveResources.fuel,
+            water: liveResources.water,
+            stationsWithoutService: liveResources.stationsWithoutService,
+            failure: runFailureRef.current,
+            claimedStops: Array.from(claimedStopsRef.current).slice(-24),
+            servicedStationSequence: servicedStationRef.current,
+          },
+        }));
+      } catch {
+        // Storage can be unavailable in private/restricted browser contexts.
+      }
+    };
+
+    // Gameplay refs update every animation frame. A fixed cadence cannot be
+    // starved by the 150 ms HUD render loop like the former debounce could.
+    persistRun();
+    const timer = window.setInterval(persistRun, 1000);
+    const flushOnPageHide = () => persistRun();
+    const flushWhenHidden = () => {
+      if (document.visibilityState === "hidden") persistRun();
+    };
+    window.addEventListener("pagehide", flushOnPageHide);
+    document.addEventListener("visibilitychange", flushWhenHidden);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("pagehide", flushOnPageHide);
+      document.removeEventListener("visibilitychange", flushWhenHidden);
+      persistRun();
+    };
+  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, saveReady]);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--user-ui-scale", String(settings.uiScale / 100));
@@ -607,6 +650,8 @@ export default function Home() {
       );
       const root = experienceRef.current;
       if (root) {
+        root.dataset.brakeLinePressure = brakePressureRef.current.toFixed(4);
+        root.dataset.brakeCylinderPressure = brakeCylinderPressureRef.current.toFixed(4);
         const fullTilePosition = visualTravelRef.current / TILE_TRAVEL;
         const routeTilePosition = fullTilePosition % ROUTE_TILE_COUNT;
         const currentTile = Math.floor(routeTilePosition);
