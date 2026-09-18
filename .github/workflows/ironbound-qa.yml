@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
-      - gpt/track-wheel-coupler-rebuild
   pull_request:
     branches:
       - sites-source
