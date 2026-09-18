@@ -148,3 +148,11 @@ test("oil and coal failures have fuel-correct language", () => {
   assert.match(page, /runFailure === "fuel"/);
   assert.doesNotMatch(page, /runFailure === "coal"/);
 });
+
+
+test("service due copy handles singular and plural station counts", () => {
+  assert.match(page, /const serviceDueStations = stationsUntilServiceRequired\(steamResources\)/);
+  assert.match(page, /serviceDueStations === 1 \? "STATION" : "STATIONS"/);
+  assert.match(page, /serviceDueStations === 1 \? "station" : "stations"/);
+  assert.doesNotMatch(page, /stationsUntilServiceRequired\(steamResources\)\} STATIONS/);
+});
