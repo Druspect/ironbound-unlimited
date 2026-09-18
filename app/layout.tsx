@@ -6,7 +6,6 @@ import "./compact-landscape.css";
 import "./input-accessibility.css";
 import "./track-realism.css";
 import "./starter-consist-realism.css";
-import "./track-ground-truth.css";
 import "./headlight-realism.css";
 import "./undercarriage-reconciliation.css";
 import "./carriage-liveries.css";
