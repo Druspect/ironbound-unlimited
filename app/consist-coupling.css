@@ -1,0 +1,130 @@
+/*
+ * Consist coupling realism
+ * ------------------------
+ * Vehicle boxes touch mathematically, but transparent artwork margins can make
+ * the train read as disconnected. Render the mechanical interfaces explicitly
+ * at each boundary without moving any calibrated body or wheel geometry.
+ */
+
+.consist-car .car-end-diaphragm {
+  position: absolute;
+  z-index: 3;
+  right: -3px;
+  bottom: 31%;
+  width: 7px;
+  height: 32%;
+  border: 1px solid rgba(58, 55, 50, .9);
+  border-radius: 2px;
+  background: linear-gradient(90deg, #171817, #47453f 48%, #181918);
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, .62);
+  pointer-events: none;
+}
+
+.consist-coupler {
+  z-index: 2;
+  left: auto;
+  right: -11px;
+  bottom: 20.6%;
+  width: 22px;
+  height: 5px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #6f654f 0 24%, #2a2b29 25% 72%, #111312 73%);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, .72);
+  transform: none;
+}
+
+.consist-coupler::before,
+.consist-coupler::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translateY(-50%);
+  border: 1px solid #171817;
+  border-radius: 45% 55% 50% 50%;
+  background: #3b3a35;
+}
+
+.consist-coupler::before { left: -2px; }
+.consist-coupler::after { right: -2px; }
+
+/* The final coach-to-tender connection is independent of transparent sprite
+   margins. It deliberately crosses the engine-left boundary. */
+.consist-engine-coupling {
+  position: absolute;
+  z-index: 4;
+  left: calc(var(--engine-left) - 15px);
+  bottom: 20.6%;
+  width: 30px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #766b53 0 22%, #2b2c29 23% 72%, #111312 73%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, .76);
+  pointer-events: none;
+}
+
+.consist-engine-coupling::before,
+.consist-engine-coupling::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translateY(-50%);
+  border: 1px solid #171817;
+  border-radius: 48%;
+  background: #3d3b35;
+}
+
+.consist-engine-coupling::before { left: -3px; }
+.consist-engine-coupling::after { right: -3px; }
+
+.consist-engine-coupling > i {
+  position: absolute;
+  left: 43%;
+  top: 5px;
+  width: 9px;
+  height: 13px;
+  border-left: 2px solid rgba(35, 33, 30, .92);
+  border-bottom: 2px solid rgba(35, 33, 30, .92);
+  border-radius: 0 0 0 8px;
+  transform: rotate(-7deg);
+}
+
+/* Make the tender-to-locomotive drawbar legible on every registered engine
+   without changing the sprite's measured tender or locomotive sections. */
+.engine-tender-drawbar {
+  position: absolute;
+  z-index: 4;
+  left: calc(var(--tender-junction, 30%) - 2%);
+  bottom: 18.5%;
+  width: 5%;
+  min-width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #615846, #242522 58%, #101211);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, .7);
+  pointer-events: none;
+}
+
+.engine-sprite-tom-thumb .engine-tender-drawbar {
+  left: 29%;
+  width: 9%;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .consist-car .car-end-diaphragm {
+    width: 6px;
+  }
+
+  .consist-coupler {
+    right: -9px;
+    width: 18px;
+  }
+
+  .consist-engine-coupling {
+    left: calc(var(--engine-left) - 12px);
+    width: 24px;
+  }
+}
