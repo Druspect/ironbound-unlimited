@@ -1,51 +1,47 @@
 /*
  * Starter consist realism
  * -----------------------
- * Ironbound No. 1 was authored from separate locomotive and tender components,
- * but the flattened runtime sheet left too much visual drawbar space between
- * them and made the tender much smaller than the adjoining passenger stock.
- *
- * Keep the registered vertical axle/rail geometry intact. The locomotive half
- * moves toward the tender while a duplicated tender section offsets by the same
- * amount in the opposite direction, so the tender remains coupled to the last
- * passenger car and every tire keeps its existing rail contact height.
+ * Ironbound No. 1 uses a split locomotive/tender composition. Keep its vertical
+ * axle registration intact while closing the drawbar gap and applying the same
+ * interpolated 32-pose motion to both locomotive and tender halves.
  */
 
-/* Close the excessive tender-to-locomotive drawbar gap. This translation is
-   horizontal only; the original vertical motion/rail inset expression is kept. */
 .engine-sprite-tom-thumb {
   transform: translate3d(-7%, calc(var(--locomotive-lift, 0px) + var(--sprite-rail-inset)), 0);
 }
 
-/* The primary animation layer now carries the locomotive section. A slight
-   overlap at the section boundary avoids a visible cut through the rear frame. */
+/* The main blended frames carry only the locomotive section. */
 .engine-sprite-tom-thumb .engine-sprite-frame {
   clip-path: polygon(29% 0, 100% 0, 100% 100%, 29% 100%);
 }
 
-/* Re-render the registered tender and its animated trucks from the same frame,
-   offsetting it by +7%. Because the parent moved -7%, its world-space position
-   is unchanged while the locomotive closes the unrealistic empty drawbar gap. */
-.engine-sprite-tom-thumb::after {
-  content: "";
+/* Re-render the tender half with the same primary/secondary blend. The +7%
+   offset cancels the parent's -7% translation, retaining its train-end position
+   while the locomotive closes toward it. */
+.starter-tender-frame {
   position: absolute;
   z-index: 3;
   inset: 0;
-  background-image: url("/assets/locomotive-shop/v3/sprites/tom-thumb.webp");
   background-repeat: no-repeat;
   background-size: var(--sprite-sheet-width, 800%) var(--sprite-sheet-height, 400%);
-  background-position: var(--engine-sprite-x, 0%) var(--engine-sprite-y, 0%);
   clip-path: polygon(0 0, 31% 0, 31% 100%, 0 100%);
   transform: translateX(7%);
   filter: drop-shadow(0 7px 5px rgba(0, 0, 0, .55));
   pointer-events: none;
-  will-change: background-position;
+  will-change: background-position, opacity;
 }
 
-/* Restore the tender body mass without scaling its wheelset. The original
-   separate tender art is overlaid above the registered animated trucks. At the
-   normal desktop scale this puts the tender at roughly two-thirds of a coach
-   body height instead of the previous toy-cart proportion. */
+.starter-tender-frame-primary {
+  background-position: var(--engine-sprite-a-x, var(--engine-sprite-x, 0%)) var(--engine-sprite-a-y, var(--engine-sprite-y, 0%));
+  opacity: calc(1 - var(--engine-sprite-blend, 0));
+}
+
+.starter-tender-frame-secondary {
+  background-position: var(--engine-sprite-b-x, var(--engine-sprite-x, 0%)) var(--engine-sprite-b-y, var(--engine-sprite-y, 0%));
+  opacity: var(--engine-sprite-blend, 0);
+}
+
+/* Restore the tender body mass without scaling its wheelset. */
 .engine-sprite-tom-thumb::before {
   content: "";
   position: absolute;
@@ -59,8 +55,6 @@
   pointer-events: none;
 }
 
-/* Keep the correction useful on short landscape layouts without letting the
-   enlarged tender body invade the control deck. */
 @media (orientation: landscape) and (max-height: 560px) {
   .engine-sprite-tom-thumb::before {
     height: 44%;
