@@ -105,21 +105,42 @@ test("generated exhaust one-shots are finite smooth pressure bodies, not click i
   assert.equal(fingerprints.size, names.length);
 });
 
-test("production generator owns the multi-chime whistle and all synchronized exhaust assets", async () => {
+test("production generator owns five smooth and acoustically distinct whistle families", async () => {
   const generator = await readFile(new URL("../scripts/generate-audio-packs.mjs", import.meta.url), "utf8");
-  for (const asset of [
+  const exhaustAssets = [
     "exhaust-light.wav",
     "exhaust-balanced.wav",
     "exhaust-heavy.wav",
     "exhaust-articulated.wav",
-    "ironbound-steam-whistle.wav",
-  ]) assert.match(generator, new RegExp(asset.replaceAll(".", "\\.")));
+  ];
+  const whistleAssets = [
+    "whistle-early-passenger.wav",
+    "whistle-freight.wav",
+    "whistle-high-speed-passenger.wav",
+    "whistle-articulated-freight.wav",
+    "whistle-winter-excursion.wav",
+  ];
+  for (const asset of [...exhaustAssets, ...whistleAssets]) {
+    assert.match(generator, new RegExp(asset.replaceAll(".", "\\.")));
+  }
 
-  const whistle = await readWav("ironbound-steam-whistle.wav");
-  const duration = whistle.samples.length / whistle.sampleRate;
-  assert.ok(duration > 2.4 && duration < 2.5);
-  const peak = Math.max(...whistle.samples.map((sample) => Math.abs(sample)));
-  assert.ok(peak > 10_000);
-  assert.ok(Math.abs(whistle.samples[0]) < 10);
-  assert.ok(Math.abs(whistle.samples[whistle.samples.length - 1]) < 100);
+  const fingerprints = new Set();
+  for (const name of whistleAssets) {
+    const whistle = await readWav(name);
+    const duration = whistle.samples.length / whistle.sampleRate;
+    assert.ok(duration >= 2.15 && duration <= 2.90, `${name} duration ${duration}`);
+    const peak = Math.max(...whistle.samples.map((sample) => Math.abs(sample)));
+    assert.ok(peak > 10_000, `${name} has insufficient whistle body`);
+    assert.ok(Math.abs(whistle.samples[0]) < 10);
+    assert.ok(Math.abs(whistle.samples[whistle.samples.length - 1]) < 100);
+
+    let maxDelta = 0;
+    for (let index = 1; index < whistle.samples.length; index += 1) {
+      maxDelta = Math.max(maxDelta, Math.abs(whistle.samples[index] - whistle.samples[index - 1]));
+    }
+    assert.ok(maxDelta / peak < 0.48, `${name} contains a snap-like edge`);
+    const checksum = whistle.samples.reduce((sum, sample, index) => (sum + sample * ((index % 89) + 1)) | 0, 0);
+    fingerprints.add(`${whistle.samples.length}:${checksum}`);
+  }
+  assert.equal(fingerprints.size, whistleAssets.length, "whistle families must not collapse into the same waveform");
 });
