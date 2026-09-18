@@ -7,7 +7,7 @@ async function startTrain(page, engineId) {
   await page.getByRole("button", { name: "Release train brake" }).click();
   await page.getByRole("slider", { name: "Locomotive throttle" }).fill("58");
   await expect.poll(async () => Number(await page.locator(".speed-reading strong").textContent() ?? 0), { timeout: 8_000 }).toBeGreaterThan(0);
-  return engine.locator(".engine-sprite-frame");
+  return engine.locator(".engine-sprite-frame-primary");
 }
 
 test.describe("animation continuity", () => {
@@ -48,7 +48,7 @@ test.describe("animation continuity", () => {
   test("reduced motion removes phase-locked chassis movement", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/?qaEngine=prr-1361&qaCars=3");
-    const frame = page.locator('[data-engine-sprite="prr-1361"] .engine-sprite-frame');
+    const frame = page.locator('[data-engine-sprite="prr-1361"] .engine-sprite-frame-primary');
     await expect(frame).toBeVisible({ timeout: 10_000 });
     await expect.poll(() => frame.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
   });
