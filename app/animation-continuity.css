@@ -1,17 +1,17 @@
 /*
  * Locomotive animation continuity
  * ------------------------------
- * The audited sprite sheets already carry 32 unique wheel/rod poses. This
- * layer adds a tiny continuous suspension response between those discrete
- * poses using the same driver-wheel angle that advances the sheet. The motion
- * remains sub-pixel vertically so the calibrated tire/rail contact is not
- * visually broken.
+ * The locomotive atlases contain 32 registered wheel/rod poses. A hard frame
+ * switch makes low-speed motion read as hold/snap/hold. Keep those audited
+ * poses, but interpolate the presentation by cross-fading the current and next
+ * registered frames every RAF. Driver angle still comes from physical travel.
  */
 
 .engine-sprite-unit {
   --phase-surge-amplitude: .28px;
   --phase-rise-amplitude: .16px;
   --phase-rock-amplitude: .012deg;
+  --engine-sprite-blend: 0;
 }
 
 .engine-sprite-frame {
@@ -21,7 +21,17 @@
   transform: translate3d(var(--phase-surge), var(--phase-rise), 0) rotate(var(--phase-rock));
   transform-origin: 68% 82%;
   backface-visibility: hidden;
-  will-change: background-position, transform;
+  will-change: background-position, opacity, transform;
+}
+
+.engine-sprite-frame-primary {
+  background-position: var(--engine-sprite-a-x, var(--engine-sprite-x, 0%)) var(--engine-sprite-a-y, var(--engine-sprite-y, 0%));
+  opacity: calc(1 - var(--engine-sprite-blend, 0));
+}
+
+.engine-sprite-frame-secondary {
+  background-position: var(--engine-sprite-b-x, var(--engine-sprite-x, 0%)) var(--engine-sprite-b-y, var(--engine-sprite-y, 0%));
+  opacity: var(--engine-sprite-blend, 0);
 }
 
 /* Large articulated beds should feel heavy rather than twitchy. */
@@ -40,7 +50,7 @@
   --phase-rock-amplitude: .015deg;
 }
 
-/* Preserve accessibility and the existing reduced-motion contract. */
+/* Reduced motion removes decorative suspension, not functional wheel phase. */
 .reduced-motion .engine-sprite-frame {
   transform: none !important;
 }
