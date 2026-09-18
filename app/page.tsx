@@ -920,13 +920,13 @@ export default function Home() {
     "--platform-width": `${trainGeometry.platformRenderedWidth}px`,
   };
 
-  const motionState = overloaded ? "SAFETY LOCK" : brakeEngaged ? (speed > 0.5 ? "BRAKING" : "BRAKE SET") : paused ? "HOLDING" : speed < 2 ? "STOPPED" : speed > 67 ? "HIGHBALL" : "RUNNING TRUE";
+  const motionState = overloaded ? "SAFETY VALVES" : brakeEngaged ? (speed > 0.5 ? "BRAKING" : "BRAKE SET") : paused ? "HOLDING" : speed < 2 ? "STOPPED" : speed > 67 ? "HIGHBALL" : "RUNNING TRUE";
   const activeBiome = BIOMES[biomeState.current];
   const nextBiome = BIOMES[biomeState.next];
   const activeStation = STATIONS[stationState.index];
   const onTarget = speed >= activeOperatingProfile.economicalSpeedMinMph && speed <= activeOperatingProfile.economicalSpeedMaxMph;
   const gradeLabel = `${gradePercent >= 0 ? "+" : ""}${gradePercent.toFixed(1)}%`;
-  const heatState = overloaded ? "SAFETY LOCK" : heat >= 72 ? "HOT" : heat >= 30 ? "WARM" : "NORMAL";
+  const heatState = overloaded ? "SAFETY VALVES" : heat >= 72 ? "HOT" : heat >= 30 ? "WARM" : "NORMAL";
   const heatTone = overloaded ? "locked" : heat >= 72 ? "hot" : heat >= 30 ? "warm" : "normal";
   const throttleState = brakeEngaged || throttle < 4
     ? "CLOSED"
