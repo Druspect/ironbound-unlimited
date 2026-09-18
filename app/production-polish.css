@@ -5,6 +5,16 @@
  * does not move wheels, locomotive bodies, rails, platforms, or cab controls.
  */
 
+/* The title screen should read as a deliberate identity screen, not a second
+   locomotive showcase. Fleet art belongs in the store and on the railway. */
+.intro-locomotive {
+  display: none;
+}
+
+.intro-panel {
+  padding-top: clamp(18px, 6vh, 64px);
+}
+
 /* Running trains should read as railway equipment, not annotated game pieces.
    Car identity remains available in the carriage store and consist editor. */
 .scene .car-mark {
