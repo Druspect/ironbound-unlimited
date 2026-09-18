@@ -307,6 +307,38 @@
   border-color: rgba(242, 154, 115, .26);
 }
 
+/* Station service legibility: service progress is actionable feedback, not
+   decorative microcopy. Keep the existing card footprint and three-column
+   sequence, but raise the stage labels above the 8 px audit floor. */
+.station-card.at-platform .service-steps {
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.station-card.at-platform .service-steps span {
+  min-height: 24px;
+  padding: 6px 3px 5px;
+  border-color: rgba(243, 234, 215, .18);
+  color: rgba(243, 234, 215, .58);
+  background: rgba(0, 0, 0, .24);
+  font-size: 10.5px;
+  line-height: 1.1;
+  letter-spacing: .065em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .74);
+}
+
+.station-card.at-platform .service-steps span.active {
+  border-color: rgba(217, 231, 162, .72);
+  color: #f4f8cf;
+  background: linear-gradient(180deg, rgba(210, 155, 74, .2), rgba(137, 154, 76, .16));
+  box-shadow: inset 0 0 0 1px rgba(217, 231, 162, .08), 0 0 10px rgba(210, 155, 74, .08);
+}
+
+.station-card.at-platform .station-dwell {
+  height: 5px;
+  margin-top: 9px;
+}
+
 /* Store legibility: normal cards were the smallest secondary typography in the
    production audit. Raise the baseline without expanding the three-column
    layout, then use the expanded card's full width for a proper fact sheet. */
