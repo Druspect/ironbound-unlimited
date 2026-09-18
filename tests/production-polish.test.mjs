@@ -12,6 +12,11 @@ test("production polish is the final presentation layer", () => {
   assert.ok(polish > carriage && polish > undercarriage);
 });
 
+test("title screen does not duplicate locomotive artwork", () => {
+  assert.match(css, /\.intro-locomotive\s*\{[\s\S]*?display:\s*none/);
+  assert.match(css, /\.intro-panel\s*\{[\s\S]*?padding-top:\s*clamp\(/);
+});
+
 test("running consist no longer carries floating arcade car labels", () => {
   assert.match(css, /\.scene\s+\.car-mark\s*\{[\s\S]*?display:\s*none/);
 });
