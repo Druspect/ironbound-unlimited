@@ -14,8 +14,11 @@
 }
 
 :root[data-carriage-livery="pullman-green"] {
-  --carriage-livery-filter: grayscale(1) sepia(.92) saturate(2.25) hue-rotate(72deg) brightness(.72) contrast(1.12);
-  --carriage-livery-swatch: #334c39;
+  /* Pullman green should read as a dark olive/forest body color, not emerald.
+     Preserve brass/window highlights while keeping the coach body subordinate
+     to the locomotive and station scenery. */
+  --carriage-livery-filter: grayscale(1) sepia(.84) saturate(1.58) hue-rotate(70deg) brightness(.60) contrast(1.18);
+  --carriage-livery-swatch: #29372d;
 }
 
 :root[data-carriage-livery="tuscan-red"] {
