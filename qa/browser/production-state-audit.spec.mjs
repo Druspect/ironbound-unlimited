@@ -106,7 +106,7 @@ test("capture every production-review visual state", async ({ page }) => {
     id: "01-navigation/01-intro-main-menu",
     category: "Navigation",
     title: "Main menu",
-    purpose: "First-launch identity, locomotive hero, and primary entry points.",
+    purpose: "First-launch identity, title balance, and primary entry points without redundant locomotive artwork.",
   });
 
   await page.getByRole("button", { name: "BEGIN RUN" }).click();
@@ -168,13 +168,50 @@ test("capture every production-review visual state", async ({ page }) => {
 
   await page.getByRole("button", { name: "Return to railway" }).click();
   await page.getByRole("button", { name: "OPTIONS" }).click();
+  const optionsPanel = page.locator(".options-panel");
   await expect(page.getByRole("heading", { name: "Settings & Options" })).toBeVisible();
+  await expect(optionsPanel).toBeVisible();
+  await expect.poll(async () => optionsPanel.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return {
+      opacity: Number(style.opacity),
+      width: Math.round(box.width),
+      height: Math.round(box.height),
+      centerOffset: Math.round(Math.abs((box.left + box.width / 2) - window.innerWidth / 2)),
+    };
+  }), {
+    timeout: 4_000,
+    message: "Options panel must be fully painted and centered before production evidence is captured",
+  }).toMatchObject({
+    opacity: 1,
+    width: expect.any(Number),
+    height: expect.any(Number),
+    centerOffset: expect.any(Number),
+  });
+  const optionsPaint = await optionsPanel.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return {
+      width: box.width,
+      height: box.height,
+      centerOffset: Math.abs((box.left + box.width / 2) - window.innerWidth / 2),
+      backgroundImage: style.backgroundImage,
+      borderTopWidth: style.borderTopWidth,
+    };
+  });
+  expect(optionsPaint.width).toBeGreaterThan(520);
+  expect(optionsPaint.height).toBeGreaterThan(430);
+  expect(optionsPaint.centerOffset).toBeLessThan(4);
+  expect(optionsPaint.backgroundImage).not.toBe("none");
+  expect(Number.parseFloat(optionsPaint.borderTopWidth)).toBeGreaterThan(0);
+  await page.waitForTimeout(420);
   await capture(page, {
     id: "01-navigation/08-options-default",
     category: "Navigation",
     title: "Settings and options",
     purpose: "Accessibility, sound, motion, contrast, interface sizing, and return actions.",
-  });
+  }, { animations: "allow" });
 
   const contrastToggle = page.locator(".options-list label").filter({ hasText: "High contrast" }).locator('input[type="checkbox"]');
   await contrastToggle.check();
