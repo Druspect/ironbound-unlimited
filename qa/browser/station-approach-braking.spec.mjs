@@ -47,9 +47,8 @@ test("driver can brake a live downgrade approach into the Saltworks service zone
   const startingSpeed = Number((await speed.textContent()) ?? 18);
   await page.getByRole("button", { name: "Apply train brake" }).click();
 
-  const brake = page.locator(".brake-button");
   const experience = page.locator(".experience");
-  await expect.poll(async () => Number(await brake.getAttribute("data-brake-line-pressure")), { timeout: 4_000 }).toBeGreaterThan(.45);
+  await expect.poll(async () => Number(await experience.getAttribute("data-brake-line-pressure")), { timeout: 4_000 }).toBeGreaterThan(.45);
   await expect.poll(async () => Number(await experience.getAttribute("data-brake-cylinder-pressure")), { timeout: 4_000 }).toBeGreaterThan(.15);
   await expect.poll(async () => Number((await speed.textContent()) ?? startingSpeed), { timeout: 6_000 }).toBeLessThan(startingSpeed - 4);
 
