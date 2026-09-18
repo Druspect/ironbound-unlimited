@@ -938,6 +938,8 @@ export default function Home() {
           ? "STRONG STEAM"
           : "FULL STEAM";
   const stationDistanceYards = Math.max(0, Math.round(stationState.distance * 1.15));
+  const serviceDueStations = stationsUntilServiceRequired(steamResources);
+  const serviceDueUnit = serviceDueStations === 1 ? "STATION" : "STATIONS";
   const servicing = stationState.inZone && speed < 2.5 && stationState.dwell > 0 && !stationState.collected;
   const openScreen = (next: typeof screen) => {
     setScreen(next);
@@ -1210,7 +1212,7 @@ export default function Home() {
           <div className="resource-monitors">
             <div className={steamResources.fuel < 25 ? "resource-low" : ""} role="meter" aria-label={`${activeFactSheet.fuelType} remaining`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(steamResources.fuel)}><span><small>{activeFactSheet.fuelType.toUpperCase()}</small><strong>{Math.round(activeOperatingProfile.fuelCapacity * steamResources.fuel / 100).toLocaleString()} {activeOperatingProfile.fuelCapacityUnit}</strong></span><i><b style={{ width: `${steamResources.fuel}%` }} /></i></div>
             <div className={steamResources.water < 25 ? "resource-low" : ""} role="meter" aria-label="Water remaining" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(steamResources.water)}><span><small>WATER</small><strong>{Math.round(activeOperatingProfile.waterCapacityGallons * steamResources.water / 100).toLocaleString()} gal</strong></span><i><b style={{ width: `${steamResources.water}%` }} /></i></div>
-            <div className={stationsUntilServiceRequired(steamResources) <= 1 ? "service-warning" : ""}><span><small>SERVICE DUE</small><strong>{stationsUntilServiceRequired(steamResources)} STATIONS</strong></span></div>
+            <div className={serviceDueStations <= 1 ? "service-warning" : ""}><span><small>SERVICE DUE</small><strong>{serviceDueStations} {serviceDueUnit}</strong></span></div>
           </div>
           <div
             className={`heat-monitor heat-${heatTone}`}
@@ -1346,7 +1348,7 @@ export default function Home() {
                     </article>;
                   })}
                 </div>
-                <footer className="consist-footer"><span><b>{Math.round(activeOperatingProfile.maximumSpeedMph * activeConsistMetrics.maximumSpeedFactor)} MPH</b> loaded limit</span><span><b>{activeConsistMetrics.brakeResponseFactor.toFixed(2)}×</b> brake demand</span><span><b>{stationsUntilServiceRequired(steamResources)}</b> stations to service</span><button className="primary-menu-button" onClick={() => openScreen("game")}>TAKE THIS TRAIN</button></footer>
+                <footer className="consist-footer"><span><b>{Math.round(activeOperatingProfile.maximumSpeedMph * activeConsistMetrics.maximumSpeedFactor)} MPH</b> loaded limit</span><span><b>{activeConsistMetrics.brakeResponseFactor.toFixed(2)}×</b> brake demand</span><span><b>{serviceDueStations}</b> {serviceDueStations === 1 ? "station" : "stations"} to service</span><button className="primary-menu-button" onClick={() => openScreen("game")}>TAKE THIS TRAIN</button></footer>
               </section>}
 
               {storeTab === "audio" && <section className="store-department audio-packs" aria-labelledby="audio-store-heading">
