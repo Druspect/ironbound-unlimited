@@ -830,6 +830,7 @@ export default function Home() {
         root.style.setProperty("--engine-sprite-b-y", `${secondaryFrame.y}%`);
         root.style.setProperty("--engine-sprite-blend", frameBlend.toFixed(4));
         root.dataset.driverWheelAngle = driverWheelAngle.toFixed(4);
+        root.dataset.driverWheelRadius = driverRadius.toFixed(4);
         root.dataset.engineFrame = String(locomotiveFrame);
         root.dataset.engineFrameBlend = frameBlend.toFixed(4);
         [0, Math.PI / 2].forEach((phase, group) => {
