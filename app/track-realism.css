@@ -1,16 +1,9 @@
 /*
- * Track visual reference
- * ----------------------
- * Conventional U.S. standard gauge is 56.5 in (1435 mm). The timber-track
- * proportions below use a 7 x 9 x 102 in tie reference on 19.5 in centers,
- * matching conventional North American timber-track practice used by the
- * period represented in Ironbound.
- *
- * This scene is a low side view, so gauge appears as vertical perspective
- * separation rather than literal screen-space width. We preserve the useful
- * physical proportion here: 9 / 19.5 = 0.4615 tie face-to-center coverage.
- * A 15 px timber face on a 32 px pitch gives 0.46875, within 1.6% of that
- * reference while keeping the moving texture pixel-stable.
+ * Physical track model
+ * --------------------
+ * One authoritative stylesheet owns the complete rail section. Standard gauge,
+ * timber proportions, wheel contact and the desktop track band remain
+ * calibrated. Only the timber rhythm moves; rails and ballast are stable.
  */
 
 .track {
@@ -21,16 +14,12 @@
   --track-tie-centers-in: 19.5;
   --track-tie-pitch: 32px;
   --track-tie-face: 15px;
-  --track-motion-period: 160px;
+  --track-motion-period: 32px;
   --rail-contact-plane: calc(var(--train-base-lift) + var(--scaled-wheel-inset));
-  --rail-near-profile: 9px;
-  --rail-far-profile: 4px;
+  --rail-near-profile: 6px;
+  --rail-far-profile: 3px;
 }
 
-/* Normal-height layouts reserve a true track band above the cab. Train, rail
-   contact, ballast and station platform move as one physical system; the
-   four-pixel train/platform relationship stays unchanged. Short landscape
-   continues to use the compact override instead of this desktop lift. */
 @media (min-height: 561px) {
   .experience {
     --train-base-lift: 58px;
@@ -41,160 +30,69 @@
   }
 }
 
-/* The legacy pseudo-track is disabled outright. A second opaque underlay was
-   the source of the old fence/deck silhouette and has no physical role once
-   ties and ballast are modeled explicitly. */
-.track::before {
+/* No second roadbed, tie-seat bar, or moving shadow layer. */
+.track::before,
+.track::after {
   content: none;
 }
 
-/* Tie-seat shadow is broken into the same 32 px cadence as the timbers. This
-   avoids inventing another uninterrupted rail-like bar beneath the track. */
-.track::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  left: -2%;
-  right: -2%;
-  bottom: calc(var(--rail-contact-plane) - 12px);
-  height: 6px;
-  opacity: .24;
-  transform: none;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 6px,
-    rgba(8, 8, 8, .54) 6px 21px,
-    transparent 21px var(--track-tie-pitch)
-  );
-  filter: blur(1px);
-}
-
-/* Ballast is deliberately BELOW the rail/tie top. FRA track observations and
-   classic FAST test sections describe full cribs at or slightly below tie top,
-   with a shoulder beyond the tie end that breaks into a slope. At this low
-   side-view camera angle we represent that as a narrow, rough crown under the
-   timber rather than a tall opaque slab extending to the cab. */
+/* The ballast shoulder is intentionally quiet. The route scenery already
+   supplies translational motion; fixed granular ballast avoids high-frequency
+   crawling immediately beneath the wheels. */
 .ballast {
   z-index: 0;
   left: -1.5%;
   right: -1.5%;
   top: auto;
   bottom: 18px;
-  height: 45px;
-  opacity: 1;
-  clip-path: polygon(0 35%, 6% 28%, 18% 22%, 32% 18%, 50% 16%, 68% 18%, 82% 22%, 94% 29%, 100% 35%, 100% 100%, 0 100%);
-  -webkit-mask-image: linear-gradient(180deg, #000 0 66%, rgba(0,0,0,.88) 78%, rgba(0,0,0,.38) 91%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0 66%, rgba(0,0,0,.88) 78%, rgba(0,0,0,.38) 91%, transparent 100%);
+  height: 30px;
+  opacity: .72;
+  clip-path: polygon(0 44%, 7% 32%, 20% 22%, 36% 16%, 50% 14%, 64% 16%, 80% 22%, 93% 32%, 100% 44%, 100% 100%, 0 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 45%, rgba(0,0,0,.68) 65%, rgba(0,0,0,.24) 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 45%, rgba(0,0,0,.68) 65%, rgba(0,0,0,.24) 84%, transparent 100%);
   background:
-    radial-gradient(ellipse at 8px 7px, rgba(211, 201, 181, .46) 0 1.1px, transparent 1.48px),
-    radial-gradient(ellipse at 3px 12px, rgba(76, 72, 65, .74) 0 1.3px, transparent 1.68px),
-    radial-gradient(ellipse at 15px 4px, rgba(147, 136, 118, .65) 0 1.22px, transparent 1.62px),
-    radial-gradient(ellipse at 11px 15px, rgba(47, 45, 41, .72) 0 1.1px, transparent 1.5px),
-    linear-gradient(180deg, #8a8377 0%, #6d675d 30%, #514c45 64%, #393733 100%);
-  background-size: 19px 17px, 23px 19px, 29px 21px, 17px 23px, 100% 100%;
-  background-position: var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, var(--track-x) 0, 0 0;
-  box-shadow: inset 0 3px 5px rgba(239, 229, 209, .07);
+    radial-gradient(circle at 7px 8px, rgba(195,184,165,.35) 0 1px, transparent 1.3px) 0 0 / 19px 17px,
+    radial-gradient(circle at 13px 5px, rgba(52,51,47,.58) 0 1.15px, transparent 1.5px) 0 0 / 23px 19px,
+    linear-gradient(180deg, rgba(121,115,105,.58), rgba(74,71,66,.38) 54%, rgba(42,41,38,.08) 88%, transparent);
+  box-shadow: none;
 }
 
-/* Compacted crib ballast remains granular and never becomes a solid lower
-   panel. Its upper surface sits underneath the timber/rail seats. */
-.ballast::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 8px;
-  bottom: 5px;
-  opacity: .68;
-  background:
-    radial-gradient(ellipse at 5px 5px, rgba(37, 36, 33, .68) 0 1px, transparent 1.35px),
-    radial-gradient(ellipse at 12px 9px, rgba(126, 116, 99, .52) 0 1.18px, transparent 1.55px),
-    radial-gradient(ellipse at 17px 3px, rgba(182, 168, 143, .28) 0 .9px, transparent 1.24px);
-  background-size: 16px 14px, 21px 18px, 27px 20px;
-  background-position: var(--track-x) 0, var(--track-x) 0, var(--track-x) 0;
-}
-
-/* A few loose shoulder stones break the lower edge; no continuous dark base. */
+.ballast::before,
 .ballast::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 1px;
-  height: 8px;
-  opacity: .55;
-  background:
-    radial-gradient(ellipse at 6px 5px, rgba(73, 69, 62, .75) 0 1.25px, transparent 1.7px),
-    radial-gradient(ellipse at 18px 3px, rgba(133, 123, 107, .62) 0 1px, transparent 1.45px);
-  background-size: 25px 8px, 31px 8px;
-  background-position: var(--track-x) 0, var(--track-x) 0;
+  content: none;
 }
 
-/* Weathered hardwood ties. Each 32 px cell contains one 15 px timber face,
-   preserving the 9 / 19.5 physical face-to-center ratio. The 38deg top plane
-   exposes enough timber between far and near rails to read as actual track. */
+/* One moving layer. Geometry never translates; only the repeating timber
+   background advances, preventing the perspective strip from snapping at wrap. */
 .sleepers {
-  z-index: 1;
+  z-index: 2;
   inset: auto -220px calc(var(--rail-contact-plane) - 18px);
-  height: 42px;
+  height: 44px;
   overflow: hidden;
   clip-path: polygon(0 8%, 100% 2%, 100% 86%, 0 96%);
-  transform: translate3d(var(--track-x), 0, 0) skewX(-7deg) perspective(960px) rotateX(38deg);
+  transform: skewX(-6deg) perspective(960px) rotateX(30deg);
   transform-origin: 50% 100%;
+  filter: saturate(.9) brightness(1.06);
   background:
     repeating-linear-gradient(
       90deg,
-      transparent 0 6px,
-      #2a2119 6px 7px,
-      #513d2e 7px 9px,
-      #71563f 9px 17px,
-      #5c4534 17px 20px,
-      #30251d 20px 21px,
-      transparent 21px var(--track-tie-pitch)
+      transparent 0 7px,
+      #2a2119 7px 9px,
+      #624a36 9px 18px,
+      #4a372a 18px 22px,
+      transparent 22px var(--track-tie-pitch)
     );
+  background-position: var(--track-x, 0px) 0;
+  will-change: background-position;
 }
 
-/* Near tie ends have real thickness, but remain discrete instead of forming a
-   continuous horizontal beam. */
-.sleepers::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 8px;
-  opacity: .9;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 6px,
-    #201914 6px 8px,
-    #3f3025 8px 18px,
-    #2b211a 18px 21px,
-    transparent 21px var(--track-tie-pitch)
-  );
-}
-
-/* Small rail-seat/fastener cues sit at both rail positions. At this camera
-   scale individual spikes are below honest resolution, so plates remain compact
-   and low contrast instead of being exaggerated into visible hardware bars. */
+.sleepers::before,
 .sleepers::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: .72;
-  background-image:
-    radial-gradient(ellipse at 10px 29%, #222321 0 1.7px, #73583f 1.75px 2.2px, transparent 2.3px),
-    radial-gradient(ellipse at 18px 29%, #222321 0 1.7px, #73583f 1.75px 2.2px, transparent 2.3px),
-    radial-gradient(ellipse at 10px 70%, #1b1c1b 0 1.8px, #6a5038 1.85px 2.25px, transparent 2.35px),
-    radial-gradient(ellipse at 18px 70%, #1b1c1b 0 1.8px, #6a5038 1.85px 2.25px, transparent 2.35px);
-  background-size: var(--track-tie-pitch) 100%;
-  background-repeat: repeat-x;
+  content: none;
 }
 
-/* Rail profiles model the visual hierarchy of real section rail: polished
-   running head, rust-stained web and a broad shadowed foot. The top of the near
-   rail remains exactly --rail-contact-plane so every wheel calibration keeps
-   real tire-to-running-surface contact. */
+/* Static profiled steel. The near rail top is exactly the calibrated wheel
+   contact plane; the far rail recedes behind the timber plane. */
 .rail {
   z-index: 3;
   left: -2%;
@@ -204,12 +102,11 @@
   background:
     linear-gradient(
       180deg,
-      #d7d4cb 0 13%,
-      #979287 14% 27%,
-      #524c43 28% 38%,
-      #5b4537 39% 67%,
-      #302820 68% 78%,
-      #171717 79% 100%
+      #d7d3ca 0 20%,
+      #918d84 21% 36%,
+      #5c5046 37% 66%,
+      #322c26 67% 84%,
+      #1a1918 85% 100%
     );
 }
 
@@ -219,20 +116,20 @@
   left: 0;
   right: 0;
   top: 0;
-  height: 2px;
+  height: 1px;
   border-radius: 2px;
-  background: linear-gradient(180deg, rgba(248, 244, 226, .58), rgba(173, 169, 158, .14));
+  background: rgba(242,239,226,.48);
 }
 
 .rail::after {
   content: "";
   position: absolute;
-  left: -.3%;
-  right: -.3%;
+  left: 0;
+  right: 0;
   bottom: 0;
-  height: 2px;
-  background: rgba(16, 15, 14, .8);
-  box-shadow: 0 2px 2px rgba(0, 0, 0, .38);
+  height: 1px;
+  background: rgba(18,17,16,.62);
+  box-shadow: 0 1px 1px rgba(0,0,0,.22);
 }
 
 .rail-near {
@@ -241,34 +138,33 @@
   height: var(--rail-near-profile);
   transform: scaleX(1.012);
   opacity: 1;
-  box-shadow: 0 3px 3px rgba(0, 0, 0, .48);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
 
 .rail-far {
+  z-index: 1;
   top: auto;
-  bottom: calc(var(--rail-contact-plane) + 10px);
+  bottom: calc(var(--rail-contact-plane) + 13px);
   height: var(--rail-far-profile);
   transform: scaleX(.986);
-  opacity: .75;
-  filter: saturate(.78) brightness(.9);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .42);
+  opacity: .44;
+  filter: saturate(.68) brightness(.9);
+  box-shadow: 0 1px 1px rgba(0,0,0,.12);
 }
 
-/* Compact landscape keeps shallower foreshortening so the cab-clearance fix
-   remains intact on phones and foldables. */
 @media (orientation: landscape) and (max-height: 560px) {
   .ballast {
     bottom: 10px;
-    height: 38px;
+    height: 24px;
   }
 
   .sleepers {
     height: 36px;
     bottom: calc(var(--rail-contact-plane) - 16px);
-    transform: translate3d(var(--track-x), 0, 0) skewX(-6deg) perspective(760px) rotateX(46deg);
+    transform: skewX(-5deg) perspective(760px) rotateX(38deg);
   }
 
   .rail-far {
-    bottom: calc(var(--rail-contact-plane) + 8px);
+    bottom: calc(var(--rail-contact-plane) + 10px);
   }
 }
