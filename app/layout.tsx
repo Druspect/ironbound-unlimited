@@ -12,6 +12,7 @@ import "./undercarriage-reconciliation.css";
 import "./carriage-liveries.css";
 import "./production-polish.css";
 import "./animation-continuity.css";
+import "./consist-coupling.css";
 import "./biome-transition-continuity.css";
 import "./touch-orientation-guard.css";
 
