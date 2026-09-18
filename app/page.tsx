@@ -137,12 +137,16 @@ function LocomotiveSprite({ engine, mode = "running", motion }: { engine: Locomo
       data-engine-sprite={engine.id}
       aria-hidden="true"
     >
-      <span className="engine-sprite-frame" style={{ backgroundImage: `url("${assetRoot}/sprites/${engine.id}.webp?v=${LOCOMOTIVE_ART_REVISION}")` }} />
+      <span className="engine-sprite-frame engine-sprite-frame-primary" style={{ backgroundImage: `url("${assetRoot}/sprites/${engine.id}.webp?v=${LOCOMOTIVE_ART_REVISION}")` }} />
+      <span className="engine-sprite-frame engine-sprite-frame-secondary" style={{ backgroundImage: `url("${assetRoot}/sprites/${engine.id}.webp?v=${LOCOMOTIVE_ART_REVISION}")` }} />
       {engine.id === STARTER_LOCOMOTIVE_ID && <>
+        <span className="starter-tender-frame starter-tender-frame-primary" style={{ backgroundImage: `url("${assetRoot}/sprites/${engine.id}.webp?v=${LOCOMOTIVE_ART_REVISION}")` }} />
+        <span className="starter-tender-frame starter-tender-frame-secondary" style={{ backgroundImage: `url("${assetRoot}/sprites/${engine.id}.webp?v=${LOCOMOTIVE_ART_REVISION}")` }} />
         <div className="headlight-system"><i /></div>
         <div className="whistle-steam" />
         <div className="steam-vent" />
       </>}
+      <span className="engine-tender-drawbar" style={{ "--tender-junction": `${layout.tenderWidth}%` } as SceneStyle} />
       {motion && <ExhaustSmoke key={engine.id} motion={motion} />}
     </div>
   );
@@ -767,7 +771,10 @@ export default function Home() {
         root.style.setProperty("--route-x", `${-(routeTilePosition * viewportWidth)}px`);
         root.style.setProperty("--scrub-x", `${-((visualTravelRef.current * 2.1) % 900)}px`);
         root.style.setProperty("--scrub-x-fast", `${-((visualTravelRef.current * 3.57) % 900)}px`);
-        root.style.setProperty("--track-x", `${-((visualTravelRef.current * 7.2) % 160)}px`);
+        // One physical travel scale now drives both timber cadence and wheels.
+        // Keeping the sleepers phase-locked to tire travel prevents visual slip
+        // and removes the former 160px multi-layer wrap shimmer.
+        root.style.setProperty("--track-x", `${-((visualTravelRef.current * WHEEL_TRAVEL_CALIBRATION) % 32)}px`);
         const movement = clamp(velocity / 70, 0, 1);
         const runningPhase = visualTravelRef.current * 0.18;
         root.style.setProperty("--train-bob", `${Math.sin(runningPhase) * movement * 1.35}px`);
@@ -810,9 +817,30 @@ export default function Home() {
         root.style.setProperty("--driver-wheel-angle", `${driverWheelAngle}deg`);
         const frameDegrees = 360 / LOCOMOTIVE_SPRITE_ANIMATION.frames;
         const spriteRows = LOCOMOTIVE_SPRITE_ANIMATION.frames / LOCOMOTIVE_SPRITE_ANIMATION.columns;
-        const locomotiveFrame = Math.floor(((driverWheelAngle + 360) % 360) / frameDegrees) % LOCOMOTIVE_SPRITE_ANIMATION.frames;
-        root.style.setProperty("--engine-sprite-x", `${(locomotiveFrame % LOCOMOTIVE_SPRITE_ANIMATION.columns) * (100 / (LOCOMOTIVE_SPRITE_ANIMATION.columns - 1))}%`);
-        root.style.setProperty("--engine-sprite-y", `${Math.floor(locomotiveFrame / LOCOMOTIVE_SPRITE_ANIMATION.columns) * (100 / (spriteRows - 1))}%`);
+        const normalizedDriverAngle = (driverWheelAngle + 360) % 360;
+        const framePosition = normalizedDriverAngle / frameDegrees;
+        const locomotiveFrame = Math.floor(framePosition) % LOCOMOTIVE_SPRITE_ANIMATION.frames;
+        const nextLocomotiveFrame = (locomotiveFrame + 1) % LOCOMOTIVE_SPRITE_ANIMATION.frames;
+        const frameFraction = framePosition - Math.floor(framePosition);
+        const frameBlend = frameFraction * frameFraction * (3 - 2 * frameFraction);
+        const frameCoordinates = (frame: number) => ({
+          x: (frame % LOCOMOTIVE_SPRITE_ANIMATION.columns) * (100 / (LOCOMOTIVE_SPRITE_ANIMATION.columns - 1)),
+          y: Math.floor(frame / LOCOMOTIVE_SPRITE_ANIMATION.columns) * (100 / (spriteRows - 1)),
+        });
+        const primaryFrame = frameCoordinates(locomotiveFrame);
+        const secondaryFrame = frameCoordinates(nextLocomotiveFrame);
+        // Keep the legacy primary variables for contracts that inspect the
+        // registered frame, while cross-fading toward the next pose every RAF.
+        root.style.setProperty("--engine-sprite-x", `${primaryFrame.x}%`);
+        root.style.setProperty("--engine-sprite-y", `${primaryFrame.y}%`);
+        root.style.setProperty("--engine-sprite-a-x", `${primaryFrame.x}%`);
+        root.style.setProperty("--engine-sprite-a-y", `${primaryFrame.y}%`);
+        root.style.setProperty("--engine-sprite-b-x", `${secondaryFrame.x}%`);
+        root.style.setProperty("--engine-sprite-b-y", `${secondaryFrame.y}%`);
+        root.style.setProperty("--engine-sprite-blend", frameBlend.toFixed(4));
+        root.dataset.driverWheelAngle = driverWheelAngle.toFixed(4);
+        root.dataset.engineFrame = String(locomotiveFrame);
+        root.dataset.engineFrameBlend = frameBlend.toFixed(4);
         [0, Math.PI / 2].forEach((phase, group) => {
           root.style.setProperty(`--rod-${group}-x`, `${Math.cos(driverRadians + driverCrankPhase + phase) * driverCrankRadius}px`);
           root.style.setProperty(`--rod-${group}-y`, `${Math.sin(driverRadians + driverCrankPhase + phase) * driverCrankRadius}px`);
@@ -1152,11 +1180,14 @@ export default function Home() {
                     ))}
                     <img className="component-body passenger-body" src={car.art} alt="" draggable={false} decoding="sync" fetchPriority={carIndex === 0 ? "high" : "auto"} />
                     <span className="car-mark">{car.shortName}</span>
-                    <span className="coupler consist-coupler" />
+                    {carIndex < consistCars.length - 1 && <>
+                      <span className="car-end-diaphragm" />
+                      <span className="coupler consist-coupler" />
+                    </>}
                   </div>
                 );
               })}
-
+              <span className="consist-engine-coupling" aria-hidden="true"><i /></span>
               <LocomotiveSprite engine={activeEngine} motion={exhaustMotionRef} />
             </div>
           </div>
