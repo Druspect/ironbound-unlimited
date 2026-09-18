@@ -143,46 +143,104 @@ function renderExhaustShot(kind) {
   return normalizeToPcm(floating, 0.80);
 }
 
-function renderWhistle() {
-  const duration = 2.45;
-  const frameCount = Math.round(sampleRate * duration);
+const WHISTLE_SPECS = Object.freeze({
+  "early-passenger": {
+    duration: 2.20,
+    frequencies: [329.63, 392.00, 493.88],
+    seed: 1907,
+    chimeGain: 0.150,
+    steamGain: 0.085,
+    pitchRise: 0.018,
+    release: 0.52,
+    reverb: [[0.081, 0.14], [0.166, 0.075]],
+  },
+  freight: {
+    duration: 2.55,
+    frequencies: [196.00, 246.94, 293.66],
+    seed: 4501,
+    chimeGain: 0.175,
+    steamGain: 0.105,
+    pitchRise: 0.014,
+    release: 0.68,
+    reverb: [[0.096, 0.17], [0.214, 0.09]],
+  },
+  "high-speed-passenger": {
+    duration: 2.45,
+    frequencies: [293.66, 369.99, 440.00, 587.33],
+    seed: 844,
+    chimeGain: 0.155,
+    steamGain: 0.075,
+    pitchRise: 0.022,
+    release: 0.62,
+    reverb: [[0.087, 0.18], [0.173, 0.11], [0.307, 0.055]],
+  },
+  "articulated-freight": {
+    duration: 2.85,
+    frequencies: [174.61, 220.00, 261.63, 349.23],
+    seed: 4014,
+    chimeGain: 0.185,
+    steamGain: 0.115,
+    pitchRise: 0.012,
+    release: 0.76,
+    reverb: [[0.108, 0.19], [0.238, 0.105], [0.390, 0.05]],
+  },
+  "winter-excursion": {
+    duration: 2.65,
+    frequencies: [233.08, 293.66, 349.23, 466.16],
+    seed: 1225,
+    chimeGain: 0.145,
+    steamGain: 0.070,
+    pitchRise: 0.016,
+    release: 0.72,
+    reverb: [[0.116, 0.16], [0.282, 0.09], [0.448, 0.045]],
+  },
+});
+
+function renderWhistle(character) {
+  const specs = WHISTLE_SPECS[character];
+  if (!specs) throw new Error(`Unknown whistle character: ${character}`);
+  const frameCount = Math.round(sampleRate * specs.duration);
   const samples = new Float64Array(frameCount);
-  const noise = randomFactory(4501);
-  const frequencies = [293.66, 369.99, 440.0, 587.33];
-  const phases = frequencies.map(() => (noise() * 0.5 + 0.5) * Math.PI * 2);
+  const noise = randomFactory(specs.seed);
+  const phases = specs.frequencies.map(() => (noise() * 0.5 + 0.5) * Math.PI * 2);
   let steamSlow = 0;
   let steamFast = 0;
 
   for (let index = 0; index < frameCount; index += 1) {
     const time = index / sampleRate;
-    const attack = Math.min(1, time / 0.075);
-    const release = Math.min(1, Math.max(0, (duration - time) / 0.62));
-    const pressure = Math.sin(attack * Math.PI / 2) ** 2 * Math.sin(release * Math.PI / 2) ** 2 *
-      (0.96 + 0.035 * Math.sin(Math.PI * 2 * 2.7 * time));
-    const pitchRise = 0.978 + 0.022 * Math.min(1, time / 0.32);
+    const attack = Math.min(1, time / 0.085);
+    const release = Math.min(1, Math.max(0, (specs.duration - time) / specs.release));
+    const pressure = Math.sin(attack * Math.PI / 2) ** 2 *
+      Math.sin(release * Math.PI / 2) ** 2 *
+      (0.96 + 0.028 * Math.sin(Math.PI * 2 * 2.45 * time));
+    const pitchRise = (1 - specs.pitchRise) + specs.pitchRise * Math.min(1, time / 0.34);
     let chimes = 0;
-    for (let chime = 0; chime < frequencies.length; chime += 1) {
-      const vibrato = 1 + 0.0018 * Math.sin(Math.PI * 2 * (3.5 + chime * 0.19) * time + phases[chime]);
-      const angle = Math.PI * 2 * frequencies[chime] * pitchRise * vibrato * time + phases[chime];
-      chimes += (Math.sin(angle) + 0.24 * Math.sin(2 * angle + 0.31) + 0.09 * Math.sin(3 * angle + 0.7)) /
-        (1 + chime * 0.16);
+    for (let chime = 0; chime < specs.frequencies.length; chime += 1) {
+      const vibrato = 1 + 0.0015 * Math.sin(Math.PI * 2 * (3.1 + chime * 0.21) * time + phases[chime]);
+      const angle = Math.PI * 2 * specs.frequencies[chime] * pitchRise * vibrato * time + phases[chime];
+      const harmonic = Math.sin(angle) + 0.20 * Math.sin(2 * angle + 0.31) + 0.065 * Math.sin(3 * angle + 0.7);
+      chimes += harmonic / (1 + chime * 0.18);
     }
 
     const raw = noise();
     steamSlow += 0.012 * (raw - steamSlow);
-    steamFast += 0.18 * (raw - steamFast);
+    steamFast += 0.16 * (raw - steamFast);
     const air = steamFast - steamSlow;
-    const valveCrack = Math.exp(-time * 19) + 0.28 * Math.exp(-Math.max(0, duration - time) * 8);
-    samples[index] = pressure * (0.155 * chimes + (0.07 + 0.12 * valveCrack) * air);
+    const valveCrack = Math.exp(-time * 17) +
+      0.24 * Math.exp(-Math.max(0, specs.duration - time) * 7);
+    samples[index] = pressure * (
+      specs.chimeGain * chimes +
+      (specs.steamGain + specs.steamGain * 0.82 * valveCrack) * air
+    );
   }
 
   const dry = samples.slice();
-  for (const [delaySeconds, gain] of [[0.087, 0.18], [0.173, 0.11], [0.307, 0.055]]) {
+  for (const [delaySeconds, gain] of specs.reverb) {
     const delay = Math.round(delaySeconds * sampleRate);
     for (let index = delay; index < frameCount; index += 1) samples[index] += dry[index - delay] * gain;
   }
 
-  return normalizeToPcm(samples, 0.86);
+  return normalizeToPcm(samples, 0.84);
 }
 
 function normalizeToPcm(samples, targetPeak) {
@@ -227,4 +285,12 @@ for (const [index, filename] of ["exhaust-light.wav", "exhaust-balanced.wav", "e
   await writeFile(resolve(output, filename), wavBuffer(renderExhaustShot(index)));
 }
 
-await writeFile(resolve(output, "ironbound-steam-whistle.wav"), wavBuffer(renderWhistle()));
+for (const [character, filename] of [
+  ["early-passenger", "whistle-early-passenger.wav"],
+  ["freight", "whistle-freight.wav"],
+  ["high-speed-passenger", "whistle-high-speed-passenger.wav"],
+  ["articulated-freight", "whistle-articulated-freight.wav"],
+  ["winter-excursion", "whistle-winter-excursion.wav"],
+]) {
+  await writeFile(resolve(output, filename), wavBuffer(renderWhistle(character)));
+}
