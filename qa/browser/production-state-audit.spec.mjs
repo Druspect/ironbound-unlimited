@@ -258,11 +258,15 @@ test("capture every production-review visual state", async ({ page }) => {
   for (const [stationIndex, stationName, biomeName] of STATIONS) {
     await openQaGame(page, `qaEngine=tom-thumb&qaCars=3&qaStation=${stationIndex}`);
     await waitForStation(page, stationIndex);
+    const stagedDistanceText = await page.locator(".telemetry-grid > div").filter({ hasText: /^DIST/ }).locator("strong").textContent();
+    const stagedRunMiles = Number.parseFloat(stagedDistanceText ?? "NaN");
+    expect(Number.isFinite(stagedRunMiles), `${stationName} must expose a finite run odometer`).toBe(true);
+    expect(stagedRunMiles, `${stationName} QA staging must not leak raw route coordinates into miles`).toBeLessThan(10);
     await capture(page, {
       id: `04-route/${String(stationIndex + 1).padStart(2, "0")}-${stationName.toLowerCase().replaceAll(" ", "-")}`,
       category: "Route",
       title: `${stationName} — ${biomeName}`,
-      purpose: "Station art, environment continuity, platform relationship, signage, and HUD state for this route region.",
+      purpose: "Station art, environment continuity, platform relationship, signage, plausible run mileage, and HUD state for this route region.",
     });
   }
 
