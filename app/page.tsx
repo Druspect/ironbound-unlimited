@@ -72,6 +72,11 @@ const CAR_RENDER_WIDTH = 190;
 const ENGINE_RENDER_BASE_WIDTH = 420;
 const STATION_STOP_ZONE_DISTANCE = 130;
 const STATION_PASS_GRACE_DISTANCE = STATION_STOP_ZONE_DISTANCE + 1;
+// visualTravel advances by speed(MPH) × elapsed seconds. The live odometer
+// advances by the same term divided by 3600, so QA staging must preserve that
+// relationship instead of writing route coordinates directly into miles.
+const RUN_MILES_PER_VISUAL_TRAVEL_UNIT = 1 / 3600;
+const runMilesForVisualTravel = (travel: number) => Math.max(0, travel) * RUN_MILES_PER_VISUAL_TRAVEL_UNIT;
 
 const ROUTE_TILES = Array.from({ length: ROUTE_TILE_COUNT + 2 }, (_, index) => {
   const routeIndex = index % ROUTE_TILE_COUNT;
@@ -257,8 +262,9 @@ export default function Home() {
           setEquippedEngine(browserAcceptanceEngineId);
           setCameraZoom("auto");
           visualTravelRef.current = STATIONS[0].position;
-          distanceRef.current = STATIONS[0].position;
-          setDistance(STATIONS[0].position);
+          const stagedDistanceMiles = runMilesForVisualTravel(STATIONS[0].position);
+          distanceRef.current = stagedDistanceMiles;
+          setDistance(stagedDistanceMiles);
           steamResourcesRef.current = { fuel: 18, water: 22, stationsWithoutService: 3, failure: null };
           setSteamResources(steamResourcesRef.current);
           brakeRef.current = true;
@@ -286,9 +292,10 @@ export default function Home() {
             : Number(qaStationParameter);
           if (Number.isInteger(qaStationIndex) && qaStationIndex >= 0 && qaStationIndex < STATIONS.length) {
             visualTravelRef.current = STATIONS[qaStationIndex].position;
-            distanceRef.current = STATIONS[qaStationIndex].position;
+            const stagedDistanceMiles = runMilesForVisualTravel(STATIONS[qaStationIndex].position);
+            distanceRef.current = stagedDistanceMiles;
             lastPassedStationRef.current = qaStationIndex - 1;
-            setDistance(STATIONS[qaStationIndex].position);
+            setDistance(stagedDistanceMiles);
           }
           setOwnedEngines([STARTER_LOCOMOTIVE_ID, qaEngine.id]);
           setEquippedEngine(qaEngine.id);
