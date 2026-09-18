@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
+      - gpt/review-published-baseline
   pull_request:
     branches:
       - sites-source
