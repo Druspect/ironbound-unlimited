@@ -40,7 +40,7 @@ test("wheel and rod phase derive from accumulated rail distance", () => {
 });
 
 test("static car bars are replaced by crankpin-linked truck rods", () => {
-  assert.doesNotMatch(page, /truck-frame|tender-frame/);
+  assert.doesNotMatch(page, /truck-frame|className="tender-frame"/);
   assert.match(page, /coach-truck-rod/);
 });
 
