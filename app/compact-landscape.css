@@ -116,6 +116,24 @@
     margin-top: 6px;
   }
 
+  .telemetry-group {
+    min-width: 0;
+  }
+
+  .resource-monitors {
+    gap: 6px;
+  }
+
+  .resource-monitors span {
+    gap: 3px;
+  }
+
+  .resource-monitors small,
+  .resource-monitors strong {
+    font-size: 9px;
+    letter-spacing: .035em;
+  }
+
   .regulator-slider,
   .regulator-input {
     height: 62px;
@@ -123,5 +141,15 @@
 
   .station-world {
     bottom: calc(var(--hud-clearance) + 8px);
+  }
+}
+
+
+/* At tablet/foldable landscape widths, give the information side of the cab
+   enough room to keep fuel, water, and service-due telemetry legible. The
+   regulator still retains over 300px of usable travel at the 932px QA target. */
+@media (orientation: landscape) and (min-width: 820px) and (max-height: 560px) {
+  .cab {
+    grid-template-columns: minmax(390px, .9fr) minmax(0, 1.1fr);
   }
 }
