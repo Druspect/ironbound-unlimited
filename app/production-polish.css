@@ -339,6 +339,21 @@
   margin-top: 9px;
 }
 
+@media (orientation: landscape) and (max-height: 560px) {
+  /* Compact landscape intentionally suppresses the three service chips to keep
+     the train corridor clear. Preserve that choice, but do not leave the
+     remaining service summary at the former 8 px microcopy size. */
+  .station-card.at-platform > small {
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: .035em;
+  }
+
+  .station-card.at-platform > strong {
+    font-size: 16px;
+  }
+}
+
 /* Store legibility: normal cards were the smallest secondary typography in the
    production audit. Raise the baseline without expanding the three-column
    layout, then use the expanded card's full width for a proper fact sheet. */
