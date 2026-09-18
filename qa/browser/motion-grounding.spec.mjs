@@ -34,6 +34,7 @@ test("low-speed departure advances wheels and timber smoothly instead of steppin
         values.push({
           time: performance.now() - start,
           angle: Number(root.dataset.driverWheelAngle ?? "0"),
+          radius: Number(root.dataset.driverWheelRadius ?? "0"),
           frame: Number(root.dataset.engineFrame ?? "0"),
           blend: Number(root.dataset.engineFrameBlend ?? "0"),
           trackX: Number.parseFloat(root.style.getPropertyValue("--track-x") || "0"),
@@ -66,8 +67,18 @@ test("low-speed departure advances wheels and timber smoothly instead of steppin
     trackDeltas.push(trackDelta);
   }
 
-  expect(Math.max(...angleDeltas.map(Math.abs))).toBeLessThan(6);
-  expect(Math.max(...trackDeltas.map(Math.abs))).toBeLessThan(3);
+  // Rotation must be a direct consequence of the same rail displacement that
+  // advances the sleepers. This remains valid when fleet scaling changes the
+  // rendered driver radius; a fixed degrees-per-frame ceiling does not.
+  for (let index = 0; index < angleDeltas.length; index += 1) {
+    const radius = samples[index + 1].radius;
+    expect(radius).toBeGreaterThan(0);
+    const expectedDegrees = Math.abs(trackDeltas[index]) / (Math.PI * 2 * radius) * 360;
+    expect(Math.abs(Math.abs(angleDeltas[index]) - expectedDegrees)).toBeLessThan(.35);
+  }
+  // At the sampled sub-7 MPH departure, even a 10 fps CI runner should not
+  // advance more than five sleeper pixels in one rendered frame.
+  expect(Math.max(...trackDeltas.map(Math.abs))).toBeLessThan(5);
   expect(new Set(samples.map((sample) => sample.ballastPosition)).size).toBe(1);
 
   await mkdir("qa-artifacts/remediation", { recursive: true });
