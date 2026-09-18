@@ -24,4 +24,23 @@ test("starter locomotive stays clear of the cab on short landscape screens", asy
   expect(geometry).not.toBeNull();
   expect(geometry.cabBottom).toBeLessThanOrEqual(geometry.viewportHeight + 2);
   expect(geometry.clearance).toBeGreaterThanOrEqual(-2);
+
+  const compactTelemetry = await page.evaluate(() => {
+    const group = document.querySelector(".telemetry-group");
+    const resourceSpans = [...document.querySelectorAll(".resource-monitors > div > span")];
+    if (!group) return null;
+    return {
+      groupWidth: group.getBoundingClientRect().width,
+      resourceOverflow: resourceSpans.map((span) => ({
+        text: span.textContent?.replace(/\s+/g, " ").trim() ?? "",
+        clientWidth: span.clientWidth,
+        scrollWidth: span.scrollWidth,
+      })),
+    };
+  });
+  expect(compactTelemetry).not.toBeNull();
+  expect(compactTelemetry.groupWidth).toBeGreaterThanOrEqual(385);
+  for (const resource of compactTelemetry.resourceOverflow) {
+    expect(resource.scrollWidth, `${resource.text} must fit inside compact telemetry`).toBeLessThanOrEqual(resource.clientWidth + 1);
+  }
 });
