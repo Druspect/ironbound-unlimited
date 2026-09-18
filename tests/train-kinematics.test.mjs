@@ -24,7 +24,7 @@ test("wheel and rod phase derive from accumulated rail distance", () => {
   assert.match(page, /WHEEL_TRAVEL_CALIBRATION = 6\.7/);
   assert.match(page, /const smallWheelAngle = wheelAngle\(coachRadius\)/);
   assert.match(page, /runtimeWheelRadiusRatios\(activeEngineId, activeLayout\)/);
-  assert.match(page, /const tenderWheelAngle = wheelAngle\(tenderRadius, CAR_WHEEL_SPEED_RATIO\)/);
+  assert.match(page, /const tenderWheelAngle = wheelAngle\(tenderRadius\)/);
   assert.match(page, /const driverWheelAngle = wheelAngle/);
   assert.match(page, /const driverRadians = driverWheelAngle/);
   assert.match(page, /const driverCrankRadius = driverRadius \* 0\.404/);
