@@ -7,12 +7,12 @@ The game mixes documented locomotives with clearly labelled fictional or design-
 ## Current Game Systems
 
 - 12-locomotive steam roster with class-specific running gear and operating profiles
-- throttle, progressive train brake, grades, boiler load, heat, safety lock, fuel, and water
+- throttle, progressive train brake, grades, boiler load, heat, safety-valve relief/protection, fuel, and water
 - three-to-six-car passenger consists with mass-dependent acceleration, braking, resource use, and speed limits
 - station berthing, progressive servicing, rewards, and a four-station service requirement
 - locomotive store with sourced fact sheets and compatibility rules
 - passenger carriage liveries with one coherent paint scheme across the consist
-- selectable synthesized audio packs with engine-analogue metadata
+- selectable synthesized audio packs plus engine-bound exhaust cadence and five synthesized whistle families
 - automatic and manual camera modes
 - keyboard and pointer controls with compact-landscape and reduced-motion support
 - browser-side save migration for progression and configuration
@@ -30,11 +30,11 @@ Key modules:
 - `app/locomotive-catalog.ts` — fleet catalog and runtime sprite geometry
 - `app/locomotive-registration.json` — calibrated sprite/wheel registration data
 - `app/locomotive-exhaust.ts` — travel-driven exhaust particle timing
-- `app/engine-audio-profiles.ts` and `app/audio-packs.ts` — sound provenance and audio-pack behavior
+- `app/engine-audio-profiles.ts` and `app/audio-packs.ts` — sound provenance, engine exhaust/whistle identity, and audio-pack behavior
 - `app/carriage-compatibility.ts` — era/family carriage compatibility and save migration
 - `app/train-geometry.ts` — consist/platform/camera layout calculations
 
-Visual corrections are split into focused CSS layers. `app/production-polish.css` is intentionally loaded last and may change presentation only; tests prevent it from redefining the calibrated wheel, rail, and train geometry.
+Visual corrections are split into focused CSS layers. `app/production-polish.css` is the late geometry-neutral presentation layer; animation-continuity, biome-transition, and touch-orientation layers follow where their narrower responsibilities require it. Tests prevent presentation layers from redefining calibrated wheel, rail, and train geometry.
 
 ## Historical Accuracy Policy
 
@@ -102,7 +102,7 @@ Production gates cover, among other things:
 - fact-sheet/operating-profile reconciliation
 - wheel and axle registration
 - locomotive-specific handling signatures
-- gradual braking and thermal safety behavior
+- gradual braking, thermal safety-valve behavior, and relief-state salience
 - consist mass effects
 - fuel/water and station-service boundaries
 - carriage compatibility and save migration
@@ -112,6 +112,7 @@ Production gates cover, among other things:
 - locomotive headlight registration
 - undercarriage family treatment
 - carriage livery persistence
+- engine-bound whistle-family coverage and smooth audio boundaries
 - environment-normalized six-car performance budgets
 
 Browser runs retain fresh PNG/video/trace evidence for human review. Deterministic geometry and behavior are the automated pass/fail gates; binary screenshots are not self-approved as baselines in CI.
