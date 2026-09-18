@@ -7,7 +7,7 @@ import { createExhaustMotion } from "./locomotive-exhaust";
 import type { ExhaustMotion } from "./locomotive-exhaust";
 import { AUDIO_PACKS, DEFAULT_AUDIO_PACK, audioPackFor, isAudioPackId, soundscapeMix } from "./audio-packs";
 import type { AudioPackId } from "./audio-packs";
-import { engineAudioProfileFor } from "./engine-audio-profiles";
+import { engineAudioProfileFor, whistleAssetFor } from "./engine-audio-profiles";
 import { advanceBrakePressure, advanceLocomotive } from "./locomotive-physics";
 import { ACTIVE_LOCOMOTIVES, canEquipLocomotive, FLEET_REVIEW_UNLOCKED, resolveEquippedLocomotive, selectLocomotive } from "./fleet-access";
 import { engineFactSheetFor } from "./engine-facts";
@@ -497,15 +497,15 @@ export default function Home() {
   }, [settings.uiScale]);
 
   useEffect(() => {
-    const whistle = new Audio("/assets/audio/ironbound-steam-whistle.wav");
+    const whistle = new Audio(whistleAssetFor(equippedEngine));
     whistle.preload = "auto";
     whistle.volume = 0.72;
     whistleAudioRef.current = whistle;
     return () => {
       whistle.pause();
-      whistleAudioRef.current = null;
+      if (whistleAudioRef.current === whistle) whistleAudioRef.current = null;
     };
-  }, []);
+  }, [equippedEngine]);
 
   useEffect(() => {
     const soundscape = new Audio(audioPackFor(selectedAudioPack).loopAsset);
