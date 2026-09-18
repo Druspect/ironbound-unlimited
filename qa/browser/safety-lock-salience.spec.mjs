@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("safety lock is visually unmistakable without obscuring the railway", async ({ page }) => {
+test("lifted safety valves are visually unmistakable without obscuring the railway", async ({ page }) => {
   await page.setViewportSize({ width: 1365, height: 768 });
   await page.goto("/");
   await page.evaluate(() => {
@@ -33,8 +33,8 @@ test("safety lock is visually unmistakable without obscuring the railway", async
   const scene = page.locator(".scene");
 
   await expect(experience).toHaveClass(/is-overloaded/, { timeout: 5_000 });
-  await expect(statusLine).toContainText("SAFETY LOCK");
-  await expect(heatMonitor).toContainText("SAFETY LOCK");
+  await expect(statusLine).toContainText("SAFETY VALVES");
+  await expect(heatMonitor).toContainText("SAFETY VALVES");
   await expect(scene).toBeVisible();
 
   const visual = await page.evaluate(() => {
@@ -66,10 +66,10 @@ test("safety lock is visually unmistakable without obscuring the railway", async
   expect(train.y + train.height).toBeLessThanOrEqual(cab.y + 2);
 });
 
-test("normal running does not inherit safety-lock emphasis", async ({ page }) => {
+test("normal running does not inherit safety-valve emphasis", async ({ page }) => {
   await page.setViewportSize({ width: 1365, height: 768 });
   await page.goto("/?qaEngine=tom-thumb&qaCars=3");
   await expect(page.locator(".scene")).toBeVisible();
   await expect(page.locator(".experience")).not.toHaveClass(/is-overloaded/);
-  await expect(page.locator(".status-line")).not.toContainText("SAFETY LOCK");
+  await expect(page.locator(".status-line")).not.toContainText("SAFETY VALVES");
 });
