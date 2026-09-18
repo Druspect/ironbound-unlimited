@@ -17,6 +17,13 @@ test("continuous locomotive motion is phase-locked to the existing driver angle"
   assert.match(css, /--phase-rise-amplitude:\s*\.16px/);
 });
 
+test("registered locomotive poses cross-fade instead of hard stepping at low speed", () => {
+  assert.match(css, /\.engine-sprite-frame-primary[\s\S]*--engine-sprite-a-x/);
+  assert.match(css, /\.engine-sprite-frame-secondary[\s\S]*--engine-sprite-b-x/);
+  assert.match(css, /opacity:\s*calc\(1 - var\(--engine-sprite-blend/);
+  assert.match(css, /opacity:\s*var\(--engine-sprite-blend/);
+});
+
 test("articulated engines are damped rather than animated like light locomotives", () => {
   for (const id of ["nw-1218", "challenger-3985", "big-boy-4014"]) assert.ok(css.includes(`.engine-sprite-${id}`));
   assert.match(css, /--phase-surge-amplitude:\s*\.18px/);
