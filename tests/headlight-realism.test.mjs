@@ -8,10 +8,11 @@ const catalog = await readFile(new URL("../app/locomotive-catalog.ts", import.me
 
 const locomotiveIds = [...catalog.matchAll(/\{ id: "([^"]+)"/g)].map((match) => match[1]);
 
-test("headlight realism is loaded last among scene visual corrections", () => {
-  const track = layout.indexOf('import "./track-ground-truth.css"');
+test("headlight realism is loaded after the single authoritative track layer", () => {
+  const track = layout.indexOf('import "./track-realism.css"');
   const lights = layout.indexOf('import "./headlight-realism.css"');
   assert.ok(track >= 0 && lights > track);
+  assert.doesNotMatch(layout, /track-ground-truth/);
 });
 
 test("every fleet locomotive has an explicit headlight socket profile", () => {
