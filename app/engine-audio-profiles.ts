@@ -3,6 +3,14 @@ import { ENGINE_FACT_SHEETS } from "./engine-facts.ts";
 
 export type EngineAudioProvenance = "class-analogue" | "fictional-design" | "documented-inspiration";
 
+export const WHISTLE_CHARACTER_ASSETS = Object.freeze({
+  "early-passenger": "/assets/audio/whistle-early-passenger.wav",
+  freight: "/assets/audio/whistle-freight.wav",
+  "high-speed-passenger": "/assets/audio/whistle-high-speed-passenger.wav",
+  "articulated-freight": "/assets/audio/whistle-articulated-freight.wav",
+  "winter-excursion": "/assets/audio/whistle-winter-excursion.wav",
+} as const);
+
 export type EngineAudioProfile = {
   engineId: string;
   packId: AudioPackId;
@@ -159,6 +167,11 @@ export function engineAudioProfileFor(engineId: string): EngineAudioProfile {
   const profile = ENGINE_AUDIO_PROFILES[engineId];
   if (!profile) throw new Error(`No audio provenance profile registered for ${engineId}`);
   return profile;
+}
+
+export function whistleAssetFor(engineId: string) {
+  const profile = engineAudioProfileFor(engineId);
+  return WHISTLE_CHARACTER_ASSETS[profile.whistleCharacter];
 }
 
 export function validateEngineAudioCoverage() {
