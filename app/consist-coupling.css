@@ -8,16 +8,33 @@
 
 .consist-car .car-end-diaphragm {
   position: absolute;
-  z-index: 3;
-  right: -3px;
-  bottom: 31%;
-  width: 7px;
-  height: 32%;
-  border: 1px solid rgba(58, 55, 50, .9);
+  z-index: 4;
+  right: -7px;
+  bottom: 29%;
+  width: 14px;
+  height: 36%;
+  border: 1px solid rgba(61, 59, 54, .92);
   border-radius: 2px;
-  background: linear-gradient(90deg, #171817, #47453f 48%, #181918);
-  box-shadow: 1px 2px 3px rgba(0, 0, 0, .62);
+  background:
+    repeating-linear-gradient(90deg, #151615 0 2px, #393934 2px 4px, #20211f 4px 6px),
+    linear-gradient(180deg, #3e3d39, #171817);
+  box-shadow:
+    inset 0 1px rgba(190, 181, 158, .12),
+    inset 0 -1px rgba(0, 0, 0, .72),
+    1px 2px 3px rgba(0, 0, 0, .62);
   pointer-events: none;
+}
+
+.consist-car .car-end-diaphragm::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: -7px;
+  height: 8px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, #545149, #1e201e 68%, #101110);
+  box-shadow: 0 2px 2px rgba(0,0,0,.62);
 }
 
 .consist-coupler {
@@ -115,7 +132,8 @@
 
 @media (orientation: landscape) and (max-height: 560px) {
   .consist-car .car-end-diaphragm {
-    width: 6px;
+    right: -6px;
+    width: 12px;
   }
 
   .consist-coupler {
