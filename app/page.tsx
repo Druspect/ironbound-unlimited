@@ -21,6 +21,7 @@ import {
 } from "./run-economy";
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
 import { calculateTrainSceneGeometry } from "./train-geometry";
+import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
 import type { CameraMode } from "./train-geometry";
 import {
   CONSIST_CAR_TYPES,
@@ -56,20 +57,13 @@ const TILE_TRAVEL = ROUTE_TILE_TRAVEL;
 const ROUTE_TILE_COUNT = BIOMES.length * TILES_PER_BIOME;
 const ROUTE_TRAVEL = ROUTE_TILE_COUNT * TILE_TRAVEL;
 
-// Move each complete bogie 3% toward the coach center. Rod anchors shift with it.
-const COACH_WHEEL_POSITIONS = [11, 25, 64, 78] as const;
-// These ratios mirror the rendered CSS geometry below. Wheel phase is tied to
-// rail travel, so the axles cannot stop, restart, or drift when speed changes.
+// Canonical 80 ft heavyweight passenger stock. Two unpowered two-axle trucks
+// use an 8 ft wheelbase and 36 in wheels; no locomotive-style side rods.
+const COACH_WHEEL_POSITIONS = [8, 18, 78, 88] as const;
+// Engine fallback ratios remain for unmigrated locomotive waves.
 const SMALL_WHEEL_RADIUS_RATIO = 0.01535;
 const DRIVER_WHEEL_RADIUS_RATIO = 0.03375;
-// Slight visual calibration against the perspective-skewed sleeper texture.
-// Track geometry still advances at 7.2; the wheel faces use the lower factor
-// to remove the small apparent over-speed reported during visual review.
 const WHEEL_TRAVEL_CALIBRATION = 6.7;
-const CAR_WHEEL_SPEED_RATIO = 0.92;
-const CAR_TRUCK_PHASES = [0, 34, 17, 51, 11, 45, 23, 57, 7, 41, 29, 63] as const;
-const CAR_RENDER_WIDTH = 190;
-const ENGINE_RENDER_BASE_WIDTH = 420;
 const STATION_STOP_ZONE_DISTANCE = 130;
 const STATION_PASS_GRACE_DISTANCE = STATION_STOP_ZONE_DISTANCE + 1;
 // visualTravel advances by speed(MPH) × elapsed seconds. The live odometer
@@ -794,24 +788,21 @@ export default function Home() {
         const activeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[equippedEngineRef.current];
         const activeEngineId = equippedEngineRef.current;
         const runtimeRadii = activeLayout ? runtimeWheelRadiusRatios(activeEngineId, activeLayout) : null;
-        const enginePixelWidth = ENGINE_RENDER_BASE_WIDTH * ((activeLayout?.totalWidth ?? 50) / 50);
+        const enginePixelWidth = engineRenderWidth(activeEngineId, activeLayout?.totalWidth);
         const layoutWidthRatio = (activeLayout?.totalWidth ?? 50) / 100;
         const driverRadius = enginePixelWidth * ((runtimeRadii?.driver ?? DRIVER_WHEEL_RADIUS_RATIO) / layoutWidthRatio);
         // Passenger coaches keep the same wheels regardless of equipped engine.
-        const coachRadius = CAR_RENDER_WIDTH * .125 / 2;
+        const coachRadius = CANONICAL_COACH_RENDER_WIDTH * CANONICAL_COACH_WHEEL_DIAMETER_RATIO / 2;
         const tenderRadius = enginePixelWidth * ((runtimeRadii?.tender ?? SMALL_WHEEL_RADIUS_RATIO) / layoutWidthRatio);
-        const smallWheelAngle = wheelAngle(coachRadius, CAR_WHEEL_SPEED_RATIO);
-        const tenderWheelAngle = wheelAngle(tenderRadius, CAR_WHEEL_SPEED_RATIO);
+        const smallWheelAngle = wheelAngle(coachRadius);
+        const tenderWheelAngle = wheelAngle(tenderRadius);
         const driverWheelAngle = wheelAngle(driverRadius);
-        const smallRadians = smallWheelAngle * (Math.PI / 180);
         const driverRadians = driverWheelAngle * (Math.PI / 180);
         // The clean driver face contains only the tire, spokes, and axle hub.
         // A separate crank pin and the coupling rod share this eccentric throw,
         // so no painted counterweight can flare around the wheel as it rotates.
         const driverCrankRadius = driverRadius * 0.404;
         const driverCrankPhase = 0;
-        const smallCrankRadius = coachRadius * 0.67;
-        const smallCrankPhase = -32.1 * (Math.PI / 180);
         root.style.setProperty("--small-wheel-angle", `${smallWheelAngle}deg`);
         root.style.setProperty("--tender-wheel-angle", `${tenderWheelAngle}deg`);
         root.style.setProperty("--driver-wheel-angle", `${driverWheelAngle}deg`);
@@ -844,11 +835,6 @@ export default function Home() {
         [0, Math.PI / 2].forEach((phase, group) => {
           root.style.setProperty(`--rod-${group}-x`, `${Math.cos(driverRadians + driverCrankPhase + phase) * driverCrankRadius}px`);
           root.style.setProperty(`--rod-${group}-y`, `${Math.sin(driverRadians + driverCrankPhase + phase) * driverCrankRadius}px`);
-        });
-        CAR_TRUCK_PHASES.forEach((phaseOffset, index) => {
-          const rodPhase = smallRadians + smallCrankPhase + phaseOffset * (Math.PI / 180);
-          root.style.setProperty(`--car-rod-${index}-x`, `${Math.cos(rodPhase) * smallCrankRadius}px`);
-          root.style.setProperty(`--car-rod-${index}-y`, `${Math.sin(rodPhase) * smallCrankRadius}px`);
         });
         Object.assign(exhaustMotionRef.current, {
           travel: railTravel, driverRadius, speed: velocity,
@@ -971,9 +957,9 @@ export default function Home() {
   const activeCarriageFamily = carriageFamilyForEngine(activeEngine.id);
   const activeAudioProfile = engineAudioProfileFor(activeEngine.id);
   const activeConsistMetrics = calculateConsistMetrics(activeEngine.id, consistCars);
-  const carWidth = CAR_RENDER_WIDTH;
+  const carWidth = CANONICAL_COACH_RENDER_WIDTH;
   const activeRuntimeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[activeEngine.id];
-  const engineWidth = ENGINE_RENDER_BASE_WIDTH * ((activeRuntimeLayout?.totalWidth ?? 50) / 50);
+  const engineWidth = engineRenderWidth(activeEngine.id, activeRuntimeLayout?.totalWidth);
   const passengerWorldWidth = consistCars.length * carWidth;
   const trainWorldWidth = passengerWorldWidth + engineWidth;
   const trainAnchor = passengerWorldWidth / 2;
@@ -1158,7 +1144,6 @@ export default function Home() {
             >
               {consistCars.map((carId, carIndex) => {
                 const car = carTypeFor(carId);
-                const firstRod = carIndex * 2;
                 return (
                   <div
                     key={`${carIndex}-${carId}`}
@@ -1171,11 +1156,6 @@ export default function Home() {
                     {COACH_WHEEL_POSITIONS.map((position, wheelIndex) => (
                       <span key={position} className="running-wheel small-wheel" style={{ "--wheel-position": `${position}%`, "--wheel-phase": `${carIndex * 17 + (wheelIndex > 1 ? 34 : 0)}deg` } as SceneStyle}>
                         <img src="/assets/train-v3-truck-wheel.webp" alt="" draggable={false} decoding="async" />
-                      </span>
-                    ))}
-                    {[0, 1].map((truck) => (
-                      <span key={truck} className={`truck-rod coach-truck-rod truck-rod-${truck === 0 ? "a" : "b"}`} style={{ "--small-rod-x": `var(--car-rod-${firstRod + truck}-x)`, "--small-rod-y": `var(--car-rod-${firstRod + truck}-y)` } as SceneStyle}>
-                        <img src="/assets/train-v3-coupling-rod.webp" alt="" draggable={false} decoding="async" />
                       </span>
                     ))}
                     <img className="component-body passenger-body" src={car.art} alt="" draggable={false} decoding="sync" fetchPriority={carIndex === 0 ? "high" : "auto"} />

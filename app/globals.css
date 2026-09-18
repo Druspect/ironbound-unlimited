@@ -707,7 +707,7 @@ button { color: inherit; }
 }
 .passenger-body {
   left: 0;
-  bottom: 14%;
+  bottom: 8%;
   width: 100%;
   height: 76%;
   object-fit: contain;
@@ -756,7 +756,7 @@ button { color: inherit; }
   transform-origin: 50% 50%;
   will-change: transform;
 }
-.small-wheel { bottom: 4%; width: 12.5%; }
+.small-wheel { bottom: 4%; width: 3.75%; }
 .tender-wheel { bottom: 4%; width: 19.8%; }
 .driver-wheel {
   /* The body artwork contains the real transparent wheel wells. The clean
@@ -813,9 +813,6 @@ button { color: inherit; }
   pointer-events: none;
 }
 .truck-rod img { display: block; width: 182%; height: auto; }
-.coach-truck-rod { width: 17%; }
-.coach-truck-rod.truck-rod-a { left: 15.8%; }
-.coach-truck-rod.truck-rod-b { left: 68.8%; }
 .tender-truck-rod { width: 25.5%; }
 .tender-truck-rod.truck-rod-a { left: 16.2%; }
 .tender-truck-rod.truck-rod-b { left: 65.2%; }

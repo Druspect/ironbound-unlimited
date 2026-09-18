@@ -22,9 +22,8 @@ test("reduced-motion mode does not disable functional wheel rotation", () => {
 test("wheel and rod phase derive from accumulated rail distance", () => {
   assert.match(page, /visualTravelRef\.current \+= travelDelta/);
   assert.match(page, /WHEEL_TRAVEL_CALIBRATION = 6\.7/);
-  assert.match(page, /CAR_WHEEL_SPEED_RATIO = 0\.92/);
+  assert.match(page, /const smallWheelAngle = wheelAngle\(coachRadius\)/);
   assert.match(page, /runtimeWheelRadiusRatios\(activeEngineId, activeLayout\)/);
-  assert.match(page, /const smallWheelAngle = wheelAngle\(coachRadius, CAR_WHEEL_SPEED_RATIO\)/);
   assert.match(page, /const tenderWheelAngle = wheelAngle\(tenderRadius, CAR_WHEEL_SPEED_RATIO\)/);
   assert.match(page, /const driverWheelAngle = wheelAngle/);
   assert.match(page, /const driverRadians = driverWheelAngle/);
@@ -33,15 +32,12 @@ test("wheel and rod phase derive from accumulated rail distance", () => {
   assert.match(page, /const smallCrankRadius = coachRadius \* 0\.67/);
   assert.match(page, /--rod-\$\{group\}-x/);
   assert.match(page, /--rod-\$\{group\}-y/);
-  assert.match(page, /--small-rod-x/);
-  assert.match(page, /--small-rod-y/);
-  assert.match(page, /CAR_TRUCK_PHASES/);
   assert.match(css, /--wheel-phase/);
 });
 
-test("static car bars are replaced by crankpin-linked truck rods", () => {
+test("passenger trucks are free-rolling and never receive locomotive coupling rods", () => {
   assert.doesNotMatch(page, /truck-frame|className="tender-frame"/);
-  assert.match(page, /coach-truck-rod/);
+  assert.doesNotMatch(page, /coach-truck-rod|CAR_TRUCK_PHASES|--car-rod-/);
 });
 
 test("no decorative pilot wheel fills the transparent rear opening", () => {
@@ -81,13 +77,12 @@ test("brake pressure builds progressively while speed and distance remain simula
   assert.match(page, /aria-pressed=\{brakeEngaged\}/);
 });
 
-test("both coach bogies and rods move inward together without changing wheel size", () => {
-  assert.match(page, /COACH_WHEEL_POSITIONS = \[11, 25, 64, 78\]/);
-  assert.match(css, /\.coach-truck-rod\.truck-rod-a \{ left: 15\.8%; \}/);
-  assert.match(css, /\.coach-truck-rod\.truck-rod-b \{ left: 68\.8%; \}/);
-  assert.match(css, /\.small-wheel \{ bottom: 4%; width: 12\.5%; \}/);
-  assert.match(page, /const coachRadius = CAR_RENDER_WIDTH \* \.125 \/ 2/);
+test("coach trucks use heavyweight passenger geometry at the shared world scale", () => {
+  assert.match(page, /COACH_WHEEL_POSITIONS = \[8, 18, 78, 88\]/);
+  assert.match(css, /\.small-wheel \{ bottom: 4%; width: 3\.75%; \}/);
+  assert.match(page, /CANONICAL_COACH_RENDER_WIDTH \* CANONICAL_COACH_WHEEL_DIAMETER_RATIO \/ 2/);
   assert.doesNotMatch(page, /const coachRadius[^;]*runtimeRadii/);
+  assert.doesNotMatch(page, /coach-truck-rod/);
   assert.doesNotMatch(page, /Train screensaver game\./);
 });
 
@@ -95,7 +90,7 @@ test("every carriage body resolves to the same visible underframe baseline", () 
   const canvasWidth = 900;
   const carWidth = 190;
   const bodyBoxHeight = 150 * .76;
-  const bodyBottom = 150 * .14;
+  const bodyBottom = 150 * .08;
   const profiles = [
     { name: "day coach", transparentBottom: 1, shift: 0 },
     { name: "baggage", transparentBottom: 5, shift: .7 },
