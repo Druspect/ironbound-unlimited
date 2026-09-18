@@ -240,6 +240,16 @@ function renderWhistle(character) {
     for (let index = delay; index < frameCount; index += 1) samples[index] += dry[index - delay] * gain;
   }
 
+  // Reverb taps can otherwise leave residual pressure at the exact file edge.
+  // Fade only the final 140 ms after reflections are mixed so every family
+  // releases naturally to digital silence without a loop/cutoff click.
+  const terminalFadeSamples = Math.round(sampleRate * 0.14);
+  for (let offset = 0; offset < terminalFadeSamples; offset += 1) {
+    const index = frameCount - terminalFadeSamples + offset;
+    const remaining = 1 - offset / Math.max(1, terminalFadeSamples - 1);
+    samples[index] *= smoothStep(remaining);
+  }
+
   return normalizeToPcm(samples, 0.84);
 }
 
