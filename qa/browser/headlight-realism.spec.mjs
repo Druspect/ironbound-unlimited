@@ -24,7 +24,7 @@ test.describe("locomotive headlight realism", () => {
     for (const engineId of ENGINES) {
       await page.goto(`/?qaEngine=${engineId}&qaCars=3`);
       await expect(page.locator(".scene")).toBeVisible();
-      const frame = page.locator(`.engine-sprite-${engineId} .engine-sprite-frame`);
+      const frame = page.locator(`.engine-sprite-${engineId} .engine-sprite-frame-primary`);
       await expect(frame).toBeVisible();
 
       const lighting = await frame.evaluate((element) => {
