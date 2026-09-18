@@ -42,3 +42,12 @@ test("livery control is loaded globally but shown only in carriage store", () =>
   assert.match(layout, /import "\.\/carriage-liveries\.css"/);
   assert.match(css, /body:has\(#carriage-store-heading\) \.carriage-livery-control/);
 });
+
+
+test("default Pullman green stays dark and restrained", () => {
+  const match = css.match(/data-carriage-livery="pullman-green"\][\s\S]*?--carriage-livery-filter:\s*([^;]+);/);
+  assert.ok(match, "Pullman Green filter must remain explicit");
+  assert.match(match[1], /brightness\(\.60\)/);
+  assert.match(match[1], /saturate\(1\.58\)/);
+  assert.match(css, /--carriage-livery-swatch:\s*#29372d/);
+});
