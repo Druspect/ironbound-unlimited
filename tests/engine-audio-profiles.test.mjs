@@ -4,8 +4,10 @@ import test from "node:test";
 import { ENGINE_FACT_SHEETS } from "../app/engine-facts.ts";
 import {
   ENGINE_AUDIO_PROFILES,
+  WHISTLE_CHARACTER_ASSETS,
   engineAudioProfileFor,
   validateEngineAudioCoverage,
+  whistleAssetFor,
 } from "../app/engine-audio-profiles.ts";
 
 test("every engine has one explicit audio provenance profile", () => {
@@ -40,4 +42,15 @@ test("winter-limited remains explicitly tied to the 1225-inspired locomotive", (
   assert.equal(profile.packId, "winter-limited");
   assert.equal(profile.provenance, "documented-inspiration");
   assert.match(profile.analogueLabel, /1225|Berkshire|winter/i);
+});
+
+
+test("whistle characters resolve to distinct generated assets", () => {
+  assert.equal(Object.keys(WHISTLE_CHARACTER_ASSETS).length, 5);
+  assert.equal(new Set(Object.values(WHISTLE_CHARACTER_ASSETS)).size, 5);
+  for (const engineId of Object.keys(ENGINE_AUDIO_PROFILES)) {
+    const profile = engineAudioProfileFor(engineId);
+    assert.equal(whistleAssetFor(engineId), WHISTLE_CHARACTER_ASSETS[profile.whistleCharacter]);
+    assert.match(whistleAssetFor(engineId), /^\/assets\/audio\/whistle-[a-z-]+\.wav$/);
+  }
 });
