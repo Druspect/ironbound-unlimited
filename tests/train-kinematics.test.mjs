@@ -178,7 +178,9 @@ test("shop and running train share fixed-canvas sprite artwork", () => {
   assert.match(page, /LOCOMOTIVE_SPRITE_CANVAS\.height/);
   assert.match(page, /360 \/ LOCOMOTIVE_SPRITE_ANIMATION\.frames/);
   assert.match(page, /% LOCOMOTIVE_SPRITE_ANIMATION\.frames/);
-  assert.match(page, /ironbound-steam-whistle\.wav/);
+  assert.match(page, /new Audio\(whistleAssetFor\(equippedEngine\)\)/);
+  assert.match(page, /\}, \[equippedEngine\]\);/);
+  assert.doesNotMatch(page, /ironbound-steam-whistle\.wav/);
   assert.doesNotMatch(page, /createOscillator|AudioContext/);
   assert.match(page, /--engine-sprite-x/);
   assert.match(page, /--engine-sprite-y/);
