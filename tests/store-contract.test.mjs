@@ -156,3 +156,13 @@ test("service due copy handles singular and plural station counts", () => {
   assert.match(page, /serviceDueStations === 1 \? "station" : "stations"/);
   assert.doesNotMatch(page, /stationsUntilServiceRequired\(steamResources\)\} STATIONS/);
 });
+
+
+test("equipped locomotive owns the active whistle family", () => {
+  const whistleEffectStart = page.indexOf("const whistle = new Audio(whistleAssetFor(equippedEngine))");
+  assert.ok(whistleEffectStart >= 0, "whistle must resolve from the equipped engine");
+  const whistleEffect = page.slice(whistleEffectStart, whistleEffectStart + 520);
+  assert.match(whistleEffect, /whistle\.preload = "auto"/);
+  assert.match(whistleEffect, /\}, \[equippedEngine\]\);/);
+  assert.doesNotMatch(page, /new Audio\("\/assets\/audio\/ironbound-steam-whistle\.wav"\)/);
+});
