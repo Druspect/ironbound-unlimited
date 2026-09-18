@@ -346,7 +346,7 @@ test("capture every production-review visual state", async ({ page }) => {
     });
   }
 
-  // Safety governor / overheat presentation restored from a valid save state.
+  // Lifted safety-valve / overheat presentation restored from a valid save state.
   await page.setViewportSize(GAME);
   await page.addInitScript(() => {
     localStorage.setItem("ironbound-save-v4", JSON.stringify({
@@ -375,10 +375,10 @@ test("capture every production-review visual state", async ({ page }) => {
   await page.getByRole("button", { name: "BEGIN RUN" }).click();
   await expect(page.locator(".experience")).toHaveClass(/is-overloaded/, { timeout: 8_000 });
   await capture(page, {
-    id: "07-safety/overheat-governor",
+    id: "07-safety/safety-valves-lifted",
     category: "Safety",
-    title: "Overheat safety governor",
-    purpose: "Heat warning, governor intervention, safety steam cue, and high-demand telemetry.",
+    title: "Safety valves lifted",
+    purpose: "Heat warning, lifted safety-valve state, relief steam cue, and high-demand telemetry.",
   }, { animations: "allow" });
 
   // Responsive layouts: compact landscape is supported; portrait is captured
