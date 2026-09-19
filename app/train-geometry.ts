@@ -48,13 +48,26 @@ export function calculateTrainSceneGeometry(
   );
   const cameraScale = clamp(Math.min(CAMERA_MODE_SCALE[cameraMode], fitScale), .16, 1.04);
   const passengerRenderedWidth = passengerWidth * cameraScale;
-  const platformRenderedWidth = Math.max(
+  const desiredPlatformWidth = Math.max(
     Math.min(680, viewport * .82),
     (passengerRenderedWidth + clamp(viewport * .04, 32, 72)) / PLATFORM_USABLE_WIDTH_RATIO,
   );
+  // The platform shares the 40% passenger anchor, so its fully visible width
+  // is limited by the nearer viewport edge. Compress decorative end margin
+  // before allowing the station art to clip off-screen.
+  const maximumCenteredPlatformWidth = Math.max(
+    passengerRenderedWidth,
+    2 * Math.min(viewportAnchor - 2, viewport - viewportAnchor - 2),
+  );
+  const platformRenderedWidth = Math.min(desiredPlatformWidth, maximumCenteredPlatformWidth);
   const passengerLeft = viewportAnchor - passengerRenderedWidth / 2;
   const passengerRight = viewportAnchor + passengerRenderedWidth / 2;
-  const platformUsableWidth = platformRenderedWidth * PLATFORM_USABLE_WIDTH_RATIO;
+  // Keep at least 10 rendered pixels of usable platform beyond each end of
+  // the passenger consist whenever the viewport permits it.
+  const platformUsableWidth = Math.min(
+    platformRenderedWidth,
+    Math.max(platformRenderedWidth * PLATFORM_USABLE_WIDTH_RATIO, passengerRenderedWidth + 20),
+  );
 
   return {
     cameraScale,
