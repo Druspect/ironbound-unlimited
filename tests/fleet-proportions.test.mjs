@@ -34,16 +34,22 @@ test("running geometry and wheel phase consume the same fleet width contract", (
 
 test("wave two documented lengths preserve real fleet ordering", () => {
   const expected = [
-    ["nkp-765", "100"],
-    ["atsf-3751", "108 + 7 / 12"],
-    ["nw-611", "110"],
-    ["up-844", "114 + 2.625 / 12"],
-    ["nw-1218", "121"],
-    ["challenger-3985", "121 + 10.875 / 12"],
-    ["big-boy-4014", "132 + 9.875 / 12"],
+    ["nkp-765", "engineAndTenderLengthFeet: 100"],
+    ["atsf-3751", "engineAndTenderLengthFeet: 108 + 7 / 12"],
+    ["nw-611", "engineAndTenderLengthFeet: 110"],
+    ["up-844", "engineAndTenderLengthFeet: 114 + 2.625 / 12"],
+    ["nw-1218", "engineAndTenderLengthFeet: 121"],
+    ["challenger-3985", "engineAndTenderLengthFeet: 121 + 10.875 / 12"],
+    ["big-boy-4014", "engineAndTenderLengthFeet: 132 + 9.875 / 12"],
   ];
-  for (const [id, lengthExpression] of expected) {
-    assert.match(proportions, new RegExp(`"${id}"[\\s\\S]*?engineAndTenderLengthFeet: ${lengthExpression.replaceAll("/", "\\/")}`));
+  for (const [id, lengthSource] of expected) {
+    const blockStart = proportions.indexOf(`"${id}"`);
+    assert.ok(blockStart >= 0, `${id} profile missing`);
+    const blockEnd = proportions.indexOf("\n  },", blockStart);
+    const block = proportions.slice(blockStart, blockEnd);
+    assert.ok(block.includes(lengthSource), `${id} length source drifted`);
+    assert.ok(block.includes('basis: "documented"'), `${id} must remain documented`);
+    assert.ok(block.includes("sourceUrl:"), `${id} must retain provenance`);
   }
   assert.equal((proportions.match(/sourceUrl:/g) ?? []).length, 7);
 });
