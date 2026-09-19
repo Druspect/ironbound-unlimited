@@ -17,6 +17,16 @@ const ENGINES = [
 const ALL_ENGINES = ["tom-thumb", ...ENGINES];
 const ARTICULATED = new Set(["nw-1218", "challenger-3985", "big-boy-4014"]);
 
+const WAVE_TWO_LENGTHS = Object.freeze({
+  "nkp-765": 100,
+  "atsf-3751": 108 + 7 / 12,
+  "nw-611": 110,
+  "up-844": 114 + 2.625 / 12,
+  "nw-1218": 121,
+  "challenger-3985": 121 + 10.875 / 12,
+  "big-boy-4014": 132 + 9.875 / 12,
+});
+
 async function waitForEngine(page, engineId) {
   const engine = page.locator(`[data-engine-sprite="${engineId}"]`);
   await expect(engine).toBeVisible({ timeout: 10_000 });
@@ -113,6 +123,44 @@ test.describe("fleet polish", () => {
           caret: "hide",
         });
         await testInfo.attach(`undercarriage-${engineId}`, { body: evidence, contentType: "image/png" });
+      }
+    }
+  });
+
+  test("wave two locomotives scale against the canonical 80 ft coach and keep couplers continuous", async ({ page }, testInfo) => {
+    test.setTimeout(70_000);
+    await page.setViewportSize({ width: 1600, height: 900 });
+
+    let priorRatio = 0;
+    for (const [engineId, lengthFeet] of Object.entries(WAVE_TWO_LENGTHS)) {
+      await page.goto(`/?qaEngine=${engineId}&qaCars=3`);
+      const engine = await waitForEngine(page, engineId);
+      const coach = page.locator(".consist-car").first();
+      await expect(coach).toBeVisible();
+
+      const [engineBox, coachBox, couplingBox] = await Promise.all([
+        engine.boundingBox(),
+        coach.boundingBox(),
+        page.locator(".consist-engine-coupling").boundingBox(),
+      ]);
+      expect(engineBox).not.toBeNull();
+      expect(coachBox).not.toBeNull();
+      expect(couplingBox).not.toBeNull();
+
+      const ratio = engineBox.width / coachBox.width;
+      const expectedRatio = lengthFeet / 80;
+      expect(Math.abs(ratio - expectedRatio)).toBeLessThan(.012);
+      expect(ratio).toBeGreaterThan(priorRatio);
+      priorRatio = ratio;
+
+      const finalCoach = await page.locator(".consist-car").last().boundingBox();
+      expect(finalCoach).not.toBeNull();
+      expect(couplingBox.x).toBeLessThan(finalCoach.x + finalCoach.width);
+      expect(couplingBox.x + couplingBox.width).toBeGreaterThan(engineBox.x);
+
+      if (["nkp-765", "nw-1218", "big-boy-4014"].includes(engineId)) {
+        const evidence = await page.screenshot({ animations: "disabled", caret: "hide" });
+        await testInfo.attach(`wave-two-proportion-${engineId}`, { body: evidence, contentType: "image/png" });
       }
     }
   });

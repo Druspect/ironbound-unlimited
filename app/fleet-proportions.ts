@@ -22,6 +22,7 @@ export type FleetProportionProfile = {
   engineAndTenderLengthFeet: number;
   basis: FleetScaleBasis;
   note: string;
+  sourceUrl?: string;
 };
 
 export const FLEET_PROPORTIONS: Readonly<Record<string, FleetProportionProfile>> = Object.freeze({
@@ -39,6 +40,48 @@ export const FLEET_PROPORTIONS: Readonly<Record<string, FleetProportionProfile>>
     engineAndTenderLengthFeet: 83,
     basis: "documented",
     note: "PRR K4s No. 1361 overall engine+tender length baseline.",
+  },
+  "nkp-765": {
+    engineAndTenderLengthFeet: 100,
+    basis: "documented",
+    note: "Fort Wayne Railroad Historical Society publishes an overall length of 100 ft.",
+    sourceUrl: "https://fortwaynerailroad.org/nickel-plate-road-no-765/",
+  },
+  "atsf-3751": {
+    engineAndTenderLengthFeet: 108 + 7 / 12,
+    basis: "documented",
+    note: "San Bernardino Railroad Historical Society lists engine+tender length as 108 ft 7 in.",
+    sourceUrl: "https://www.sbrhs.org/equipment/santa-fe-3751/specifications.html",
+  },
+  "nw-611": {
+    engineAndTenderLengthFeet: 110,
+    basis: "documented",
+    note: "Virginia DHR documents N&W 611 at 110 ft overall with tender.",
+    sourceUrl: "https://www.dhr.virginia.gov/historic-registers/128-6479/",
+  },
+  "up-844": {
+    engineAndTenderLengthFeet: 114 + 2.625 / 12,
+    basis: "documented",
+    note: "Union Pacific lists engine+tender length as 114 ft 2 5/8 in.",
+    sourceUrl: "https://www.up.com/about-us/history/steam/living-legend-844",
+  },
+  "nw-1218": {
+    engineAndTenderLengthFeet: 121,
+    basis: "documented",
+    note: "Virginia DHR documents N&W 1218 at 121 ft total length.",
+    sourceUrl: "https://www.dhr.virginia.gov/historic-registers/128-6655/",
+  },
+  "challenger-3985": {
+    engineAndTenderLengthFeet: 121 + 10.875 / 12,
+    basis: "documented",
+    note: "Union Pacific lists engine+tender length as 121 ft 10 7/8 in.",
+    sourceUrl: "https://www.up.com/heritage/steam/3985/",
+  },
+  "big-boy-4014": {
+    engineAndTenderLengthFeet: 132 + 9.875 / 12,
+    basis: "documented",
+    note: "Union Pacific lists engine+tender length as 132 ft 9 7/8 in.",
+    sourceUrl: "https://www.up.com/about-us/history/steam/big-boy-4014",
   },
 });
 
