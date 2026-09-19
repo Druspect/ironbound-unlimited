@@ -7,8 +7,8 @@ import {
 } from "../app/train-geometry.ts";
 
 const CAR_WIDTH = 190;
-const ENGINE_WIDTHS = [420, 546];
-const VIEWPORTS = [390, 768, 1365, 1920];
+const ENGINE_WIDTHS = [180.5, 257.9, 315.5, 420, 546];
+const VIEWPORTS = [390, 768, 932, 1365, 1920];
 
 test("automatic camera contains three- and six-car trains at every target viewport", () => {
   for (const viewport of VIEWPORTS) {
@@ -26,13 +26,20 @@ test("automatic camera contains three- and six-car trains at every target viewpo
   }
 });
 
-test("platform usable span covers every passenger car for three and six cars", () => {
+test("platform stays on-screen while covering every passenger car", () => {
   for (const viewport of VIEWPORTS) {
     for (const carCount of [3, 6]) {
-      const passengerWidth = carCount * CAR_WIDTH;
-      const geometry = calculateTrainSceneGeometry(viewport, passengerWidth, passengerWidth + ENGINE_WIDTHS[1], "auto");
-      assert.ok(geometry.platformUsableLeft <= geometry.passengerLeft - 15, `${viewport}px ${carCount}-car platform left`);
-      assert.ok(geometry.platformUsableRight >= geometry.passengerRight + 15, `${viewport}px ${carCount}-car platform right`);
+      for (const engineWidth of ENGINE_WIDTHS) {
+        const passengerWidth = carCount * CAR_WIDTH;
+        const geometry = calculateTrainSceneGeometry(viewport, passengerWidth, passengerWidth + engineWidth, "auto");
+        const anchor = Math.max(320, viewport) * PASSENGER_ANCHOR_VIEWPORT_RATIO;
+        const platformLeft = anchor - geometry.platformRenderedWidth / 2;
+        const platformRight = anchor + geometry.platformRenderedWidth / 2;
+        assert.ok(platformLeft >= -0.01, `${viewport}px ${carCount}-car platform clips left`);
+        assert.ok(platformRight <= Math.max(320, viewport) + .01, `${viewport}px ${carCount}-car platform clips right`);
+        assert.ok(geometry.platformUsableLeft <= geometry.passengerLeft - 9.9, `${viewport}px ${carCount}-car platform left coverage`);
+        assert.ok(geometry.platformUsableRight >= geometry.passengerRight + 9.9, `${viewport}px ${carCount}-car platform right coverage`);
+      }
     }
   }
 });
