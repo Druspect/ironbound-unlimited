@@ -6,8 +6,9 @@
  * locomotives use engine+tender overall length; fictional/proxy art is marked
  * explicitly so a design estimate is never presented as historical fact.
  *
- * Stage A migration is intentionally gated. Engines without a profile retain
- * their previous render width until their review wave.
+ * Stage A is complete. Every active locomotive must have a proportion profile;
+ * missing profiles are a hard error so the old equal-width fallback cannot
+ * silently return when the roster grows.
  */
 
 export const CANONICAL_COACH_LENGTH_FEET = 80;
@@ -83,17 +84,22 @@ export const FLEET_PROPORTIONS: Readonly<Record<string, FleetProportionProfile>>
     note: "Union Pacific lists engine+tender length as 132 ft 9 7/8 in.",
     sourceUrl: "https://www.up.com/about-us/history/steam/big-boy-4014",
   },
+  "the-flyer-1907": {
+    engineAndTenderLengthFeet: 78,
+    basis: "visual-proxy",
+    note: "The Flyer is fictional; 78 ft is the house-road period-Atlantic proportion baseline against the 80 ft heavyweight coach.",
+  },
+  "polar-express-1225": {
+    engineAndTenderLengthFeet: 101,
+    basis: "documented",
+    note: "Steam Railroading Institute lists Pere Marquette 1225 at 101 ft overall; the in-game engine uses 1225 only as documented mechanical inspiration.",
+    sourceUrl: "https://michigansteamtrain.com/equipment/",
+  },
 });
 
-const LEGACY_ENGINE_RENDER_BASE_WIDTH = 420;
-
-export function legacyEngineRenderWidth(registeredTotalWidth = 50) {
-  return LEGACY_ENGINE_RENDER_BASE_WIDTH * (registeredTotalWidth / 50);
-}
-
-export function engineRenderWidth(engineId: string, registeredTotalWidth = 50) {
+export function engineRenderWidth(engineId: string) {
   const profile = FLEET_PROPORTIONS[engineId];
-  if (!profile) return legacyEngineRenderWidth(registeredTotalWidth);
+  if (!profile) throw new Error(`Missing fleet proportion profile for ${engineId}`);
   return CANONICAL_COACH_RENDER_WIDTH *
     (profile.engineAndTenderLengthFeet / CANONICAL_COACH_LENGTH_FEET);
 }

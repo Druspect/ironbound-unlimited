@@ -5,9 +5,14 @@ import {
   calculateTrainSceneGeometry,
   PASSENGER_ANCHOR_VIEWPORT_RATIO,
 } from "../app/train-geometry.ts";
+import {
+  CANONICAL_COACH_RENDER_WIDTH,
+  engineRenderWidth,
+  FLEET_PROPORTIONS,
+} from "../app/fleet-proportions.ts";
 
-const CAR_WIDTH = 190;
-const ENGINE_WIDTHS = [180.5, 257.9, 315.5, 420, 546];
+const CAR_WIDTH = CANONICAL_COACH_RENDER_WIDTH;
+const ENGINE_WIDTHS = Object.keys(FLEET_PROPORTIONS).map((id) => engineRenderWidth(id));
 const VIEWPORTS = [390, 768, 932, 1365, 1920];
 
 test("automatic camera contains three- and six-car trains at every target viewport", () => {
@@ -46,7 +51,7 @@ test("platform stays on-screen while covering every passenger car", () => {
 
 test("manual camera modes may widen but never crop the consist", () => {
   const passengerWidth = 6 * CAR_WIDTH;
-  const trainWidth = passengerWidth + ENGINE_WIDTHS[1];
+  const trainWidth = passengerWidth + Math.max(...ENGINE_WIDTHS);
   for (const mode of ["close", "standard", "wide"]) {
     const geometry = calculateTrainSceneGeometry(768, passengerWidth, trainWidth, mode);
     const anchor = 768 * PASSENGER_ANCHOR_VIEWPORT_RATIO;

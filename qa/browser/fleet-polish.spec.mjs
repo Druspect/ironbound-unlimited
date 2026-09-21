@@ -17,7 +17,10 @@ const ENGINES = [
 const ALL_ENGINES = ["tom-thumb", ...ENGINES];
 const ARTICULATED = new Set(["nw-1218", "challenger-3985", "big-boy-4014"]);
 
-const WAVE_TWO_LENGTHS = Object.freeze({
+const FLEET_LENGTHS = Object.freeze({
+  "tom-thumb": 76,
+  "southern-4501": 77,
+  "prr-1361": 83,
   "nkp-765": 100,
   "atsf-3751": 108 + 7 / 12,
   "nw-611": 110,
@@ -25,6 +28,8 @@ const WAVE_TWO_LENGTHS = Object.freeze({
   "nw-1218": 121,
   "challenger-3985": 121 + 10.875 / 12,
   "big-boy-4014": 132 + 9.875 / 12,
+  "the-flyer-1907": 78,
+  "polar-express-1225": 101,
 });
 
 async function waitForEngine(page, engineId) {
@@ -127,41 +132,53 @@ test.describe("fleet polish", () => {
     }
   });
 
-  test("wave two locomotives scale against the canonical 80 ft coach and keep couplers continuous", async ({ page }, testInfo) => {
-    test.setTimeout(70_000);
+  test("entire fleet shares one coach scale with continuous tender and consist hardware", async ({ page }, testInfo) => {
+    test.setTimeout(120_000);
     await page.setViewportSize({ width: 1600, height: 900 });
 
-    let priorRatio = 0;
-    for (const [engineId, lengthFeet] of Object.entries(WAVE_TWO_LENGTHS)) {
+    for (const [engineId, lengthFeet] of Object.entries(FLEET_LENGTHS)) {
       await page.goto(`/?qaEngine=${engineId}&qaCars=3`);
       const engine = await waitForEngine(page, engineId);
       const coach = page.locator(".consist-car").first();
       await expect(coach).toBeVisible();
 
-      const [engineBox, coachBox, couplingBox] = await Promise.all([
+      const [engineBox, coachBox, couplingBox, drawbarBox, finalCoach] = await Promise.all([
         engine.boundingBox(),
         coach.boundingBox(),
         page.locator(".consist-engine-coupling").boundingBox(),
+        page.locator(".engine-tender-drawbar").boundingBox(),
+        page.locator(".consist-car").last().boundingBox(),
       ]);
       expect(engineBox).not.toBeNull();
       expect(coachBox).not.toBeNull();
       expect(couplingBox).not.toBeNull();
+      expect(drawbarBox).not.toBeNull();
+      expect(finalCoach).not.toBeNull();
 
       const ratio = engineBox.width / coachBox.width;
-      const expectedRatio = lengthFeet / 80;
-      expect(Math.abs(ratio - expectedRatio)).toBeLessThan(.012);
-      expect(ratio).toBeGreaterThan(priorRatio);
-      priorRatio = ratio;
+      expect(Math.abs(ratio - lengthFeet / 80)).toBeLessThan(.012);
 
-      const finalCoach = await page.locator(".consist-car").last().boundingBox();
-      expect(finalCoach).not.toBeNull();
+      // Final coach connection must bridge the coach/engine boundary.
       expect(couplingBox.x).toBeLessThan(finalCoach.x + finalCoach.width);
       expect(couplingBox.x + couplingBox.width).toBeGreaterThan(engineBox.x);
 
-      if (["nkp-765", "nw-1218", "big-boy-4014"].includes(engineId)) {
-        const evidence = await page.screenshot({ animations: "disabled", caret: "hide" });
-        await testInfo.attach(`wave-two-proportion-${engineId}`, { body: evidence, contentType: "image/png" });
-      }
+      // Tender drawbar belongs wholly inside the registered engine+tender box.
+      expect(drawbarBox.width).toBeGreaterThan(5);
+      expect(drawbarBox.x).toBeGreaterThanOrEqual(engineBox.x - 1);
+      expect(drawbarBox.x + drawbarBox.width).toBeLessThanOrEqual(engineBox.x + engineBox.width + 1);
+
+      // Auto framing must keep the whole consist inside the desktop viewport.
+      const firstCoach = await page.locator(".consist-car").first().boundingBox();
+      expect(firstCoach.x).toBeGreaterThanOrEqual(-2);
+      expect(engineBox.x + engineBox.width).toBeLessThanOrEqual(1602);
+
+      const evidence = await page.screenshot({
+        type: "jpeg",
+        quality: 76,
+        animations: "disabled",
+        caret: "hide",
+      });
+      await testInfo.attach(`fleet-proportion-${engineId}`, { body: evidence, contentType: "image/jpeg" });
     }
   });
 

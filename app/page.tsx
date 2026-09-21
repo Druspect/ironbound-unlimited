@@ -788,7 +788,7 @@ export default function Home() {
         const activeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[equippedEngineRef.current];
         const activeEngineId = equippedEngineRef.current;
         const runtimeRadii = activeLayout ? runtimeWheelRadiusRatios(activeEngineId, activeLayout) : null;
-        const enginePixelWidth = engineRenderWidth(activeEngineId, activeLayout?.totalWidth);
+        const enginePixelWidth = engineRenderWidth(activeEngineId);
         const layoutWidthRatio = (activeLayout?.totalWidth ?? 50) / 100;
         const driverRadius = enginePixelWidth * ((runtimeRadii?.driver ?? DRIVER_WHEEL_RADIUS_RATIO) / layoutWidthRatio);
         // Passenger coaches keep the same wheels regardless of equipped engine.
@@ -960,7 +960,7 @@ export default function Home() {
   const activeConsistMetrics = calculateConsistMetrics(activeEngine.id, consistCars);
   const carWidth = CANONICAL_COACH_RENDER_WIDTH;
   const activeRuntimeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[activeEngine.id];
-  const engineWidth = engineRenderWidth(activeEngine.id, activeRuntimeLayout?.totalWidth);
+  const engineWidth = engineRenderWidth(activeEngine.id);
   const passengerWorldWidth = consistCars.length * carWidth;
   const trainWorldWidth = passengerWorldWidth + engineWidth;
   const trainAnchor = passengerWorldWidth / 2;
