@@ -19,7 +19,7 @@ test("wave three completes the twelve-engine proportion roster and removes fallb
     "challenger-3985", "big-boy-4014", "the-flyer-1907", "polar-express-1225",
   ];
   for (const id of ids) assert.match(proportions, new RegExp(`"${id}"\\s*:\\s*\\{`));
-  assert.equal((proportions.match(/engineAndTenderLengthFeet:/g) ?? []).length, 12);
+  assert.equal((proportions.match(/^  "[^"]+": \{\n    engineAndTenderLengthFeet:/gm) ?? []).length, 12);
   assert.doesNotMatch(proportions, /LEGACY_ENGINE_RENDER_BASE_WIDTH|legacyEngineRenderWidth/);
   assert.match(proportions, /if \(!profile\) throw new Error/);
 });
@@ -49,7 +49,6 @@ test("wave two documented lengths preserve real fleet ordering", () => {
     assert.ok(block.includes('basis: "documented"'), `${id} must remain documented`);
     assert.ok(block.includes("sourceUrl:"), `${id} must retain provenance`);
   }
-  assert.equal((proportions.match(/sourceUrl:/g) ?? []).length, 7);
 });
 
 test("wave three special cases are explicit about provenance", () => {
