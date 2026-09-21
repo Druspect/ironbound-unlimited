@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - gpt/qa-hardening-six-pack
-      - gpt/fleet-proportion-stage-a
   pull_request:
     branches:
       - sites-source
