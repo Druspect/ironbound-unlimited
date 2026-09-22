@@ -9,6 +9,7 @@ const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "ut
 test("stage B renders one synchronized foreground composition for every station", () => {
   assert.match(page, /className="station-foreground-layer"/);
   assert.match(page, /data-station-foreground-index=\{index\}/);
+  assert.match(page, /stationState\.distance < 700\) \? "station-near-active"/);
   assert.equal((page.match(/className="station-foreground-passengers station-foreground-passengers-/g) ?? []).length, 2);
   assert.match(page, /station-near-platform/);
   assert.match(page, /station-near-canopy-left/);
@@ -25,7 +26,7 @@ test("foreground reuses the original station-specific human service art", () => 
 });
 
 test("near platform stays above ballast but protects wheel visibility", () => {
-  assert.match(css, /bottom: -28px;[\s\S]*height: 38px;/);
+  assert.match(css, /bottom: -16px;[\s\S]*height: 26px;/);
   assert.match(css, /central[\s\S]*wheel\/coupler silhouette stays readable/);
   assert.match(css, /\.station-foreground-layer[\s\S]*z-index: 8/);
 });
