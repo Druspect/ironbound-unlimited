@@ -68,10 +68,12 @@ test("stage B station foreground keeps people visible without covering running g
       expect(layer.backgroundImage).toContain(`/assets/stations/service/v1/${STATIONS[index]}.webp`);
       expect(layer.width).toBeGreaterThan(300);
     }
-    const visiblePassengerLayers = geometry.people.filter((layer) =>
-      layer.opacity > .65 && layer.clipPath !== "none" && !/inset\([^)]*100%/.test(layer.clipPath)
-    );
-    expect(visiblePassengerLayers.length).toBeGreaterThanOrEqual(1);
+    const primaryPassengerLayer = geometry.people[0];
+    expect(primaryPassengerLayer.opacity).toBeGreaterThan(.65);
+    expect(primaryPassengerLayer.clipPath).not.toBe("none");
+    expect(primaryPassengerLayer.clipPath).not.toContain("100%");
+    expect(primaryPassengerLayer.width).toBeGreaterThan(300);
+    expect(primaryPassengerLayer.height).toBeGreaterThan(150);
 
     const shot = await page.screenshot({
       path: `qa-artifacts/stage-b/station-foreground-${index + 1}-${STATIONS[index]}.png`,
