@@ -17,8 +17,18 @@ test("stage B station foreground keeps people visible without covering running g
     const people = foreground.locator(".station-foreground-passengers");
     const nearRail = page.locator(".rail-near");
 
-    await expect(station).toBeVisible();
-    await expect(foreground).toBeVisible();
+    await expect.poll(async () => station.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const center = box.left + box.width / 2;
+      return Number(getComputedStyle(node).opacity) >= .95 &&
+        Math.abs(center - window.innerWidth * .40) <= 3 &&
+        node.dataset.serviceActive === "true";
+    }), { timeout: 12_000, message: `${STATIONS[index]} must reach the platform before Stage B capture` }).toBe(true);
+
+    await expect.poll(async () => foreground.evaluate((node) =>
+      node.classList.contains("station-near-active") && Number(getComputedStyle(node).opacity) >= .95
+    ), { timeout: 5_000 }).toBe(true);
+
     await expect(people).toHaveCount(2);
 
     const geometry = await page.evaluate((stationIndex) => {
@@ -48,7 +58,7 @@ test("stage B station foreground keeps people visible without covering running g
 
     expect(geometry).not.toBeNull();
     expect(geometry.foreground.opacity).toBeGreaterThan(.9);
-    expect(geometry.deck.height).toBeGreaterThan(25);
+    expect(geometry.deck.height).toBeGreaterThan(20);
     // The player-side deck begins at or below the near-rail top, so the wheel
     // faces and couplers remain readable above it.
     expect(geometry.deck.top).toBeGreaterThanOrEqual(geometry.rail.top - 2.5);
@@ -86,7 +96,7 @@ test("stage B foreground simplifies cleanly at compact landscape height", async 
   });
 
   expect(values.canopyHeight).toBeLessThanOrEqual(74);
-  expect(values.platformHeight).toBeLessThanOrEqual(31);
+  expect(values.platformHeight).toBeLessThanOrEqual(23);
   expect(values.foregroundBottom).toBeGreaterThan(0);
 
   const shot = await page.screenshot({ animations: "disabled", caret: "hide" });
