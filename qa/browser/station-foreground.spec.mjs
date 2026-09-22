@@ -30,6 +30,9 @@ test("stage B station foreground keeps people visible without covering running g
     ), { timeout: 5_000 }).toBe(true);
 
     await expect(people).toHaveCount(2);
+    await expect.poll(async () => people.first().evaluate((node) =>
+      Number(getComputedStyle(node).opacity)
+    ), { timeout: 3_000, message: `${STATIONS[index]} passenger foreground must finish fading in` }).toBeGreaterThan(.65);
 
     const geometry = await page.evaluate((stationIndex) => {
       const foreground = document.querySelector(`[data-station-foreground-index="${stationIndex}"]`);
