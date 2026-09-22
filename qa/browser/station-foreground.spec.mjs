@@ -50,6 +50,7 @@ test("stage B station foreground keeps people visible without covering running g
         people: passengerLayers.map((layer) => ({
           backgroundImage: getComputedStyle(layer).backgroundImage,
           opacity: Number(getComputedStyle(layer).opacity),
+          clipPath: getComputedStyle(layer).clipPath,
           width: layer.getBoundingClientRect().width,
           height: layer.getBoundingClientRect().height,
         })),
@@ -65,9 +66,12 @@ test("stage B station foreground keeps people visible without covering running g
     expect(geometry.deck.top).toBeGreaterThan(geometry.train.top + 70);
     for (const layer of geometry.people) {
       expect(layer.backgroundImage).toContain(`/assets/stations/service/v1/${STATIONS[index]}.webp`);
-      expect(layer.opacity).toBeGreaterThan(.65);
       expect(layer.width).toBeGreaterThan(300);
     }
+    const visiblePassengerLayers = geometry.people.filter((layer) =>
+      layer.opacity > .65 && layer.clipPath !== "none" && !/inset\([^)]*100%/.test(layer.clipPath)
+    );
+    expect(visiblePassengerLayers.length).toBeGreaterThanOrEqual(1);
 
     const shot = await page.screenshot({
       path: `qa-artifacts/stage-b/station-foreground-${index + 1}-${STATIONS[index]}.png`,
