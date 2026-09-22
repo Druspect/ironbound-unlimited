@@ -9,7 +9,7 @@ const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "ut
 test("stage B renders one synchronized foreground composition for every station", () => {
   assert.match(page, /className="station-foreground-layer"/);
   assert.match(page, /data-station-foreground-index=\{index\}/);
-  assert.equal((page.match(/station-foreground-passengers/g) ?? []).length, 2);
+  assert.equal((page.match(/className="station-foreground-passengers station-foreground-passengers-/g) ?? []).length, 2);
   assert.match(page, /station-near-platform/);
   assert.match(page, /station-near-canopy-left/);
   assert.match(page, /station-near-canopy-right/);
