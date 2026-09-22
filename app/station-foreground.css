@@ -51,7 +51,7 @@
   z-index: 3;
   inset: 0;
   display: block;
-  opacity: .78;
+  opacity: 0;
   background-position: center bottom;
   background-size: contain;
   background-repeat: no-repeat;
@@ -75,6 +75,10 @@
     var(--passenger-b-bottom)
     var(--passenger-b-left)
   );
+}
+
+.station-foreground.station-near-active .station-foreground-passengers {
+  opacity: .78;
 }
 
 .station-foreground.service-active .station-foreground-passengers {
@@ -142,6 +146,24 @@
   --passenger-b-left: 60%;
 }
 
+/* Keep near-side structures out of the far-distance station view. They enter
+   only once this station is the active approach, matching the driver's
+   "Make the stop" window and preventing detached foreground scenery. */
+.station-near-platform,
+.station-near-railing,
+.station-near-canopy {
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.station-foreground.station-near-active .station-near-platform,
+.station-foreground.station-near-active .station-near-railing,
+.station-foreground.station-near-active .station-near-canopy {
+  opacity: 1;
+  transform: none;
+}
+
 /* Near platform: top edge lands on the calibrated near-rail top at desktop
    height (station bottom + 10px). It therefore covers ballast/ties, not wheels. */
 .station-near-platform {
@@ -149,8 +171,8 @@
   z-index: 6;
   left: 1%;
   right: 1%;
-  bottom: -28px;
-  height: 38px;
+  bottom: -16px;
+  height: 26px;
   clip-path: polygon(1% 0, 99% 0, 100% 100%, 0 100%);
   background:
     linear-gradient(180deg, #d7b47b 0 3px, #5a4632 4px 10px, #302a24 11px 100%),
@@ -186,7 +208,6 @@
   background:
     repeating-linear-gradient(90deg, transparent 0 22px, #4a4034 23px 26px, transparent 27px 46px);
   filter: drop-shadow(0 2px 2px rgba(0,0,0,.56));
-  opacity: .92;
 }
 .station-near-railing-left { left: 3%; }
 .station-near-railing-right { right: 3%; }
@@ -267,8 +288,8 @@
   }
 
   .station-near-platform {
-    bottom: -22px;
-    height: 30px;
+    bottom: -14px;
+    height: 22px;
   }
 
   .station-near-railing {
@@ -280,14 +301,13 @@
     bottom: 9px;
     height: 72px;
     width: 22%;
-    opacity: .76;
   }
 
   .station-near-canopy::after {
     display: none;
   }
 
-  .station-foreground-passengers {
+  .station-foreground.station-near-active .station-foreground-passengers {
     opacity: .7;
   }
 }
