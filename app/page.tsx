@@ -1178,7 +1178,7 @@ export default function Home() {
           {STATIONS.map((station, index) => (
             <div
               key={`foreground-${station.name}`}
-              className={`station-foreground station-${index} ${servicing && stationState.index === index ? "service-active" : ""}`}
+              className={`station-foreground station-${index} ${stationState.index === index && (stationState.inZone || stationState.distance < 700) ? "station-near-active" : ""} ${servicing && stationState.index === index ? "service-active" : ""}`}
               data-station-foreground-index={index}
               data-station-name={station.name}
             >
