@@ -1174,6 +1174,31 @@ export default function Home() {
           </div>
         </div>
 
+        <div className="station-foreground-layer" aria-hidden="true">
+          {STATIONS.map((station, index) => (
+            <div
+              key={`foreground-${station.name}`}
+              className={`station-foreground station-${index} ${servicing && stationState.index === index ? "service-active" : ""}`}
+              data-station-foreground-index={index}
+              data-station-name={station.name}
+            >
+              <span
+                className="station-foreground-passengers station-foreground-passengers-a"
+                style={{ backgroundImage: `url("/assets/stations/service/v1/${station.serviceArt}.webp")` }}
+              />
+              <span
+                className="station-foreground-passengers station-foreground-passengers-b"
+                style={{ backgroundImage: `url("/assets/stations/service/v1/${station.serviceArt}.webp")` }}
+              />
+              <span className="station-near-canopy station-near-canopy-left"><i /></span>
+              <span className="station-near-canopy station-near-canopy-right"><i /></span>
+              <span className="station-near-railing station-near-railing-left" />
+              <span className="station-near-railing station-near-railing-right" />
+              <span className="station-near-platform"><i /></span>
+            </div>
+          ))}
+        </div>
+
         <div className="track" aria-hidden="true">
           <div className="ballast" />
           <div className="sleepers" />

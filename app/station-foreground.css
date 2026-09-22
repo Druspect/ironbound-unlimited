@@ -1,0 +1,308 @@
+/*
+ * Stage B station foreground composition
+ * --------------------------------------
+ * The station building and service plant remain behind the train. A separate
+ * near-side layer shares the exact station transform, reuses the station-
+ * specific passenger/service artwork, and places only selected passenger
+ * regions in front of the consist. The platform top is calibrated to the near
+ * rail plane so it adds depth without hiding the wheels or couplers.
+ */
+
+.station-foreground-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.station-foreground {
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--hud-clearance) + 18px);
+  width: var(--platform-width, min(64vw, 920px));
+  aspect-ratio: 1774 / 887;
+  pointer-events: none;
+  will-change: transform, opacity;
+  filter: none;
+  --passenger-a-top: 28%;
+  --passenger-a-right: 60%;
+  --passenger-a-bottom: 4%;
+  --passenger-a-left: 10%;
+  --passenger-b-top: 28%;
+  --passenger-b-right: 10%;
+  --passenger-b-bottom: 4%;
+  --passenger-b-left: 62%;
+}
+
+/* These station classes already own the world-space x transform and opacity.
+   Neutralize the biome tint here so CSS-built platform metal/wood stays stable. */
+.station-foreground.station-3,
+.station-foreground.station-4,
+.station-foreground.station-5 {
+  filter: none;
+}
+
+/* Reuse the original generated station people rather than introducing a second
+   crowd style. Two clipped copies let station-specific travelers, porters,
+   families and freight read in front while the central service machinery stays
+   predominantly behind the train. */
+.station-foreground-passengers {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: block;
+  opacity: .78;
+  background-position: center bottom;
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: saturate(.96) brightness(.98) drop-shadow(0 5px 4px rgba(0,0,0,.58));
+  transition: opacity 240ms ease, filter 240ms ease;
+}
+
+.station-foreground-passengers-a {
+  clip-path: inset(
+    var(--passenger-a-top)
+    var(--passenger-a-right)
+    var(--passenger-a-bottom)
+    var(--passenger-a-left)
+  );
+}
+
+.station-foreground-passengers-b {
+  clip-path: inset(
+    var(--passenger-b-top)
+    var(--passenger-b-right)
+    var(--passenger-b-bottom)
+    var(--passenger-b-left)
+  );
+}
+
+.station-foreground.service-active .station-foreground-passengers {
+  opacity: .98;
+  filter: saturate(1.02) brightness(1.04) drop-shadow(0 6px 5px rgba(0,0,0,.62));
+}
+
+/* Cinder Flats: the passenger/mail group lives left of the water crane. */
+.station-foreground.station-0 {
+  --passenger-a-top: 27%;
+  --passenger-a-right: 56%;
+  --passenger-a-bottom: 3%;
+  --passenger-a-left: 9%;
+  --passenger-b-top: 0%;
+  --passenger-b-right: 100%;
+  --passenger-b-bottom: 0%;
+  --passenger-b-left: 0%;
+}
+
+/* Copper Wash: one worker group at left and travelers under the right awning. */
+.station-foreground.station-1 {
+  --passenger-a-top: 29%;
+  --passenger-a-right: 68%;
+  --passenger-a-bottom: 3%;
+  --passenger-a-left: 16%;
+  --passenger-b-top: 27%;
+  --passenger-b-right: 28%;
+  --passenger-b-bottom: 3%;
+  --passenger-b-left: 50%;
+}
+
+/* Remaining service scenes deliberately use broad side windows. They keep the
+   centerline service plant behind the consist while surfacing station people,
+   luggage and hand freight at the platform edges. */
+.station-foreground.station-2 {
+  --passenger-a-top: 28%;
+  --passenger-a-right: 58%;
+  --passenger-a-left: 9%;
+  --passenger-b-top: 28%;
+  --passenger-b-right: 9%;
+  --passenger-b-left: 62%;
+}
+.station-foreground.station-3 {
+  --passenger-a-top: 27%;
+  --passenger-a-right: 63%;
+  --passenger-a-left: 10%;
+  --passenger-b-top: 27%;
+  --passenger-b-right: 10%;
+  --passenger-b-left: 60%;
+}
+.station-foreground.station-4 {
+  --passenger-a-top: 24%;
+  --passenger-a-right: 58%;
+  --passenger-a-left: 8%;
+  --passenger-b-top: 24%;
+  --passenger-b-right: 8%;
+  --passenger-b-left: 63%;
+}
+.station-foreground.station-5 {
+  --passenger-a-top: 27%;
+  --passenger-a-right: 60%;
+  --passenger-a-left: 9%;
+  --passenger-b-top: 27%;
+  --passenger-b-right: 8%;
+  --passenger-b-left: 60%;
+}
+
+/* Near platform: top edge lands on the calibrated near-rail top at desktop
+   height (station bottom + 10px). It therefore covers ballast/ties, not wheels. */
+.station-near-platform {
+  position: absolute;
+  z-index: 6;
+  left: 1%;
+  right: 1%;
+  bottom: -28px;
+  height: 38px;
+  clip-path: polygon(1% 0, 99% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(180deg, #d7b47b 0 3px, #5a4632 4px 10px, #302a24 11px 100%),
+    repeating-linear-gradient(90deg, rgba(116,87,55,.72) 0 22px, rgba(59,45,33,.8) 23px 25px);
+  border-top: 1px solid rgba(244,223,180,.82);
+  box-shadow:
+    0 -2px 3px rgba(0,0,0,.38),
+    0 8px 10px rgba(0,0,0,.52),
+    inset 0 -8px 14px rgba(0,0,0,.38);
+}
+
+.station-near-platform > i {
+  position: absolute;
+  left: 1%;
+  right: 1%;
+  top: 10px;
+  height: 2px;
+  opacity: .68;
+  background: repeating-linear-gradient(90deg, #c5aa78 0 34px, #6d573e 35px 37px);
+}
+
+/* A low railing is restricted to the outer platform thirds so the central
+   wheel/coupler silhouette stays readable while the near-side platform still
+   has an unmistakable passenger boundary. */
+.station-near-railing {
+  position: absolute;
+  z-index: 5;
+  bottom: 10px;
+  width: 24%;
+  height: 28px;
+  border-top: 3px solid #54483a;
+  border-bottom: 2px solid rgba(48,40,32,.88);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 22px, #4a4034 23px 26px, transparent 27px 46px);
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.56));
+  opacity: .92;
+}
+.station-near-railing-left { left: 3%; }
+.station-near-railing-right { right: 3%; }
+
+/* Two open canopy wings frame the arrival instead of placing a roof across the
+   locomotive. Posts sit at the outer thirds, leaving the train body dominant. */
+.station-near-canopy {
+  position: absolute;
+  z-index: 4;
+  bottom: 13px;
+  width: 27%;
+  height: 128px;
+  border-left: 4px solid rgba(73,57,41,.94);
+  border-right: 4px solid rgba(73,57,41,.94);
+  filter: drop-shadow(0 6px 5px rgba(0,0,0,.48));
+}
+.station-near-canopy-left { left: 2.5%; }
+.station-near-canopy-right { right: 2.5%; }
+
+.station-near-canopy::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: 0;
+  height: 13px;
+  clip-path: polygon(2% 100%, 7% 16%, 93% 16%, 98% 100%);
+  background:
+    repeating-linear-gradient(90deg, #3f3429 0 20px, #755c42 21px 24px),
+    linear-gradient(180deg, #80654a, #302820);
+  border-top: 2px solid rgba(188,151,99,.62);
+  box-shadow: 0 4px 6px rgba(0,0,0,.48);
+}
+
+.station-near-canopy::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 18px;
+  height: 3px;
+  background: #4f4133;
+  box-shadow: 0 31px 0 rgba(79,65,51,.92);
+}
+
+.station-near-canopy > i {
+  position: absolute;
+  left: 50%;
+  top: 17px;
+  bottom: 0;
+  width: 3px;
+  transform: translateX(-50%);
+  background: rgba(69,55,42,.9);
+}
+
+/* Match the authoritative station artwork elevation. */
+@media (min-height: 561px) {
+  .station-foreground {
+    bottom: calc(var(--hud-clearance) + 54px);
+  }
+}
+
+@media (max-width: 980px) {
+  .station-foreground {
+    width: var(--platform-width, min(82vw, 840px));
+  }
+
+  .station-near-canopy {
+    width: 25%;
+  }
+}
+
+/* Compact landscape keeps the platform/people depth cue but reduces tall
+   foreground structures so controls and locomotive silhouettes stay clear. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .station-foreground {
+    bottom: calc(var(--hud-clearance) + 8px);
+  }
+
+  .station-near-platform {
+    bottom: -22px;
+    height: 30px;
+  }
+
+  .station-near-railing {
+    bottom: 7px;
+    height: 18px;
+  }
+
+  .station-near-canopy {
+    bottom: 9px;
+    height: 72px;
+    width: 22%;
+    opacity: .76;
+  }
+
+  .station-near-canopy::after {
+    display: none;
+  }
+
+  .station-foreground-passengers {
+    opacity: .7;
+  }
+}
+
+@media (max-width: 680px) {
+  .station-foreground {
+    width: var(--platform-width, 118vw);
+    bottom: calc(var(--hud-clearance) + 14px);
+  }
+
+  .station-near-canopy {
+    display: none;
+  }
+}
+
+.reduced-motion .station-foreground-passengers {
+  transition: none;
+}
