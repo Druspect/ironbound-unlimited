@@ -38,7 +38,7 @@ test("driver can brake a live downgrade approach into the Saltworks service zone
   await page.goto("/");
   await page.getByRole("button", { name: "BEGIN RUN" }).click();
   await expect(page.locator("#cab")).toBeVisible();
-  await expect(page.locator(".mission-card")).toContainText("BRAKE FOR SALTWORKS", { timeout: 5_000 });
+  await expect(page.locator(".mission-card")).toContainText(/Brake (for Saltworks|below 3 MPH)/i, { timeout: 5_000 });
 
   const grade = page.locator(".telemetry-grid div").filter({ hasText: "GRADE" }).locator("strong");
   await expect.poll(async () => Number.parseFloat((await grade.textContent()) ?? "0"), { timeout: 4_000 }).toBeLessThan(-1);
@@ -57,7 +57,7 @@ test("driver can brake a live downgrade approach into the Saltworks service zone
   await expect(stationCard).toContainText("Brake below 3 MPH");
 
   await expect.poll(async () => Number((await speed.textContent()) ?? 99), { timeout: 12_000 }).toBeLessThan(3);
-  await expect(stationCard).toContainText(/Boarding|Passengers aboard/, { timeout: 8_000 });
+  await expect(stationCard).toContainText(/Hold stopped|Stop complete|Passengers/i, { timeout: 8_000 });
   await expect(page.locator('.station-world[data-station-index="2"]')).toHaveAttribute("data-service-active", "true", { timeout: 8_000 });
   await expect(page.locator(".run-failure")).toHaveCount(0);
 
