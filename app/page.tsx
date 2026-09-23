@@ -1149,10 +1149,28 @@ export default function Home() {
   const serviceDueStations = stationsUntilServiceRequired(steamResources);
   const serviceDueUnit = serviceDueStations === 1 ? "STATION" : "STATIONS";
   const servicing = stationState.inZone && speed < 2.5 && stationState.dwell > 0 && !stationState.collected;
+  const expectedStationBonds = stationBondPayout(activeStation.baseBonds, activeEngine.bondMultiplier, consistCars);
+  const routeStopsCleared = runProgress.clearedStationIds.length;
+  const routeProgressPercent = runComplete ? 100 : routeStopsCleared / RUN_STATION_COUNT * 100;
+  const nextAction = runComplete
+    ? "Route complete."
+    : stationState.inZone
+      ? stationState.collected
+        ? "Stop complete. Release the brake when ready."
+        : speed >= 2.5
+          ? "Brake below 3 MPH."
+          : `Hold stopped for ${activeStation.serviceLabel.toLowerCase()}.`
+      : brakeEngaged && speed < 1
+        ? "Release the brake, then ease on steam."
+        : stationState.distance < 700
+          ? `Brake for ${activeStation.name}.`
+          : onTarget
+            ? "Target speed locked."
+            : `Hold ${activeOperatingProfile.economicalSpeedMinMph}–${activeOperatingProfile.economicalSpeedMaxMph} MPH.`;
   const openScreen = (next: typeof screen) => {
     setScreen(next);
-    setPaused(next !== "game" || Boolean(runFailureRef.current));
-    if (next === "game" && settings.sound) void soundscapeAudioRef.current?.play().catch(() => undefined);
+    setPaused(next !== "game" || Boolean(runFailureRef.current) || Boolean(runComplete));
+    if (next === "game" && settings.sound && !runComplete) void soundscapeAudioRef.current?.play().catch(() => undefined);
   };
   const purchaseOrEquip = (engineId: string) => {
     const next = selectLocomotive({ bonds, ownedEngines, equippedEngine }, engineId);
@@ -1201,6 +1219,10 @@ export default function Home() {
     brakeRef.current = true;
     throttleRef.current = 0;
     safeDrivingRef.current = createSafeDrivingProgress();
+    const cleanRunProgress = createRunProgress();
+    runProgressRef.current = cleanRunProgress;
+    setRunProgress(cleanRunProgress);
+    setRunComplete(null);
     setSteamResources(cleanResources);
     setRunFailure(null);
     setDistance(0);
@@ -1222,7 +1244,9 @@ export default function Home() {
       ? activeFactSheet.fuelType === "oil"
         ? { title: "Oil exhausted", detail: "The burner has lost fuel pressure. Service the oil tender before the next departure." }
         : { title: "Coal exhausted", detail: "The fire has gone out. Use steadier steam and service the coal tender before the next departure." }
-      : { title: "Service stop missed", detail: `Four stations passed without ${activeFactSheet.fuelType} and water service. The run has ended.` };
+      : runFailure === "schedule"
+        ? { title: "Schedule incomplete", detail: `Stillwater was reached before all ${RUN_STATION_COUNT} scheduled stops were cleared. Every passenger stop counts on a completed run.` }
+        : { title: "Service stop missed", detail: `Four stations passed without ${activeFactSheet.fuelType} and water service. The run has ended.` };
 
   return (
     <main ref={experienceRef} className={`experience phase-golden ${paused ? "is-paused" : ""} ${overloaded ? "is-overloaded" : ""} ${settings.reducedMotion ? "reduced-motion" : ""} ${settings.highContrast ? "high-contrast" : ""}`} style={sceneStyle}>
@@ -1357,25 +1381,27 @@ export default function Home() {
         <div className="vignette" />
 
         <aside className="mission-card">
-          <p>ACTIVE ORDER &nbsp;/&nbsp; WESTBOUND 01</p>
-          <h1>{stationState.distance < 700 ? "Make the stop." : "Hold the line."}</h1>
-          <div className="mission-rule" />
+          <p>WESTBOUND &nbsp;/&nbsp; STOP {Math.min(routeStopsCleared + 1, RUN_STATION_COUNT)} OF {RUN_STATION_COUNT}</p>
+          <h1>{nextAction}</h1>
+          <div className="mission-rule route-progress" aria-label={`Route progress ${routeStopsCleared} of ${RUN_STATION_COUNT} stops`}><i style={{ width: `${routeProgressPercent}%` }} /></div>
           <span className={onTarget ? "target-ok" : ""}>
-            {stationState.distance < 700
-              ? `BRAKE FOR ${activeStation.name.toUpperCase()}`
-              : `${onTarget ? "TARGET SPEED LOCKED" : `HOLD ${activeOperatingProfile.economicalSpeedMinMph}–${activeOperatingProfile.economicalSpeedMaxMph} MPH`} • ${activeBiome.name}`}
+            {activeStation.name.toUpperCase()} • {activeStation.serviceLabel.toUpperCase()}
           </span>
         </aside>
 
         <aside className={`station-card ${stationState.inZone ? "at-platform" : ""}`} aria-live="polite">
-          <span className="eyebrow">{stationState.inZone ? "PLATFORM ZONE" : "NEXT REWARD STOP"}</span>
+          <span className="eyebrow">{stationState.inZone ? "PLATFORM ZONE" : "NEXT SCHEDULED STOP"}</span>
           <strong>{activeStation.name}</strong>
           {stationState.inZone ? (
-            <small>{stationState.collected ? "Passengers aboard • service complete" : speed < 2.5 ? `Boarding • water • ${activeFactSheet.fuelType} service` : "Brake below 3 MPH"}</small>
+            <small>{stationState.collected ? `Stop complete • ${activeStation.serviceLabel}` : speed < 2.5 ? `Hold stopped • ${activeStation.serviceLabel}` : "Brake below 3 MPH"}</small>
           ) : (
-            <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStation.reward}</span></small>
+            <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStation.serviceLabel} • ~{expectedStationBonds.toLocaleString()} bonds</span></small>
           )}
-          {stationState.inZone && !stationState.collected && <div className="service-steps" aria-hidden="true"><span className={stationState.dwell > .05 ? "active" : ""}>BOARD</span><span className={stationState.dwell > .2 ? "active" : ""}>WATER</span><span className={stationState.dwell > .45 ? "active" : ""}>{activeFactSheet.fuelType.toUpperCase()}</span></div>}
+          {stationState.inZone && !stationState.collected && <div className="service-steps" aria-hidden="true">
+            <span className={stationState.dwell > .05 ? "active" : ""}>BOARD</span>
+            {(activeStation.serviceKind === "water" || activeStation.serviceKind === "full") && <span className={stationState.dwell > .2 ? "active" : ""}>WATER</span>}
+            {activeStation.serviceKind === "full" && <span className={stationState.dwell > .45 ? "active" : ""}>{activeFactSheet.fuelType.toUpperCase()}</span>}
+          </div>}
           <div className="station-dwell"><i style={{ width: `${stationState.dwell * 100}%` }} /></div>
         </aside>
 
@@ -1416,6 +1442,21 @@ export default function Home() {
             <p>+ {rewardNotice.reward}</p>
             {rewardNotice.service && <small>{rewardNotice.service}</small>}
             {rewardNotice.bonus && <small>{rewardNotice.bonus}</small>}
+          </div>
+        )}
+
+        {runComplete && (
+          <div className="run-complete" role="dialog" aria-modal="true" aria-labelledby="run-complete-title">
+            <span>ROUTE COMPLETE</span>
+            <h2 id="run-complete-title">Stillwater reached</h2>
+            <p>All {RUN_STATION_COUNT} scheduled stops cleared.</p>
+            <div className="run-summary-grid">
+              <div><small>STATIONS</small><strong>{runComplete.clearedStationIds.length}/{RUN_STATION_COUNT}</strong></div>
+              <div><small>RUN EARNINGS</small><strong>{totalRunBonds(runComplete).toLocaleString()}</strong></div>
+              <div><small>COMPLETION BONUS</small><strong>{runComplete.completionBonusBonds.toLocaleString()}</strong></div>
+              <div><small>CAREER RUNS</small><strong>{careerProgress.completedRuns}</strong></div>
+            </div>
+            <button onClick={restartRun}>START NEXT RUN</button>
           </div>
         )}
 
@@ -1498,7 +1539,8 @@ export default function Home() {
             <section className="intro-panel">
               <div className="intro-locomotive" aria-hidden="true"><LocomotiveSprite engine={activeEngine} mode="preview" /></div>
               <h1>IRONBOUND <em>UNLIMITED</em></h1>
-              <p>Run a historically grounded steam railway. Build the consist, manage fuel and water, and berth every carriage at the platform.</p>
+              <p>Run six scheduled stops. Release the brake, work the throttle, and stop below 3 MPH at each platform.</p>
+              {careerProgress.completedRuns > 0 && <div className="career-summary"><strong>{careerProgress.completedRuns}</strong><span>completed runs</span><strong>{careerProgress.bestRunBonds.toLocaleString()}</strong><span>best bonds</span></div>}
               <div className="menu-actions">
                 <button className="primary-menu-button" onClick={() => openScreen("game")}>BEGIN RUN</button>
                 <button onClick={() => openScreen("shop")}>OPEN STORE</button>
