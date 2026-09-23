@@ -111,6 +111,12 @@ test("Stillwater closes a six-stop run, awards the terminal bonus, and persists 
   const savedBonds = await page.evaluate(() => JSON.parse(localStorage.getItem("ironbound-save-v4")).bonds);
   expect(savedBonds).toBeGreaterThan(500);
 
+  await expect(page.getByRole("button", { name: "OPEN STORE" })).toBeVisible();
+  await page.getByRole("button", { name: "OPEN STORE" }).click();
+  await expect(page.getByRole("heading", { name: "Locomotive Store" })).toBeVisible();
+  await page.getByRole("button", { name: "Return to railway" }).click();
+  await expect(page.locator(".run-complete")).toBeVisible();
+
   await page.getByRole("button", { name: "START NEXT RUN" }).click();
   await expect(page.locator(".run-complete")).toHaveCount(0);
   await expect(page.locator(".mission-card .route-progress")).toHaveAttribute(
