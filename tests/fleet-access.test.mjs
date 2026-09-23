@@ -40,7 +40,9 @@ test("full-fleet review leaves no catalog model shelved", () => {
 });
 
 test("normal progression rejects unaffordable engines and charges exactly once", () => {
-  const save = { bonds: 2500, ownedEngines: [STARTER_LOCOMOTIVE_ID], equippedEngine: "big-boy-4014" };
+  const southern = LOCOMOTIVES.find((engine) => engine.id === "southern-4501");
+  assert.ok(southern);
+  const save = { bonds: southern.cost + 600, ownedEngines: [STARTER_LOCOMOTIVE_ID], equippedEngine: "big-boy-4014" };
   assert.equal(canEquipLocomotive("big-boy-4014", save.ownedEngines, false), false);
   assert.equal(resolveEquippedLocomotive(save.equippedEngine, save.ownedEngines, false), STARTER_LOCOMOTIVE_ID);
   assert.equal(selectLocomotive(save, "big-boy-4014", false), save);
