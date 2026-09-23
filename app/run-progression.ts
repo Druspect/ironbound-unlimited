@@ -113,6 +113,32 @@ export function createCareerProgress(): CareerProgress {
   };
 }
 
+export function migrateLegacyRunProgress(claimedStops: unknown): RunProgress {
+  if (!Array.isArray(claimedStops)) return createRunProgress();
+  const stationIndexes = new Set<number>();
+  for (const key of claimedStops) {
+    if (typeof key !== "string") continue;
+    const match = key.match(/^\d+-(\d+)$/);
+    if (!match) continue;
+    const index = Number(match[1]);
+    if (Number.isInteger(index) && index >= 0 && index < RUN_STATION_COUNT) {
+      stationIndexes.add(index);
+    }
+  }
+  const clearedStationIds = [...stationIndexes]
+    .sort((a, b) => a - b)
+    .map((index) => RUN_STATIONS[index].id);
+  const stationBonds = [...stationIndexes]
+    .reduce((sum, index) => sum + RUN_STATIONS[index].baseBonds, 0);
+  return {
+    clearedStationIds,
+    stationBonds,
+    drivingBonusBonds: 0,
+    completionBonusBonds: 0,
+    completed: clearedStationIds.length === RUN_STATION_COUNT,
+  };
+}
+
 export function normalizeRunProgress(value: unknown): RunProgress {
   if (!value || typeof value !== "object") return createRunProgress();
   const candidate = value as Partial<RunProgress>;
