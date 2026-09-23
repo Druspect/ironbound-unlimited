@@ -795,12 +795,23 @@ export default function Home() {
         const stopKey = `${routeLoop}-${stopStationIndex}`;
         const inStopZone = stopStationIndex >= 0 && Math.abs(stopStationDistance) <= STATION_STOP_ZONE_DISTANCE;
         const stopCollected = claimedStopsRef.current.has(stopKey);
+        const stopStation = STATIONS[Math.max(0, stopStationIndex)] ?? STATIONS[0];
         let serviceDurationMilliseconds = dwellRef.current.durationMilliseconds ||
-          calculateServiceDurationSeconds(steamResourcesRef.current, consistMetrics, operatingProfile) * 1000;
+          calculateServiceDurationSeconds(
+            steamResourcesRef.current,
+            consistMetrics,
+            operatingProfile,
+            stopStation.serviceKind,
+          ) * 1000;
         if (inStopZone && speedRef.current < 2.5 && !stopCollected && !pausedRef.current) {
           if (dwellRef.current.station !== stopStationIndex) {
             const arrivalResources = { ...steamResourcesRef.current };
-            serviceDurationMilliseconds = calculateServiceDurationSeconds(arrivalResources, consistMetrics, operatingProfile) * 1000;
+            serviceDurationMilliseconds = calculateServiceDurationSeconds(
+              arrivalResources,
+              consistMetrics,
+              operatingProfile,
+              stopStation.serviceKind,
+            ) * 1000;
             dwellRef.current = {
               station: stopStationIndex,
               milliseconds: 0,
@@ -810,16 +821,37 @@ export default function Home() {
           }
           dwellRef.current.milliseconds += delta;
           const serviceProgress = clamp(dwellRef.current.milliseconds / serviceDurationMilliseconds, 0, 1);
-          steamResourcesRef.current = stationServiceProgress(dwellRef.current.arrivalResources, serviceProgress);
+          steamResourcesRef.current = stationServiceProgress(
+            dwellRef.current.arrivalResources,
+            serviceProgress,
+            stopStation.serviceKind,
+          );
           if (dwellRef.current.milliseconds >= serviceDurationMilliseconds) {
             const station = STATIONS[stopStationIndex];
             const stationSequence = routeLoop * STATIONS.length + stopStationIndex;
             claimedStopsRef.current.add(stopKey);
-            servicedStationRef.current = stationSequence;
-            steamResourcesRef.current = serviceSteamLocomotive(steamResourcesRef.current);
-            const multiplier = LOCOMOTIVES.find((engine) => engine.id === equippedEngineRef.current)?.bondMultiplier ?? 1;
-            const earnedBonds = Math.round(station.bonds * multiplier);
-            const drivingBonus = safeDrivingBonus(station.bonds, safeDrivingRef.current);
+            if (station.serviceKind === "full") servicedStationRef.current = stationSequence;
+            steamResourcesRef.current = serviceSteamLocomotive(
+              steamResourcesRef.current,
+              station.serviceKind,
+            );
+            const multiplier = LOCOMOTIVES.find(
+              (engine) => engine.id === equippedEngineRef.current,
+            )?.bondMultiplier ?? 1;
+            const earnedBonds = stationBondPayout(
+              station.baseBonds,
+              multiplier,
+              consistCarsRef.current,
+            );
+            const drivingBonus = safeDrivingBonus(earnedBonds, safeDrivingRef.current);
+            let nextRunProgress = recordStationProgress(
+              runProgressRef.current,
+              station.id,
+              earnedBonds,
+              drivingBonus,
+            );
+            runProgressRef.current = nextRunProgress;
+            setRunProgress(nextRunProgress);
             setBonds((current) => current + earnedBonds + drivingBonus);
             setRewardNotice({
               station: station.name,
@@ -827,9 +859,45 @@ export default function Home() {
               bonus: drivingBonus > 0
                 ? `Steady hand +${drivingBonus.toLocaleString()} bonds`
                 : undefined,
-              service: `${engineFactSheetFor(equippedEngineRef.current).fuelType === "oil" ? "Oil" : "Coal"} and water restored to full`,
+              service: station.serviceKind === "full"
+                ? `${engineFactSheetFor(equippedEngineRef.current).fuelType === "oil" ? "Oil" : "Coal"} and water restored to full`
+                : station.serviceKind === "water"
+                  ? "Water restored to full"
+                  : station.serviceLabel,
             });
             safeDrivingRef.current = createSafeDrivingProgress();
+
+            if (stopStationIndex === STATIONS.length - 1) {
+              if (canCompleteRun(nextRunProgress)) {
+                const completionBonus = completionBondPayout(
+                  multiplier,
+                  consistCarsRef.current,
+                );
+                nextRunProgress = completeRun(nextRunProgress, completionBonus);
+                runProgressRef.current = nextRunProgress;
+                setRunProgress(nextRunProgress);
+                const nextCareer = recordCareerCompletion(
+                  careerProgressRef.current,
+                  nextRunProgress,
+                );
+                careerProgressRef.current = nextCareer;
+                setCareerProgress(nextCareer);
+                setBonds((current) => current + completionBonus);
+                throttleRef.current = 0;
+                setThrottle(0);
+                pausedRef.current = true;
+                setPaused(true);
+                setRunComplete(nextRunProgress);
+              } else {
+                runFailureRef.current = "schedule";
+                setRunFailure("schedule");
+                throttleRef.current = 0;
+                setThrottle(0);
+                pausedRef.current = true;
+                setPaused(true);
+              }
+            }
+
             if (rewardTimer.current) clearTimeout(rewardTimer.current);
             rewardTimer.current = setTimeout(() => setRewardNotice(null), 4200);
           }
