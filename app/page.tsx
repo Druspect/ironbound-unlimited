@@ -27,6 +27,7 @@ import {
   completionBondPayout,
   createCareerProgress,
   createRunProgress,
+  migrateLegacyRunProgress,
   normalizeCareerProgress,
   normalizeRunProgress,
   recordCareerCompletion,
@@ -357,7 +358,9 @@ export default function Home() {
             if (parsed.cameraZoom === "auto" || parsed.cameraZoom === "close" || parsed.cameraZoom === "standard" || parsed.cameraZoom === "wide") setCameraZoom(parsed.cameraZoom);
             if (parsed.settings) setSettings((current) => ({ ...current, ...parsed.settings }));
             if (isAudioPackId(parsed.selectedAudioPack)) setSelectedAudioPack(parsed.selectedAudioPack);
-            const restoredRunProgress = normalizeRunProgress(parsed.runProgress);
+            const restoredRunProgress = parsed.runProgress === undefined
+              ? migrateLegacyRunProgress(parsed.run?.claimedStops)
+              : normalizeRunProgress(parsed.runProgress);
             const restoredCareerProgress = normalizeCareerProgress(parsed.careerProgress);
             runProgressRef.current = restoredRunProgress;
             careerProgressRef.current = restoredCareerProgress;
@@ -1456,7 +1459,10 @@ export default function Home() {
               <div><small>COMPLETION BONUS</small><strong>{runComplete.completionBonusBonds.toLocaleString()}</strong></div>
               <div><small>CAREER RUNS</small><strong>{careerProgress.completedRuns}</strong></div>
             </div>
-            <button onClick={restartRun}>START NEXT RUN</button>
+            <div className="run-complete-actions">
+              <button className="secondary" onClick={() => openScreen("shop")}>OPEN STORE</button>
+              <button onClick={restartRun}>START NEXT RUN</button>
+            </div>
           </div>
         )}
 
