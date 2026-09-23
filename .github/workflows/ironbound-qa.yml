@@ -6,6 +6,7 @@ on:
       - gpt/qa-hardening-six-pack
       - gpt/stage-c-audio-realism
       - gpt/stage-d-final-reconciliation
+      - gpt/stage-e-run-progression
   pull_request:
     branches:
       - sites-source
