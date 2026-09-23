@@ -33,3 +33,15 @@ test("the target band is inclusive and the bonus remains modest", () => {
   assert.equal(safeDrivingBonus(100, allSafe), 15);
   assert.equal(safeDrivingBonus(900, allSafe), 72);
 });
+
+
+test("engine-specific economical bands can drive the same distance-based scoring", () => {
+  let progress = createSafeDrivingProgress();
+  progress = recordSafeDrivingDistance(progress, 800, 31, 28, 34);
+  progress = recordSafeDrivingDistance(progress, 200, 40, 28, 34);
+
+  assert.equal(isOptimalSpeed(31, 28, 34), true);
+  assert.equal(isOptimalSpeed(40, 28, 34), false);
+  assert.equal(safeDrivingShare(progress), 0.8);
+  assert.equal(safeDrivingBonus(300, progress), 24);
+});
