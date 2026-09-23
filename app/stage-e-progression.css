@@ -79,6 +79,12 @@
   font: 700 20px/1 Georgia, serif;
 }
 
+.run-complete-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .run-complete button {
   min-height: 46px;
   padding: 13px 20px;
@@ -89,6 +95,11 @@
   font-size: 12px;
   font-weight: 900;
   letter-spacing: .12em;
+}
+
+.run-complete button.secondary {
+  background: rgba(255,255,255,.025);
+  color: var(--paper);
 }
 
 .career-summary {
