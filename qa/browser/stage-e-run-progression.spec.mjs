@@ -125,3 +125,15 @@ test("Stillwater closes a six-stop run, awards the terminal bonus, and persists 
   );
   await expect(page.locator(".brake-button")).toHaveAttribute("aria-pressed", "true");
 });
+
+
+test("terminal QA staging stays a visual fixture instead of completing or failing a real schedule", async ({ page }) => {
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.goto("/?qaEngine=tom-thumb&qaCars=3&qaStation=5&qaService=active");
+
+  await expect(page.locator(".station-card")).toContainText("Stillwater");
+  await expect(page.locator(".station-card")).toHaveClass(/at-platform/, { timeout: 8_000 });
+  await page.waitForTimeout(4_500);
+  await expect(page.locator(".run-complete")).toHaveCount(0);
+  await expect(page.locator(".run-failure")).toHaveCount(0);
+});
