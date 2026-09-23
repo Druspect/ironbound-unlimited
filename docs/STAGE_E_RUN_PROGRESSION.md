@@ -128,6 +128,20 @@ Stage E adds coverage for:
 
 All prior fleet, geometry, audio, braking, station, responsive-layout, visual-audit, and performance tests remain part of the same branch gate.
 
+## Completion status
+
+All five Stage E passes are implemented and integrated:
+
+- E1 route and run structure — complete
+- E2 economy and career progression — complete
+- E3 typed station gameplay — complete
+- E4 consist/reward tradeoffs — complete
+- E5 Dad-ready guidance and end-to-end flow — complete
+
+The final E1 audit also closed the terminal boundary: passing Stillwater without completing the stop now ends the finite schedule as **Schedule incomplete** instead of wrapping into another reward-bearing lap.
+
+GitHub Actions run **#265** passed the complete suite at commit `4ce8ed85bbdae29e9a916d97108f821efbde22dd`, including unit/contract/build/lint, Chromium journeys, visual regression, performance budgets, and evidence upload.
+
 ## Promotion rule
 
-Stage E is a production candidate only after the exact branch tip passes the complete GitHub Actions suite, including browser journeys and evidence upload. `sites-source` remains on Stage D until Stage E is deliberately published.
+This closeout documentation commit must also pass the exact branch-tip suite. After that, Stage E is a production candidate. `sites-source` remains on the published Stage D tip until Stage E is deliberately published.
