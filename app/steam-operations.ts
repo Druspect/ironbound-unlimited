@@ -49,6 +49,8 @@ export type SteamResourceState = {
   failure: "fuel" | "water" | "service" | null;
 };
 
+export type SteamServiceKind = "passenger" | "water" | "full";
+
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
@@ -219,8 +221,13 @@ export function recordPassedStation(state: SteamResourceState): SteamResourceSta
   };
 }
 
-export function serviceSteamLocomotive(state: SteamResourceState): SteamResourceState {
+export function serviceSteamLocomotive(
+  state: SteamResourceState,
+  serviceKind: SteamServiceKind = "full",
+): SteamResourceState {
   if (state.failure) return state;
+  if (serviceKind === "passenger") return state;
+  if (serviceKind === "water") return { ...state, water: 100 };
   return { fuel: 100, water: 100, stationsWithoutService: 0, failure: null };
 }
 
@@ -232,13 +239,18 @@ export function serviceSteamLocomotive(state: SteamResourceState): SteamResource
 export function stationServiceProgress(
   arrivalState: SteamResourceState,
   progress: number,
+  serviceKind: SteamServiceKind = "full",
 ): SteamResourceState {
   if (arrivalState.failure) return arrivalState;
   const completed = clamp(progress, 0, 1);
   return {
     ...arrivalState,
-    fuel: arrivalState.fuel + (100 - arrivalState.fuel) * completed,
-    water: arrivalState.water + (100 - arrivalState.water) * completed,
+    fuel: serviceKind === "full"
+      ? arrivalState.fuel + (100 - arrivalState.fuel) * completed
+      : arrivalState.fuel,
+    water: serviceKind === "full" || serviceKind === "water"
+      ? arrivalState.water + (100 - arrivalState.water) * completed
+      : arrivalState.water,
   };
 }
 
@@ -246,16 +258,19 @@ export function calculateServiceDurationSeconds(
   state: SteamResourceState,
   metrics: ConsistMetrics,
   profile: LocomotiveOperatingProfile,
+  serviceKind: SteamServiceKind = "full",
 ) {
   const missingFuel = profile.fuelCapacity * (100 - state.fuel) / 100;
   const missingWater = profile.waterCapacityGallons * (100 - state.water) / 100;
   // Coal chutes move bulk solids more slowly than oil standpipes, while water
   // columns fill in parallel. These are game-time rates, not literal claims.
   const fuelFillRate = profile.fuelType === "coal" ? 4_000 : 800;
-  const fuelSeconds = missingFuel / fuelFillRate;
-  const waterSeconds = missingWater / 2_500;
+  const fuelSeconds = serviceKind === "full" ? missingFuel / fuelFillRate : 0;
+  const waterSeconds = serviceKind === "full" || serviceKind === "water"
+    ? missingWater / 2_500
+    : 0;
   const boardingSeconds = 2.4 + Math.max(0, metrics.carCount - 3) * .6;
-  const inspectionSeconds = state.stationsWithoutService * .3;
+  const inspectionSeconds = serviceKind === "full" ? state.stationsWithoutService * .3 : 0;
   return clamp(Math.max(boardingSeconds, fuelSeconds, waterSeconds) + inspectionSeconds, 2.4, 12);
 }
 
