@@ -8,8 +8,10 @@ The game mixes documented locomotives with clearly labelled fictional or design-
 
 - 12-locomotive steam roster with class-specific running gear and operating profiles
 - throttle, progressive train brake, grades, boiler load, heat, safety-valve relief/protection, fuel, and water
-- three-to-six-car passenger consists with mass-dependent acceleration, braking, resource use, and speed limits
-- station berthing, progressive servicing, rewards, and a four-station service requirement
+- three-to-six-car passenger consists with mass-dependent acceleration, braking, resource use, speed limits, and consist-scaled revenue
+- finite six-stop westbound runs with required station calls, terminal completion, route progress, and schedule failure when required stops are missed
+- passenger-only, water, and full fuel/water station service types, with full service required by the fourth stop
+- persistent run/career progression, completion bonuses, safe-driving rewards, and a rebalanced locomotive unlock economy
 - locomotive store with sourced fact sheets and compatibility rules
 - passenger carriage liveries with one coherent paint scheme across the consist
 - selectable synthesized audio packs plus engine-bound exhaust cadence and five synthesized whistle families
@@ -24,8 +26,10 @@ The production application lives under `app/`.
 Key modules:
 
 - `app/page.tsx` — game orchestration, UI, station flow, save state, and scene composition
+- `app/run-progression.ts` — six-stop schedule, run/career ledgers, station payouts, completion rules, consist revenue, and legacy progression migration
+- `app/run-economy.ts` — distance-based safe-driving scoring using each locomotive's economical-speed band
 - `app/engine-facts.ts` — sourced locomotive facts and provenance labels
-- `app/steam-operations.ts` — operating profiles, consist mass, fuel/water consumption, and station service
+- `app/steam-operations.ts` — operating profiles, consist mass, fuel/water consumption, and typed station service
 - `app/locomotive-physics.ts` — throttle, braking, grade response, boiler load, heat, and safety behavior
 - `app/locomotive-catalog.ts` — fleet catalog and runtime sprite geometry
 - `app/locomotive-registration.json` — calibrated sprite/wheel registration data
@@ -104,7 +108,9 @@ Production gates cover, among other things:
 - locomotive-specific handling signatures
 - gradual braking, thermal safety-valve behavior, and relief-state salience
 - consist mass effects
-- fuel/water and station-service boundaries
+- fuel/water and typed station-service boundaries
+- finite-route completion, required-stop enforcement, run/career persistence, and legacy save migration
+- consist-scaled revenue and engine-specific safe-driving target scoring
 - carriage compatibility and save migration
 - track gauge, rail hierarchy, wheel contact, and cab clearance
 - station platform containment
@@ -139,9 +145,9 @@ Passenger paint is a render-time livery system in `app/carriage-liveries.css`; a
 
 ## Branch and Deployment Model
 
-- `gpt/stage-d-final-reconciliation` — completed Stage D production candidate
-- `gpt/stage-c-audio-realism` — published Stage C baseline
-- `sites-source` — deployment source branch
+- `gpt/stage-e-run-progression` — Stage E run/progression production candidate
+- `gpt/stage-d-final-reconciliation` — published Stage D baseline
+- `sites-source` — deployment source branch, currently held at the published Stage D tip
 
 Production changes are validated on the active staged-remediation branch first. `sites-source` should only be advanced when the QA branch is a clean fast-forward and the candidate has completed its release review.
 
