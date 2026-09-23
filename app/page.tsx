@@ -572,14 +572,40 @@ export default function Home() {
   }, [equippedEngine]);
 
   useEffect(() => {
-    const soundscape = new Audio(audioPackFor(selectedAudioPack).loopAsset);
+    const pack = audioPackFor(selectedAudioPack);
+    const soundscape = new Audio(pack.loopAsset);
     soundscape.preload = "auto";
     soundscape.loop = true;
     soundscape.volume = 0;
     soundscapeAudioRef.current = soundscape;
+
+    // Stage D keeps soundscape readiness observable just like whistle/exhaust
+    // readiness. A selected Store card is not enough proof that its loop asset
+    // actually loaded and survived an in-session pack handoff.
+    const root = document.documentElement;
+    root.dataset.soundscapeAudioPack = selectedAudioPack;
+    root.dataset.soundscapeAudioAsset = pack.loopAsset;
+    root.dataset.soundscapeAudioReady = "loading";
+    const markReady = () => {
+      if (root.dataset.soundscapeAudioAsset === pack.loopAsset) root.dataset.soundscapeAudioReady = "true";
+    };
+    const markError = () => {
+      if (root.dataset.soundscapeAudioAsset === pack.loopAsset) root.dataset.soundscapeAudioReady = "false";
+    };
+    soundscape.addEventListener("canplaythrough", markReady, { once: true });
+    soundscape.addEventListener("error", markError, { once: true });
+    soundscape.load();
+
     return () => {
       soundscape.pause();
+      soundscape.removeEventListener("canplaythrough", markReady);
+      soundscape.removeEventListener("error", markError);
       if (soundscapeAudioRef.current === soundscape) soundscapeAudioRef.current = null;
+      if (root.dataset.soundscapeAudioAsset === pack.loopAsset) {
+        delete root.dataset.soundscapeAudioPack;
+        delete root.dataset.soundscapeAudioAsset;
+        delete root.dataset.soundscapeAudioReady;
+      }
     };
   }, [selectedAudioPack]);
 
