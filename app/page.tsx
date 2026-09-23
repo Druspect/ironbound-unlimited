@@ -758,12 +758,33 @@ export default function Home() {
           STATION_PASS_GRACE_DISTANCE,
         );
         if (latestPassedStation > lastPassedStationRef.current) {
+          let terminalMissed = false;
           for (let sequence = lastPassedStationRef.current + 1; sequence <= latestPassedStation; sequence += 1) {
-            if (sequence < 0 || sequence === servicedStationRef.current) continue;
+            if (sequence < 0) continue;
+            const passedStationIndex = sequence % STATIONS.length;
+            if (
+              passedStationIndex === STATIONS.length - 1 &&
+              sequence !== servicedStationRef.current &&
+              !visualQaModeRef.current
+            ) {
+              // Stage E is a finite schedule. Missing Stillwater cannot silently
+              // wrap the player into another lap where station rewards could be
+              // collected again.
+              terminalMissed = true;
+              break;
+            }
+            if (sequence === servicedStationRef.current) continue;
             steamResourcesRef.current = recordPassedStation(steamResourcesRef.current);
           }
           lastPassedStationRef.current = latestPassedStation;
-          if (steamResourcesRef.current.failure && !runFailureRef.current) {
+          if (terminalMissed && !runFailureRef.current) {
+            runFailureRef.current = "schedule";
+            throttleRef.current = 0;
+            setThrottle(0);
+            pausedRef.current = true;
+            setPaused(true);
+            setRunFailure("schedule");
+          } else if (steamResourcesRef.current.failure && !runFailureRef.current) {
             runFailureRef.current = steamResourcesRef.current.failure;
             pausedRef.current = true;
             setPaused(true);
