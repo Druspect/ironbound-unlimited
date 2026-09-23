@@ -36,6 +36,7 @@ import {
   totalRunBonds,
 } from "./run-progression";
 import type { CareerProgress, RunProgress } from "./run-progression";
+import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, landmarksForRouteTile } from "./route-content";
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
 import { calculateTrainSceneGeometry } from "./train-geometry";
 import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
@@ -60,16 +61,8 @@ import {
 
 type SceneStyle = CSSProperties & Record<`--${string}`, string | number>;
 
-const BIOMES = [
-  { name: "High Plains", short: "PLAINS" },
-  { name: "Red Mesa", short: "MESA" },
-  { name: "Salt Flats", short: "SALT" },
-  { name: "Pine Divide", short: "PINES" },
-  { name: "Alpine Pass", short: "ALPINE" },
-  { name: "River Basin", short: "RIVER" },
-] as const;
-
-const TILES_PER_BIOME = 5;
+const BIOMES = ROUTE_BIOMES;
+const TILES_PER_BIOME = ROUTE_TILES_PER_BIOME;
 const TILE_TRAVEL = ROUTE_TILE_TRAVEL;
 const ROUTE_TILE_COUNT = BIOMES.length * TILES_PER_BIOME;
 const ROUTE_TRAVEL = ROUTE_TILE_COUNT * TILE_TRAVEL;
@@ -91,10 +84,13 @@ const runMilesForVisualTravel = (travel: number) => Math.max(0, travel) * RUN_MI
 
 const ROUTE_TILES = Array.from({ length: ROUTE_TILE_COUNT + 2 }, (_, index) => {
   const routeIndex = index % ROUTE_TILE_COUNT;
+  const biome = Math.floor(routeIndex / TILES_PER_BIOME);
+  const tile = routeIndex % TILES_PER_BIOME;
   return {
     key: `${index}-${routeIndex}`,
-    biome: Math.floor(routeIndex / TILES_PER_BIOME),
-    tile: routeIndex % TILES_PER_BIOME,
+    biome,
+    tile,
+    landmarks: landmarksForRouteTile(biome, tile),
   };
 });
 
@@ -1307,7 +1303,22 @@ export default function Home() {
             <div
               key={tile.key}
               className={`route-tile biome-${tile.biome} tile-${tile.tile} ${index === 0 ? "first-tile" : ""}`}
-            />
+              data-biome-id={BIOMES[tile.biome].id}
+              data-route-tile={tile.tile}
+              style={{ backgroundImage: `url("${BIOMES[tile.biome].asset}")` }}
+            >
+              {tile.landmarks.map((landmark) => (
+                <span
+                  key={landmark.id}
+                  className={`route-landmark landmark-${landmark.kind} depth-${landmark.depth}`}
+                  data-landmark-id={landmark.id}
+                  style={{
+                    "--landmark-left": `${landmark.leftPercent}%`,
+                    "--landmark-scale": landmark.scale,
+                  } as SceneStyle}
+                />
+              ))}
+            </div>
           ))}
         </div>
         <div className="biome-transition-haze" />

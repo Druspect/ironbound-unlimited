@@ -7,6 +7,7 @@ on:
       - gpt/stage-c-audio-realism
       - gpt/stage-d-final-reconciliation
       - gpt/stage-e-run-progression
+      - gpt/stage-f-route-content
   pull_request:
     branches:
       - sites-source
