@@ -728,6 +728,8 @@ export default function Home() {
         safeDrivingRef.current,
         travelDelta,
         speedRef.current,
+        operatingProfile.economicalSpeedMinMph,
+        operatingProfile.economicalSpeedMaxMph,
       );
       const root = experienceRef.current;
       if (root) {
@@ -846,7 +848,7 @@ export default function Home() {
               multiplier,
               consistCarsRef.current,
             );
-            const drivingBonus = safeDrivingBonus(earnedBonds, safeDrivingRef.current);
+            const drivingBonus = safeDrivingBonus(station.baseBonds, safeDrivingRef.current);
             let nextRunProgress = recordStationProgress(
               runProgressRef.current,
               station.id,
