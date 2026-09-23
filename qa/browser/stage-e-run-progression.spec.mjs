@@ -1,9 +1,11 @@
+import { mkdir } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
 const TERMINAL_TRAVEL = 25.82 * 1150;
 const TERMINAL_MILES = TERMINAL_TRAVEL / 3600;
 
 test("fresh run gives one clear action and exposes six-stop schedule progress", async ({ page }) => {
+  await mkdir("qa-artifacts/stage-e", { recursive: true });
   await page.setViewportSize({ width: 1365, height: 768 });
   await page.goto("/");
   await page.getByRole("button", { name: "BEGIN RUN" }).click();
@@ -16,6 +18,11 @@ test("fresh run gives one clear action and exposes six-stop schedule progress", 
   await expect(page.locator(".station-card")).toContainText("Cinder Flats");
   await expect(page.locator(".station-card")).toContainText("Passengers");
   await expect(page.locator(".station-card")).toContainText("bonds");
+  await page.screenshot({
+    path: "qa-artifacts/stage-e/first-run-guidance.png",
+    animations: "disabled",
+    caret: "hide",
+  });
 
   await page.getByRole("button", { name: "Release train brake" }).click();
   await expect(page.locator(".mission-card h1")).toContainText("Hold");
@@ -88,6 +95,12 @@ test("Stillwater closes a six-stop run, awards the terminal bonus, and persists 
   await expect(page.locator(".run-complete")).toContainText("6/6");
   await expect(page.locator(".run-complete")).toContainText("CAREER RUNS");
   await expect(page.locator(".run-complete")).toContainText("1");
+  await mkdir("qa-artifacts/stage-e", { recursive: true });
+  await page.screenshot({
+    path: "qa-artifacts/stage-e/route-complete.png",
+    animations: "disabled",
+    caret: "hide",
+  });
 
   await expect.poll(async () => {
     return page.evaluate(() => {
