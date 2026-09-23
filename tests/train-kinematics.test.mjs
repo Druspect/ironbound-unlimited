@@ -6,6 +6,7 @@ const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
 const physics = await readFile(new URL("../app/locomotive-physics.ts", import.meta.url), "utf8");
+const routeContent = await readFile(new URL("../app/route-content.ts", import.meta.url), "utf8");
 
 test("starter uses registered frames instead of a separately lifted shell", () => {
   assert.doesNotMatch(page, /className="locomotive-superstructure"|className="rail-unit locomotive-unit"/);
@@ -201,11 +202,12 @@ test("every locomotive uses its own stack socket and travel-driven textured exha
 });
 
 test("route uses six five-tile biomes with broad feathered overlaps", () => {
-  assert.match(page, /const TILES_PER_BIOME = 5/);
-  assert.match(page, /name: "Salt Flats"/);
-  assert.match(page, /name: "Alpine Pass"/);
-  assert.match(css, /salt-flats-v1\.webp/);
-  assert.match(css, /alpine-pass-v1\.webp/);
+  assert.match(routeContent, /ROUTE_TILES_PER_BIOME = 5/);
+  assert.match(routeContent, /name: "Salt Flats"/);
+  assert.match(routeContent, /name: "Alpine Pass"/);
+  assert.match(routeContent, /salt-flats-v1\.webp/);
+  assert.match(routeContent, /alpine-pass-v1\.webp/);
+  assert.match(page, /const TILES_PER_BIOME = ROUTE_TILES_PER_BIOME/);
   assert.match(css, /calc\(100vw \+ 520px\)/);
   assert.match(css, /#000 420px/);
 });
