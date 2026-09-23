@@ -9,6 +9,7 @@ import {
   consistRevenueMultiplier,
   createCareerProgress,
   createRunProgress,
+  migrateLegacyRunProgress,
   recordCareerCompletion,
   recordStationProgress,
   stationBondPayout,
@@ -44,6 +45,17 @@ test("longer consists earn more but do not overwhelm progression", () => {
   assert.ok(heavy > starter);
   assert.ok(heavy < 1_400);
   assert.ok(completionBondPayout(1.9, six) < 3_300);
+});
+
+test("legacy claimed-stop keys migrate into the finite Stage E schedule", () => {
+  const partial = migrateLegacyRunProgress(["0-0", "0-1", "0-3", "bad", "0-99"]);
+  assert.deepEqual(partial.clearedStationIds, ["cinder-flats", "copper-wash", "timberline"]);
+  assert.equal(partial.stationBonds, 250 + 300 + 425);
+  assert.equal(partial.completed, false);
+
+  const complete = migrateLegacyRunProgress(["0-0", "0-1", "0-2", "0-3", "0-4", "0-5"]);
+  assert.equal(complete.clearedStationIds.length, 6);
+  assert.equal(complete.completed, true);
 });
 
 test("run completion requires every scheduled stop and records persistent career totals", () => {
