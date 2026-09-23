@@ -150,3 +150,69 @@ test("terminal QA staging stays a visual fixture instead of completing or failin
   await expect(page.locator(".run-complete")).toHaveCount(0);
   await expect(page.locator(".run-failure")).toHaveCount(0);
 });
+
+
+test("passing Stillwater without stopping ends the finite schedule instead of wrapping another lap", async ({ page }) => {
+  test.setTimeout(20_000);
+  const terminalTravel = TERMINAL_TRAVEL;
+  const startTravel = terminalTravel + 100;
+  const startMiles = startTravel / 3600;
+
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.addInitScript(({ travel, miles }) => {
+    localStorage.setItem("ironbound-save-v4", JSON.stringify({
+      bonds: 2_000,
+      ownedEngines: ["tom-thumb"],
+      equippedEngine: "tom-thumb",
+      consistCars: ["pullman", "day-coach", "baggage-mail"],
+      cameraZoom: "auto",
+      settings: { sound: false, reducedMotion: false, highContrast: false, uiScale: 100 },
+      selectedAudioPack: "heritage-steam",
+      runProgress: {
+        clearedStationIds: [
+          "cinder-flats",
+          "copper-wash",
+          "saltworks",
+          "timberline",
+          "summit-house",
+        ],
+        stationBonds: 1_825,
+        drivingBonusBonds: 0,
+        completionBonusBonds: 0,
+        completed: false,
+      },
+      careerProgress: {
+        completedRuns: 0,
+        totalStationsCleared: 0,
+        lifetimeBondsEarned: 0,
+        bestRunBonds: 0,
+      },
+      run: {
+        throttle: 0,
+        speed: 30,
+        boilerLoad: 42,
+        heat: 0,
+        distance: miles,
+        visualTravel: travel,
+        brakeEngaged: false,
+        brakePressure: 0,
+        brakeCylinderPressure: 0,
+        fuel: 90,
+        water: 90,
+        stationsWithoutService: 0,
+        failure: null,
+        claimedStops: ["0-0", "0-1", "0-2", "0-3", "0-4"],
+        servicedStationSequence: 3,
+      },
+    }));
+  }, { travel: startTravel, miles: startMiles });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "BEGIN RUN" }).click();
+
+  await expect(page.locator(".run-failure")).toBeVisible({ timeout: 8_000 });
+  await expect(page.locator(".run-failure")).toContainText("Schedule incomplete");
+  await expect(page.locator(".run-complete")).toHaveCount(0);
+  await expect(page.locator(".speed-reading strong")).toHaveText(/\d+/);
+  await expect(page.locator("#throttle")).toHaveValue("0");
+});
