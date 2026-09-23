@@ -47,12 +47,18 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
     texture.src = "/assets/locomotive-shop/v3/exhaust-puff.webp";
 
     const exhaustAsset = exhaustOneShotAsset(audioProfile);
-    const voices = Array.from({ length: 4 }, () => {
+    const voiceCount = audioProfile.exhaustCharacter === "articulated" ? 10 : 7;
+    const voices = Array.from({ length: voiceCount }, () => {
       const voice = new Audio(exhaustAsset);
       voice.preload = "auto";
       return voice;
     });
-    let voiceIndex = 0;
+    canvas.dataset.exhaustAudioAsset = exhaustAsset;
+    canvas.dataset.exhaustAudioReady = "loading";
+    const markAudioReady = () => { canvas.dataset.exhaustAudioReady = "true"; };
+    const markAudioError = () => { canvas.dataset.exhaustAudioReady = "false"; };
+    voices[0]?.addEventListener("canplaythrough", markAudioReady, { once: true });
+    voices[0]?.addEventListener("error", markAudioError, { once: true });
     let mechanicalEvents = 0;
     let cachedSoundEnabled = true;
     let lastSoundCheck = -Infinity;
@@ -106,9 +112,8 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
         }
         if (cachedSoundEnabled && document.visibilityState === "visible") {
           for (let event = 0; event < beatEvents; event += 1) {
-            const voice = voices[voiceIndex % voices.length];
-            voiceIndex += 1;
-            voice.pause();
+            const voice = voices.find((candidate) => candidate.paused || candidate.ended);
+            if (!voice) continue;
             voice.currentTime = 0;
             voice.playbackRate = 1;
             voice.volume = exhaustBeatGain(audioProfile, currentMotion);
@@ -150,6 +155,8 @@ export function ExhaustSmoke({ motion }: { motion: RefObject<ExhaustMotion> }) {
       }
       texture.onload = null;
       texture.onerror = null;
+      voices[0]?.removeEventListener("canplaythrough", markAudioReady);
+      voices[0]?.removeEventListener("error", markAudioError);
       for (const voice of voices) {
         voice.pause();
         voice.removeAttribute("src");
