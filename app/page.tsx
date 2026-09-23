@@ -1072,7 +1072,7 @@ export default function Home() {
       if (event.key === "Escape") {
         event.preventDefault();
         if (screen === "game") { setPaused(true); setScreen("options"); }
-        else { setScreen("game"); setPaused(Boolean(runFailureRef.current)); }
+        else { setScreen("game"); setPaused(Boolean(runFailureRef.current) || Boolean(runComplete)); }
         return;
       }
       if (screen !== "game") return;
@@ -1093,7 +1093,7 @@ export default function Home() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [brake, commandThrottle, screen, soundWhistle]);
+  }, [brake, commandThrottle, runComplete, screen, soundWhistle]);
 
   useEffect(() => () => {
     if (whistleTimer.current) clearTimeout(whistleTimer.current);
