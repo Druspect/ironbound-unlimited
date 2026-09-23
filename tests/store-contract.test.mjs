@@ -161,9 +161,19 @@ test("service due copy handles singular and plural station counts", () => {
 test("equipped locomotive owns the active whistle family", () => {
   const whistleEffectStart = page.indexOf("const asset = whistleAssetFor(equippedEngine)");
   assert.ok(whistleEffectStart >= 0, "whistle must resolve from the equipped engine");
-  const whistleEffect = page.slice(whistleEffectStart, whistleEffectStart + 520);
+
+  const dependencyMarker = "}, [equippedEngine]);";
+  const whistleEffectEnd = page.indexOf(dependencyMarker, whistleEffectStart);
+  assert.ok(
+    whistleEffectEnd > whistleEffectStart && whistleEffectEnd - whistleEffectStart < 3_000,
+    "whistle setup must remain inside the effect keyed to equippedEngine",
+  );
+
+  const whistleEffect = page.slice(whistleEffectStart, whistleEffectEnd + dependencyMarker.length);
   assert.match(whistleEffect, /const whistle = new Audio\(asset\)/);
   assert.match(whistleEffect, /whistle\.preload = "auto"/);
+  assert.match(whistleEffect, /root\.dataset\.whistleAudioAsset = asset/);
+  assert.match(whistleEffect, /root\.dataset\.whistleAudioReady = "loading"/);
   assert.match(whistleEffect, /\}, \[equippedEngine\]\);/);
   assert.doesNotMatch(page, /new Audio\("\/assets\/audio\/ironbound-steam-whistle\.wav"\)/);
 });
