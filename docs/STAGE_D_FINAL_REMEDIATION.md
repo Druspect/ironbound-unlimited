@@ -20,10 +20,14 @@ The first Stage D browser journey cycles all 12 locomotives in one `reviewFleet`
 
 This specifically guards against stale cross-engine runtime state, including the historical class of failure where one engine worked while later selections inherited or lost another engine's behavior.
 
+## Stage D progress
+
+- live locomotive handoff — complete and green
+- live consist/engine compatibility handoff — active validation pass
+
 ## Next Stage D passes
 
-1. live consist/engine compatibility handoff
-2. resource and braking continuity across store transitions
+1. resource and braking continuity across store transitions
 3. audio-pack switching under an active locomotive
 4. desktop/compact-landscape final evidence sweep
 5. final publish-candidate review
