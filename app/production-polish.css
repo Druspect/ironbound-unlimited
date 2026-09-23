@@ -219,6 +219,26 @@
   --headlight-phase: .24;
 }
 
+/* Peripheral safety-lock cues from the dedicated salience pass. These
+   reinforce the existing telemetry without moving controls or obscuring the train. */
+.experience.is-overloaded .cab {
+  border-color: rgba(222, 121, 83, .62);
+  box-shadow:
+    inset 0 1px rgba(242, 177, 143, .3),
+    0 18px 48px rgba(0, 0, 0, .5),
+    0 0 24px rgba(183, 94, 58, .12);
+}
+
+.experience.is-overloaded .speed-card .eyebrow {
+  color: #ffd7c4;
+}
+
+.experience.is-overloaded .vignette {
+  box-shadow:
+    inset 0 0 140px rgba(4, 6, 7, .52),
+    inset 0 0 100px rgba(126, 35, 25, .16);
+}
+
 /* Safety-lock presentation: the governor is already enforced by the physics,
    but the production audit showed that the visual state was too easy to miss.
    Strengthen the existing in-cab cues without adding a modal or moving controls. */
@@ -305,6 +325,51 @@
 
 .station-card.at-platform:has(.service-steps):not(:has(.service-steps .active)) .service-steps span {
   border-color: rgba(242, 154, 115, .26);
+}
+
+/* Station service legibility: service progress is actionable feedback, not
+   decorative microcopy. Keep the existing card footprint and three-column
+   sequence, but raise the stage labels above the 8 px audit floor. */
+.station-card.at-platform .service-steps {
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.station-card.at-platform .service-steps span {
+  min-height: 24px;
+  padding: 6px 3px 5px;
+  border-color: rgba(243, 234, 215, .18);
+  color: rgba(243, 234, 215, .58);
+  background: rgba(0, 0, 0, .24);
+  font-size: 10.5px;
+  line-height: 1.1;
+  letter-spacing: .065em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .74);
+}
+
+.station-card.at-platform .service-steps span.active {
+  border-color: rgba(217, 231, 162, .72);
+  color: #f4f8cf;
+  background: linear-gradient(180deg, rgba(210, 155, 74, .2), rgba(137, 154, 76, .16));
+  box-shadow: inset 0 0 0 1px rgba(217, 231, 162, .08), 0 0 10px rgba(210, 155, 74, .08);
+  font-weight: 800;
+}
+
+.station-card.at-platform .station-dwell {
+  height: 5px;
+  margin-top: 9px;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .station-card.at-platform > small {
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: .035em;
+  }
+
+  .station-card.at-platform > strong {
+    font-size: 16px;
+  }
 }
 
 /* Store legibility: normal cards were the smallest secondary typography in the
