@@ -62,7 +62,7 @@ test("station service is visibly staged and remains safe under reduced motion", 
   assert.match(page, />WATER<\/span>/);
   assert.match(css, /\.station-world\.service-active \.station-service-activity/);
   assert.match(css, /\.reduced-motion \.station-world\.service-active \.station-service-activity\s*\{[^}]*animation:\s*none/s);
-  assert.match(page, /stationServiceProgress\(dwellRef\.current\.arrivalResources, serviceProgress\)/);
+  assert.match(page, /stationServiceProgress\([\s\S]*?dwellRef\.current\.arrivalResources,[\s\S]*?serviceProgress,[\s\S]*?stopStation\.serviceKind,[\s\S]*?\)/);
   assert.match(page, /latestMissedStationSequence\(/);
 });
 
@@ -121,6 +121,8 @@ test("version-four persistence migrates earlier saves and includes reward and se
   assert.match(page, /setRunFailure\(restoredFailure\)/);
   assert.match(page, /claimedStopsRef\.current = new Set/);
   assert.match(page, /servicedStationRef\.current = Math\.max/);
+  assert.match(page, /runProgress: runProgressRef\.current/);
+  assert.match(page, /careerProgress: careerProgressRef\.current/);
 });
 
 test("camera defaults to automatic fit and refits when the consist changes", () => {
