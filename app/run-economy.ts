@@ -12,13 +12,18 @@ export const createSafeDrivingProgress = (): SafeDrivingProgress => ({
   optimalDistance: 0,
 });
 
-export const isOptimalSpeed = (speed: number) =>
-  speed >= OPTIMAL_SPEED_MIN && speed <= OPTIMAL_SPEED_MAX;
+export const isOptimalSpeed = (
+  speed: number,
+  minimumSpeed = OPTIMAL_SPEED_MIN,
+  maximumSpeed = OPTIMAL_SPEED_MAX,
+) => speed >= minimumSpeed && speed <= maximumSpeed;
 
 export function recordSafeDrivingDistance(
   progress: SafeDrivingProgress,
   distanceDelta: number,
   speed: number,
+  minimumSpeed = OPTIMAL_SPEED_MIN,
+  maximumSpeed = OPTIMAL_SPEED_MAX,
 ): SafeDrivingProgress {
   const traveled = Math.max(0, distanceDelta);
   if (traveled === 0) return progress;
@@ -26,7 +31,7 @@ export function recordSafeDrivingDistance(
   return {
     totalDistance: progress.totalDistance + traveled,
     optimalDistance: progress.optimalDistance +
-      (isOptimalSpeed(speed) ? traveled : 0),
+      (isOptimalSpeed(speed, minimumSpeed, maximumSpeed) ? traveled : 0),
   };
 }
 
