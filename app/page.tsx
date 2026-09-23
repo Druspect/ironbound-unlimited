@@ -538,13 +538,36 @@ export default function Home() {
   }, [settings.uiScale]);
 
   useEffect(() => {
-    const whistle = new Audio(whistleAssetFor(equippedEngine));
+    const asset = whistleAssetFor(equippedEngine);
+    const whistle = new Audio(asset);
     whistle.preload = "auto";
     whistle.volume = 0.72;
     whistleAudioRef.current = whistle;
+
+    // Keep production audio readiness observable. This catches the historical
+    // failure mode where profiles existed but one or more engine assets did not.
+    const root = document.documentElement;
+    root.dataset.whistleAudioAsset = asset;
+    root.dataset.whistleAudioReady = "loading";
+    const markReady = () => {
+      if (root.dataset.whistleAudioAsset === asset) root.dataset.whistleAudioReady = "true";
+    };
+    const markError = () => {
+      if (root.dataset.whistleAudioAsset === asset) root.dataset.whistleAudioReady = "false";
+    };
+    whistle.addEventListener("canplaythrough", markReady, { once: true });
+    whistle.addEventListener("error", markError, { once: true });
+    whistle.load();
+
     return () => {
       whistle.pause();
+      whistle.removeEventListener("canplaythrough", markReady);
+      whistle.removeEventListener("error", markError);
       if (whistleAudioRef.current === whistle) whistleAudioRef.current = null;
+      if (root.dataset.whistleAudioAsset === asset) {
+        delete root.dataset.whistleAudioAsset;
+        delete root.dataset.whistleAudioReady;
+      }
     };
   }, [equippedEngine]);
 
