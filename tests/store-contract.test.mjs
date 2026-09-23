@@ -162,7 +162,8 @@ test("equipped locomotive owns the active whistle family", () => {
   const whistleEffectStart = page.indexOf("const asset = whistleAssetFor(equippedEngine)");
   assert.ok(whistleEffectStart >= 0, "whistle must resolve from the equipped engine");
   const whistleEffect = page.slice(whistleEffectStart, whistleEffectStart + 520);
-  assert.match(whistleEffect, /const whistle = new Audio\(asset\)/);\n  assert.match(whistleEffect, /whistle\.preload = "auto"/);
+  assert.match(whistleEffect, /const whistle = new Audio\(asset\)/);
+  assert.match(whistleEffect, /whistle\.preload = "auto"/);
   assert.match(whistleEffect, /\}, \[equippedEngine\]\);/);
   assert.doesNotMatch(page, /new Audio\("\/assets\/audio\/ironbound-steam-whistle\.wav"\)/);
 });
