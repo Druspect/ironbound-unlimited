@@ -15,6 +15,7 @@ import "./animation-continuity.css";
 import "./consist-coupling.css";
 import "./biome-transition-continuity.css";
 import "./touch-orientation-guard.css";
+import "./stage-e-progression.css";
 
 const productionQaQueryGuard = `(() => {
   const url = new URL(window.location.href);
