@@ -19,6 +19,22 @@ import {
   recordSafeDrivingDistance,
   safeDrivingBonus,
 } from "./run-economy";
+import {
+  RUN_STATIONS,
+  RUN_STATION_COUNT,
+  canCompleteRun,
+  completeRun,
+  completionBondPayout,
+  createCareerProgress,
+  createRunProgress,
+  normalizeCareerProgress,
+  normalizeRunProgress,
+  recordCareerCompletion,
+  recordStationProgress,
+  stationBondPayout,
+  totalRunBonds,
+} from "./run-progression";
+import type { CareerProgress, RunProgress } from "./run-progression";
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
 import { calculateTrainSceneGeometry } from "./train-geometry";
 import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
@@ -81,14 +97,7 @@ const ROUTE_TILES = Array.from({ length: ROUTE_TILE_COUNT + 2 }, (_, index) => {
   };
 });
 
-const STATIONS = [
-  { name: "Cinder Flats", position: 0.82 * TILE_TRAVEL, reward: "250 rail bonds", bonds: 250, art: "plains", serviceArt: "cinder-flats" },
-  { name: "Copper Wash", position: 5.82 * TILE_TRAVEL, reward: "400 rail bonds", bonds: 400, art: "mesa", serviceArt: "copper-wash" },
-  { name: "Saltworks", position: 10.82 * TILE_TRAVEL, reward: "525 rail bonds", bonds: 525, art: "plains", serviceArt: "saltworks" },
-  { name: "Timberline", position: 15.82 * TILE_TRAVEL, reward: "Boiler shield + 650 bonds", bonds: 650, art: "pine", serviceArt: "timberline" },
-  { name: "Summit House", position: 20.82 * TILE_TRAVEL, reward: "800 rail bonds", bonds: 800, art: "pine", serviceArt: "summit-house" },
-  { name: "Stillwater", position: 25.82 * TILE_TRAVEL, reward: "1,000 rail bonds", bonds: 1000, art: "river", serviceArt: "stillwater" },
-] as const;
+const STATIONS = RUN_STATIONS;
 
 type StationState = {
   index: number;
@@ -169,7 +178,10 @@ export default function Home() {
   const [cameraZoom, setCameraZoom] = useState<CameraMode>("auto");
   const [viewportWidth, setViewportWidth] = useState(1365);
   const [steamResources, setSteamResources] = useState(createSteamResourceState);
-  const [runFailure, setRunFailure] = useState<"fuel" | "water" | "service" | null>(null);
+  const [runFailure, setRunFailure] = useState<"fuel" | "water" | "service" | "schedule" | null>(null);
+  const [runProgress, setRunProgress] = useState<RunProgress>(createRunProgress);
+  const [careerProgress, setCareerProgress] = useState<CareerProgress>(createCareerProgress);
+  const [runComplete, setRunComplete] = useState<RunProgress | null>(null);
   const [settings, setSettings] = useState({ sound: true, reducedMotion: false, highContrast: false, uiScale: 100 });
   const [selectedAudioPack, setSelectedAudioPack] = useState<AudioPackId>(DEFAULT_AUDIO_PACK);
   const [browserAcceptanceEnabled, setBrowserAcceptanceEnabled] = useState(false);
@@ -208,6 +220,8 @@ export default function Home() {
   const lastPassedStationRef = useRef(-1);
   const servicedStationRef = useRef(-1);
   const runFailureRef = useRef<typeof runFailure>(null);
+  const runProgressRef = useRef<RunProgress>(runProgress);
+  const careerProgressRef = useRef<CareerProgress>(careerProgress);
   const safeDrivingRef = useRef(createSafeDrivingProgress());
   const visualQaModeRef = useRef(false);
   const exhaustMotionRef = useRef(createExhaustMotion());
@@ -231,6 +245,14 @@ export default function Home() {
   useEffect(() => {
     selectedAudioPackRef.current = selectedAudioPack;
   }, [selectedAudioPack]);
+
+  useEffect(() => {
+    runProgressRef.current = runProgress;
+  }, [runProgress]);
+
+  useEffect(() => {
+    careerProgressRef.current = careerProgress;
+  }, [careerProgress]);
 
   useEffect(() => {
     const measureViewport = () => setViewportWidth(Math.max(320, window.innerWidth));
@@ -316,7 +338,7 @@ export default function Home() {
         } else if (!browserAcceptanceRequested) {
           const saved = localStorage.getItem("ironbound-save-v4") ?? localStorage.getItem("ironbound-save-v3") ?? localStorage.getItem("ironbound-save-v2") ?? localStorage.getItem("ironbound-save-v1");
           if (saved) {
-            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; selectedAudioPack?: AudioPackId; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; brakePressure?: number; brakeCylinderPressure?: number; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | null; claimedStops?: string[]; servicedStationSequence?: number } };
+            const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; selectedAudioPack?: AudioPackId; runProgress?: unknown; careerProgress?: unknown; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; brakePressure?: number; brakeCylinderPressure?: number; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | "schedule" | null; claimedStops?: string[]; servicedStationSequence?: number } };
             if (typeof parsed.bonds === "number") setBonds(Math.max(0, parsed.bonds));
             const owned = Array.from(new Set([STARTER_LOCOMOTIVE_ID, ...(Array.isArray(parsed.ownedEngines) ? parsed.ownedEngines.filter((id) => LOCOMOTIVES.some((engine) => engine.id === id)) : [])]));
             setOwnedEngines(owned);
@@ -335,6 +357,13 @@ export default function Home() {
             if (parsed.cameraZoom === "auto" || parsed.cameraZoom === "close" || parsed.cameraZoom === "standard" || parsed.cameraZoom === "wide") setCameraZoom(parsed.cameraZoom);
             if (parsed.settings) setSettings((current) => ({ ...current, ...parsed.settings }));
             if (isAudioPackId(parsed.selectedAudioPack)) setSelectedAudioPack(parsed.selectedAudioPack);
+            const restoredRunProgress = normalizeRunProgress(parsed.runProgress);
+            const restoredCareerProgress = normalizeCareerProgress(parsed.careerProgress);
+            runProgressRef.current = restoredRunProgress;
+            careerProgressRef.current = restoredCareerProgress;
+            setRunProgress(restoredRunProgress);
+            setCareerProgress(restoredCareerProgress);
+            if (restoredRunProgress.completed) setRunComplete(restoredRunProgress);
             if (parsed.run) {
               const restoredThrottle = clamp(finiteOr(parsed.run.throttle, 0), 0, 100);
               const restoredSpeed = clamp(finiteOr(parsed.run.speed, 0), 0, 140);
@@ -343,7 +372,7 @@ export default function Home() {
               const restoredDistance = Math.max(0, finiteOr(parsed.run.distance, 0));
               const restoredFailure = parsed.run.failure === "coal" || parsed.run.failure === "fuel"
                 ? "fuel"
-                : parsed.run.failure === "water" || parsed.run.failure === "service"
+                : parsed.run.failure === "water" || parsed.run.failure === "service" || parsed.run.failure === "schedule"
                   ? parsed.run.failure
                   : null;
               const restoredResources = {
@@ -491,6 +520,8 @@ export default function Home() {
       try {
         localStorage.setItem("ironbound-save-v4", JSON.stringify({
           bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack,
+          runProgress: runProgressRef.current,
+          careerProgress: careerProgressRef.current,
           run: {
             throttle: throttleRef.current,
             speed: speedRef.current,
@@ -531,7 +562,7 @@ export default function Home() {
       document.removeEventListener("visibilitychange", flushWhenHidden);
       persistRun();
     };
-  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, saveReady]);
+  }, [bonds, ownedEngines, equippedEngine, consistCars, cameraZoom, settings, selectedAudioPack, runProgress, careerProgress, saveReady]);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--user-ui-scale", String(settings.uiScale / 100));
