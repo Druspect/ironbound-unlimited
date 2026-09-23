@@ -113,7 +113,7 @@ test("Stillwater closes a six-stop run, awards the terminal bonus, and persists 
 
   await expect(page.getByRole("button", { name: "OPEN STORE" })).toBeVisible();
   await page.getByRole("button", { name: "OPEN STORE" }).click();
-  await expect(page.getByRole("heading", { name: "Locomotive Store" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Store", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Return to railway" }).click();
   await expect(page.locator(".run-complete")).toBeVisible();
 
