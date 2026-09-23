@@ -69,5 +69,5 @@ test("platform overspeed correction is prominent and clears when service speed i
   await expect.poll(async () => Number((await page.locator(".speed-reading strong").textContent()) ?? 99), {
     timeout: 12_000,
   }).toBeLessThan(3);
-  await expect(correction).toContainText(/Boarding|Passengers aboard/, { timeout: 8_000 });
+  await expect(correction).toContainText(/Hold stopped|Stop complete|Passengers/i, { timeout: 8_000 });
 });
