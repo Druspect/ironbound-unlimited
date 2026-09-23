@@ -870,7 +870,7 @@ export default function Home() {
             });
             safeDrivingRef.current = createSafeDrivingProgress();
 
-            if (stopStationIndex === STATIONS.length - 1) {
+            if (stopStationIndex === STATIONS.length - 1 && !visualQaModeRef.current) {
               if (canCompleteRun(nextRunProgress)) {
                 const completionBonus = completionBondPayout(
                   multiplier,
