@@ -52,3 +52,10 @@ Each Stage E station now has presentation-only route metadata: district, approac
 ## F4 implementation
 
 Seven deterministic line-side events now punctuate the route: cattle and a section crew on the plains, telegraph infrastructure through Red Mesa, salt hoppers on a siding, a logging camp, a stored summit snow plow, and a river work barge. These are decorative route-tile children only. They do not block the train, change physics, add random penalties, alter rewards, or require player input.
+
+
+## F5 reconciliation gate
+
+The final Stage F gate captures every scheduled station at desktop size and representative Saltworks/Stillwater states at 932×430 compact landscape. It asserts the train remains contained, platform scenery remains above the cab, route/station identity stays visible, and the large throttle, brake, whistle, mission, and stop guidance remain usable.
+
+Before promotion, the final diff must also confirm that Stage F did not alter locomotive art/registration, wheel or track geometry, physics, audio identity, Stage E economy/progression semantics, or service positions.
