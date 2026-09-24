@@ -1457,7 +1457,7 @@ export default function Home() {
           {stationState.inZone ? (
             <small>{stationState.collected ? `Stop complete • ${activeStation.serviceLabel}` : speed < 2.5 ? `Hold stopped • ${activeStation.serviceLabel}` : "Brake below 3 MPH"}</small>
           ) : (
-            <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStationContent.approachCue} • ~{expectedStationBonds.toLocaleString()} bonds</span></small>
+            <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStation.serviceLabel}<i className="station-approach-cue"> • {activeStationContent.approachCue}</i> • ~{expectedStationBonds.toLocaleString()} bonds</span></small>
           )}
           {stationState.inZone && !stationState.collected && <div className="service-steps" aria-hidden="true">
             <span className={stationState.dwell > .05 ? "active" : ""}>BOARD</span>

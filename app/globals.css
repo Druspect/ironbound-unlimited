@@ -1752,3 +1752,8 @@ button { color: inherit; }
 @media (max-height: 520px) {
   .route-event { bottom: calc(var(--hud-clearance) + 86px); opacity: .52; }
 }
+
+.station-approach-cue { font-style: normal; }
+@media (max-width: 680px), (max-height: 520px) {
+  .station-approach-cue { display: none; }
+}
