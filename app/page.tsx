@@ -36,7 +36,7 @@ import {
   totalRunBonds,
 } from "./run-progression";
 import type { CareerProgress, RunProgress } from "./run-progression";
-import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, landmarksForRouteTile } from "./route-content";
+import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, blendBiomeTheme, landmarksForRouteTile, stationContentFor } from "./route-content";
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
 import { calculateTrainSceneGeometry } from "./train-geometry";
 import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
@@ -1023,6 +1023,10 @@ export default function Home() {
           soundscape.playbackRate = mix.playbackRate;
         }
         root.style.setProperty("--transition-haze", String(Math.sin(biomeMix * Math.PI) * 0.34));
+        root.style.setProperty("--biome-mix", biomeMix.toFixed(4));
+        root.dataset.biomeId = BIOMES[currentBiome].id;
+        root.dataset.nextBiomeId = BIOMES[nextBiome].id;
+        root.dataset.biomeTile = String(tileInBiome);
         root.style.setProperty("--station-dwell", `${clamp(dwellRef.current.milliseconds / serviceDurationMilliseconds, 0, 1) * 100}%`);
 
         if (now - lastHudUpdate > 150) {
@@ -1129,6 +1133,9 @@ export default function Home() {
   const activeAudioProfile = engineAudioProfileFor(activeEngine.id);
   const activeConsistMetrics = calculateConsistMetrics(activeEngine.id, consistCars);
   const carWidth = CANONICAL_COACH_RENDER_WIDTH;
+  const activeBiome = BIOMES[biomeState.current];
+  const nextBiome = BIOMES[biomeState.next];
+  const blendedBiomeTheme = blendBiomeTheme(biomeState.current, biomeState.next, biomeState.mix);
   const activeRuntimeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[activeEngine.id];
   const engineWidth = engineRenderWidth(activeEngine.id);
   const passengerWorldWidth = consistCars.length * carWidth;
@@ -1148,12 +1155,17 @@ export default function Home() {
     "--camera-scale": cameraScale,
     "--scaled-wheel-inset": `${6 * cameraScale}px`,
     "--platform-width": `${trainGeometry.platformRenderedWidth}px`,
+    "--biome-sky": blendedBiomeTheme.sky,
+    "--biome-ground": blendedBiomeTheme.ground,
+    "--biome-haze": blendedBiomeTheme.haze,
+    "--biome-scrub-hue": `${blendedBiomeTheme.scrubHue.toFixed(2)}deg`,
+    "--biome-scrub-saturation": blendedBiomeTheme.scrubSaturation.toFixed(3),
+    "--biome-scrub-brightness": blendedBiomeTheme.scrubBrightness.toFixed(3),
   };
 
   const motionState = overloaded ? "SAFETY VALVES" : brakeEngaged ? (speed > 0.5 ? "BRAKING" : "BRAKE SET") : paused ? "HOLDING" : speed < 2 ? "STOPPED" : speed > 67 ? "HIGHBALL" : "RUNNING TRUE";
-  const activeBiome = BIOMES[biomeState.current];
-  const nextBiome = BIOMES[biomeState.next];
   const activeStation = STATIONS[stationState.index];
+  const activeStationContent = stationContentFor(activeStation.id);
   const onTarget = speed >= activeOperatingProfile.economicalSpeedMinMph && speed <= activeOperatingProfile.economicalSpeedMaxMph;
   const gradeLabel = `${gradePercent >= 0 ? "+" : ""}${gradePercent.toFixed(1)}%`;
   const heatState = overloaded ? "SAFETY VALVES" : heat >= 72 ? "HOT" : heat >= 30 ? "WARM" : "NORMAL";
@@ -1297,6 +1309,7 @@ export default function Home() {
       </aside>}
 
       <section className="scene" aria-label={`Interactive steam train crossing ${activeBiome.name}`}>
+        <div className="biome-character-wash" />
         <div className="sky-glow" />
         <div className="route-strip" aria-hidden="true">
           {ROUTE_TILES.map((tile, index) => (
@@ -1328,7 +1341,7 @@ export default function Home() {
 
         <div className={`station-layer ${servicing ? "is-servicing" : ""}`} aria-hidden="true">
           {STATIONS.map((station, index) => (
-            <div key={station.name} className={`station-world station-${index} station-${station.art} ${servicing && stationState.index === index ? "service-active" : ""}`} data-station-index={index} data-station-name={station.name} data-service-active={servicing && stationState.index === index ? "true" : "false"}>
+            <div key={station.name} className={`station-world station-${index} station-${station.art} ${servicing && stationState.index === index ? "service-active" : ""}`} data-station-index={index} data-station-id={station.id} data-station-role={stationContentFor(station.id).role} data-station-name={station.name} data-service-active={servicing && stationState.index === index ? "true" : "false"}>
               <img
                 className="station-platform-art"
                 src={`/assets/station-${station.art === "river" ? "plains" : station.art}.webp`}
@@ -1338,6 +1351,7 @@ export default function Home() {
                 loading={index === 0 ? "eager" : "lazy"}
               />
               <span className="station-service-activity" style={{ backgroundImage: `url("/assets/stations/service/v1/${station.serviceArt}.webp")` }} />
+              <span className="station-place-sign"><b>{station.name}</b><small>{stationContentFor(station.id).identity}</small></span>
             </div>
           ))}
         </div>
@@ -1429,10 +1443,11 @@ export default function Home() {
         <aside className={`station-card ${stationState.inZone ? "at-platform" : ""}`} aria-live="polite">
           <span className="eyebrow">{stationState.inZone ? "PLATFORM ZONE" : "NEXT SCHEDULED STOP"}</span>
           <strong>{activeStation.name}</strong>
+          <em className="station-identity">{activeStationContent.district} • {activeStationContent.identity}</em>
           {stationState.inZone ? (
             <small>{stationState.collected ? `Stop complete • ${activeStation.serviceLabel}` : speed < 2.5 ? `Hold stopped • ${activeStation.serviceLabel}` : "Brake below 3 MPH"}</small>
           ) : (
-            <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStation.serviceLabel} • ~{expectedStationBonds.toLocaleString()} bonds</span></small>
+            <small className="station-distance"><b>{stationDistanceYards.toLocaleString()} YD</b><span>• {activeStationContent.approachCue} • ~{expectedStationBonds.toLocaleString()} bonds</span></small>
           )}
           {stationState.inZone && !stationState.collected && <div className="service-steps" aria-hidden="true">
             <span className={stationState.dwell > .05 ? "active" : ""}>BOARD</span>
@@ -1457,7 +1472,7 @@ export default function Home() {
             <span className="eyebrow">TERRAIN</span>
             <strong>{activeBiome.name}</strong>
             <small>
-              Tile {biomeState.tile + 1} of {TILES_PER_BIOME} • {biomeState.mix > 0.02 ? `Blending into ${nextBiome.name}` : `Next: ${nextBiome.name}`}
+              Tile {biomeState.tile + 1} of {TILES_PER_BIOME} • {biomeState.mix > 0.02 ? `Blending into ${nextBiome.name}` : activeBiome.character}
             </small>
             <div><i style={{ width: `${Math.max(2, biomeState.mix * 100)}%` }} /></div>
           </aside>

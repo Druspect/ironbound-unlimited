@@ -5,8 +5,11 @@ import test from "node:test";
 import {
   ROUTE_BIOMES,
   ROUTE_LANDMARKS,
+  ROUTE_STATION_CONTENT,
   ROUTE_TILES_PER_BIOME,
+  blendBiomeTheme,
   landmarksForRouteTile,
+  stationContentFor,
 } from "../app/route-content.ts";
 
 test("Stage F route content preserves six five-tile biome territories", () => {
@@ -45,4 +48,26 @@ test("tile lookup only returns landmarks owned by that biome and tile", () => {
     }
   });
   assert.deepEqual(landmarksForRouteTile(999, 0), []);
+});
+
+
+test("biome themes blend continuously without mutating route identity", () => {
+  const a = blendBiomeTheme(0, 1, 0);
+  const b = blendBiomeTheme(0, 1, 1);
+  const mid = blendBiomeTheme(0, 1, .5);
+  assert.notEqual(a.sky, b.sky);
+  assert.notEqual(mid.sky, a.sky);
+  assert.notEqual(mid.sky, b.sky);
+  assert.ok(mid.scrubSaturation > 0);
+  assert.deepEqual(blendBiomeTheme(0, 1, -10), a);
+  assert.deepEqual(blendBiomeTheme(0, 1, 10), b);
+});
+
+test("all six scheduled stations have distinct presentation identities", () => {
+  const entries = Object.values(ROUTE_STATION_CONTENT);
+  assert.equal(entries.length, 6);
+  assert.equal(new Set(entries.map((station) => station.identity)).size, 6);
+  assert.equal(entries.filter((station) => station.terminal).length, 1);
+  assert.equal(stationContentFor("stillwater").role, "terminal");
+  assert.equal(stationContentFor("unknown").terminal, false);
 });

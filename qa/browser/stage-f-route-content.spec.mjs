@@ -38,3 +38,35 @@ test("Stage F route content is data-driven and keeps landmarks behind the railwa
   });
   expect(pageErrors).toEqual([]);
 });
+
+
+test("Stage F biome treatment and station identities remain readable without changing controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.goto("/?qaEngine=tom-thumb&qaCars=3&qaStation=5");
+
+  const experience = page.locator(".experience");
+  await expect(experience).toHaveAttribute("data-biome-id", /.+/);
+  await expect(page.locator('.station-world[data-station-id="stillwater"] .station-place-sign')).toContainText("Stillwater");
+  await expect(page.locator('.station-world[data-station-role="terminal"]')).toHaveCount(1);
+  await expect(page.locator(".station-card")).toContainText(/River Basin|Westbound terminal/);
+  await expect(page.locator("#throttle")).toBeVisible();
+  await expect(page.getByRole("button", { name: /BRAKE/i })).toBeVisible();
+
+  const vars = await experience.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return {
+      sky: style.getPropertyValue("--biome-sky").trim(),
+      ground: style.getPropertyValue("--biome-ground").trim(),
+      scrub: style.getPropertyValue("--biome-scrub-saturation").trim(),
+    };
+  });
+  expect(vars.sky).toMatch(/^rgb/);
+  expect(vars.ground).toMatch(/^rgb/);
+  expect(Number(vars.scrub)).toBeGreaterThan(0);
+
+  await page.screenshot({
+    path: "qa-artifacts/stage-f/stillwater-terminal-identity.png",
+    animations: "disabled",
+    caret: "hide",
+  });
+});
