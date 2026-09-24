@@ -36,7 +36,7 @@ import {
   totalRunBonds,
 } from "./run-progression";
 import type { CareerProgress, RunProgress } from "./run-progression";
-import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, blendBiomeTheme, landmarksForRouteTile, stationContentFor } from "./route-content";
+import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, blendBiomeTheme, eventsForRouteTile, landmarksForRouteTile, stationContentFor } from "./route-content";
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
 import { calculateTrainSceneGeometry } from "./train-geometry";
 import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
@@ -91,6 +91,7 @@ const ROUTE_TILES = Array.from({ length: ROUTE_TILE_COUNT + 2 }, (_, index) => {
     biome,
     tile,
     landmarks: landmarksForRouteTile(biome, tile),
+    events: eventsForRouteTile(biome, tile),
   };
 });
 
@@ -1329,6 +1330,15 @@ export default function Home() {
                     "--landmark-left": `${landmark.leftPercent}%`,
                     "--landmark-scale": landmark.scale,
                   } as SceneStyle}
+                />
+              ))}
+              {tile.events.map((event) => (
+                <span
+                  key={event.id}
+                  className={`route-event event-${event.kind} depth-${event.depth}`}
+                  data-route-event={event.id}
+                  data-event-label={event.label}
+                  style={{ "--event-left": `${event.leftPercent}%` } as SceneStyle}
                 />
               ))}
             </div>

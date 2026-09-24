@@ -130,3 +130,39 @@ export function stationContentFor(stationId: string) {
     terminal: false,
   };
 }
+
+
+export type RouteEventKind =
+  | "grazing-cattle"
+  | "section-crew"
+  | "telegraph-line"
+  | "salt-siding"
+  | "logging-camp"
+  | "snow-plow"
+  | "river-barge";
+
+export type RouteEvent = {
+  id: string;
+  biome: RouteBiomeId;
+  tile: number;
+  leftPercent: number;
+  kind: RouteEventKind;
+  label: string;
+  depth: "far" | "mid";
+};
+
+export const ROUTE_EVENTS: readonly RouteEvent[] = Object.freeze([
+  { id: "plains-cattle", biome: "high-plains", tile: 2, leftPercent: 68, kind: "grazing-cattle", label: "Cattle beside the right of way", depth: "mid" },
+  { id: "plains-section-men", biome: "high-plains", tile: 4, leftPercent: 74, kind: "section-crew", label: "Section crew at a tool cart", depth: "mid" },
+  { id: "mesa-telegraph", biome: "red-mesa", tile: 2, leftPercent: 62, kind: "telegraph-line", label: "Telegraph line through the cut", depth: "far" },
+  { id: "salt-siding-cars", biome: "salt-flats", tile: 2, leftPercent: 72, kind: "salt-siding", label: "Salt hoppers on the siding", depth: "mid" },
+  { id: "pine-logging-camp", biome: "pine-divide", tile: 2, leftPercent: 70, kind: "logging-camp", label: "Small logging camp", depth: "mid" },
+  { id: "alpine-snow-plow", biome: "alpine-pass", tile: 2, leftPercent: 66, kind: "snow-plow", label: "Snow plow stored above the pass", depth: "mid" },
+  { id: "river-barge", biome: "river-basin", tile: 2, leftPercent: 64, kind: "river-barge", label: "Work barge on the river", depth: "far" },
+]);
+
+export function eventsForRouteTile(biomeIndex: number, tile: number) {
+  const biome = ROUTE_BIOMES[biomeIndex];
+  if (!biome) return [];
+  return ROUTE_EVENTS.filter((event) => event.biome === biome.id && event.tile === tile);
+}

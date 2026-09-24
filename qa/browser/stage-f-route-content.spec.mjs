@@ -70,3 +70,23 @@ test("Stage F biome treatment and station identities remain readable without cha
     caret: "hide",
   });
 });
+
+
+test("Stage F line-side events are decorative, deterministic, and behind the train", async ({ page }) => {
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.goto("/?qaEngine=tom-thumb&qaCars=3&qaStation=0");
+
+  await expect(page.locator("[data-route-event]")).toHaveCount(7);
+  const ids = await page.locator("[data-route-event]").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-route-event")));
+  expect(new Set(ids).size).toBe(7);
+
+  const layering = await page.evaluate(() => ({
+    event: Number(getComputedStyle(document.querySelector(".route-event")).zIndex),
+    route: Number(getComputedStyle(document.querySelector(".route-strip")).zIndex),
+    train: Number(getComputedStyle(document.querySelector(".train-wrap")).zIndex),
+    pointerEvents: getComputedStyle(document.querySelector(".route-event")).pointerEvents,
+  }));
+  expect(layering.event).toBeLessThan(layering.train);
+  expect(layering.route).toBeLessThan(layering.train);
+  expect(layering.pointerEvents).toBe("none");
+});
