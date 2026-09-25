@@ -67,7 +67,10 @@ test("Stage G rejects malformed save JSON and returns a clean usable menu", asyn
   await expect(page.locator(".experience")).toHaveAttribute("data-app-ready", "true");
   await expect(page.getByRole("button", { name: "BEGIN RUN" })).toBeEnabled();
   await expect(page.locator(".save-recovery-notice")).toContainText("damaged local save");
-  expect(await page.evaluate((key) => localStorage.getItem(key), SAVE_KEY)).toBeNull();
+  const recoveredSave = await page.evaluate((key) => localStorage.getItem(key), SAVE_KEY);
+  expect(recoveredSave).not.toBeNull();
+  expect(() => JSON.parse(recoveredSave)).not.toThrow();
+  expect(JSON.parse(recoveredSave).runProgress.clearedStationIds).toEqual([]);
 
   await page.getByRole("button", { name: "OPEN STORE" }).click();
   await expect(page.getByRole("heading", { name: "Store" })).toBeVisible();
