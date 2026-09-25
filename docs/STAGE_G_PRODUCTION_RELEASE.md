@@ -31,3 +31,24 @@ Finish Ironbound as a dependable Dad-demo/release candidate without adding anoth
 - complete production-state evidence
 - verify Stage G does not alter calibrated art/geometry/physics/economy/audio/content
 - exact-tip QA before any promotion
+
+
+## Completion status
+
+All five Stage G passes are implemented:
+
+- G1 resume and save clarity — complete
+- G2 input and accessibility hardening — complete
+- G3 release diagnostics — complete
+- G4 production journey audit — complete
+- G5 final reconciliation — complete pending exact closeout-tip QA
+
+The release audit corrected three concrete edge cases:
+
+- Escape no longer starts a run from the main menu.
+- Existing in-progress saves are labelled **CONTINUE RUN** instead of looking like a new run.
+- Malformed local save JSON is discarded and immediately replaced by a clean valid save while showing a recovery notice.
+
+GitHub Actions run **#278** passed the complete integrated suite at commit `e4b1fc1885146088eb7e761c15579ca616e0cbc7`, including build/unit/lint and all 59 Chromium journeys.
+
+The final closeout tip adds only release evidence and documentation. It must pass the same exact-tip suite before Stage G is considered a completed production candidate.
