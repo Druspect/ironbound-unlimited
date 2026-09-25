@@ -40,6 +40,7 @@ import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, blendBiomeTheme, eventsForRouteTil
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
 import { RELEASE_INFO, releaseDisplayLabel } from "./release-info";
 import { calculateTrainSceneGeometry } from "./train-geometry";
+import { calculateConsistBoundaryGeometry } from "./consist-boundary-geometry";
 import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
 import type { CameraMode } from "./train-geometry";
 import {
@@ -1156,8 +1157,9 @@ export default function Home() {
   const blendedBiomeTheme = blendBiomeTheme(biomeState.current, biomeState.next, biomeState.mix);
   const activeRuntimeLayout = LOCOMOTIVE_RUNTIME_LAYOUTS[activeEngine.id];
   const engineWidth = engineRenderWidth(activeEngine.id);
-  const passengerWorldWidth = consistCars.length * carWidth;
-  const trainWorldWidth = passengerWorldWidth + engineWidth;
+  const consistBoundaryGeometry = calculateConsistBoundaryGeometry(consistCars.length, carWidth, engineWidth);
+  const passengerWorldWidth = consistBoundaryGeometry.passengerWorldWidth;
+  const trainWorldWidth = consistBoundaryGeometry.trainWorldWidth;
   const trainAnchor = passengerWorldWidth / 2;
   const trainGeometry = calculateTrainSceneGeometry(viewportWidth, passengerWorldWidth, trainWorldWidth, cameraZoom);
   const cameraScale = trainGeometry.cameraScale;
@@ -1166,7 +1168,9 @@ export default function Home() {
     "--throttle-color": `hsl(${Math.round(118 - throttle * 1.12)} 78% 52%)`,
     "--brake-pressure": `${brakePressure * 100}%`,
     "--car-width": `${carWidth}px`,
-    "--engine-left": `${consistCars.length * carWidth}px`,
+    "--engine-left": `${consistBoundaryGeometry.engineLeft}px`,
+    "--coach-coupling-gap": `${consistBoundaryGeometry.coachCouplingGap}px`,
+    "--engine-coupling-gap": `${consistBoundaryGeometry.engineCouplingGap}px`,
     "--engine-width": `${engineWidth}px`,
     "--train-world-width": `${trainWorldWidth}px`,
     "--train-anchor": `${trainAnchor}px`,
@@ -1414,7 +1418,7 @@ export default function Home() {
                   <div
                     key={`${carIndex}-${carId}`}
                     className={`rail-unit coach consist-car ${car.visualClass}`}
-                    style={{ left: `${carIndex * carWidth}px`, width: `${carWidth}px`, "--car-lift": `var(--coach-${carIndex % 2 === 0 ? "a" : "b"}-lift, 0px)` } as SceneStyle}
+                    style={{ left: `${consistBoundaryGeometry.carLeftOffsets[carIndex]}px`, width: `${carWidth}px`, "--car-lift": `var(--coach-${carIndex % 2 === 0 ? "a" : "b"}-lift, 0px)` } as SceneStyle}
                     data-passenger-car-index={carIndex}
                     data-car-type={carId}
                     aria-hidden="true"

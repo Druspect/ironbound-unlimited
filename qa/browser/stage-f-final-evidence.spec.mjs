@@ -32,7 +32,7 @@ test("Stage F desktop evidence covers every station and biome identity", async (
     await expect(page.locator(".cab")).toBeVisible();
 
     const geometry = await page.evaluate((stationId) => {
-      const train = document.querySelector(".train-wrap")?.getBoundingClientRect();
+      const train = document.querySelector(".train-kinetic")?.getBoundingClientRect();
       const cab = document.querySelector(".cab")?.getBoundingClientRect();
       const platform = document.querySelector(`.station-world[data-station-id="${stationId}"]`)?.getBoundingClientRect();
       return {
@@ -74,7 +74,7 @@ test("Stage F compact landscape preserves route identity and older-player contro
 
     const fit = await page.evaluate(() => {
       const cab = document.querySelector(".cab")?.getBoundingClientRect();
-      const train = document.querySelector(".train-wrap")?.getBoundingClientRect();
+      const train = document.querySelector(".train-kinetic")?.getBoundingClientRect();
       const mission = document.querySelector(".mission-card")?.getBoundingClientRect();
       return {
         cabBottom: cab?.bottom ?? NaN,
