@@ -1435,12 +1435,18 @@ export default function Home() {
                     <span className="car-mark">{car.shortName}</span>
                     {carIndex < consistCars.length - 1 && <>
                       <span className="car-end-diaphragm" />
-                      <span className="coupler consist-coupler" />
+                      <span className="coupler consist-coupler">
+                        <i className="coupler-air-hose" />
+                        <i className="coupler-steam-line" />
+                      </span>
                     </>}
                   </div>
                 );
               })}
-              <span className="consist-engine-coupling" aria-hidden="true"><i /></span>
+              <span className="consist-engine-coupling" aria-hidden="true">
+                <i className="coupler-air-hose" />
+                <i className="coupler-steam-line" />
+              </span>
               <LocomotiveSprite engine={activeEngine} motion={exhaustMotionRef} />
             </div>
           </div>
