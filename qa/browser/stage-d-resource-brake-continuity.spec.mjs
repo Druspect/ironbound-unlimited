@@ -47,7 +47,7 @@ test("resources and live brake state survive Store pause and resume without rese
   await expect.poll(() => pressure(page, "data-brake-cylinder-pressure")).toBeCloseTo(0.44, 2);
   expect(await resources(page)).toEqual({ fuel: 63, water: 58 });
 
-  await page.getByRole("button", { name: "BEGIN RUN" }).click();
+  await page.getByRole("button", { name: /BEGIN RUN|CONTINUE RUN/ }).click();
   await expect(page.locator(".consist-car")).toHaveCount(6);
   await page.waitForTimeout(180);
   await page.getByRole("button", { name: "STORE" }).click();
