@@ -1757,3 +1757,44 @@ button { color: inherit; }
 @media (max-width: 680px), (max-height: 520px) {
   .station-approach-cue { display: none; }
 }
+
+
+/* Stage G release hardening: keyboard visibility, disabled hydration gates, and recovery status. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 3px;
+}
+button:disabled {
+  cursor: wait;
+  opacity: .48;
+}
+.save-recovery-notice {
+  width: min(620px, 92%);
+  margin: 10px auto 0 !important;
+  padding: 10px 14px;
+  border: 1px solid rgba(210,155,74,.5);
+  background: rgba(210,155,74,.08);
+  color: rgba(243,234,215,.86) !important;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.release-stamp {
+  display: block;
+  margin-top: 10px;
+  color: rgba(243,234,215,.42);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.options-panel > .release-stamp {
+  margin-top: 12px;
+  text-align: center;
+}
+@media (max-height: 520px) {
+  .intro-panel .release-stamp { display: none; }
+}

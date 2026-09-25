@@ -38,6 +38,7 @@ import {
 import type { CareerProgress, RunProgress } from "./run-progression";
 import { ROUTE_BIOMES, ROUTE_TILES_PER_BIOME, blendBiomeTheme, eventsForRouteTile, landmarksForRouteTile, stationContentFor } from "./route-content";
 import { ROUTE_TILE_TRAVEL, sampleRouteProfile } from "./route-profile";
+import { RELEASE_INFO, releaseDisplayLabel } from "./release-info";
 import { calculateTrainSceneGeometry } from "./train-geometry";
 import { CANONICAL_COACH_RENDER_WIDTH, CANONICAL_COACH_WHEEL_DIAMETER_RATIO, engineRenderWidth } from "./fleet-proportions";
 import type { CameraMode } from "./train-geometry";
@@ -185,6 +186,7 @@ export default function Home() {
   const [browserAcceptanceEnabled, setBrowserAcceptanceEnabled] = useState(false);
   const [browserAcceptanceChecks, setBrowserAcceptanceChecks] = useState<BrowserAcceptanceCheck[]>([]);
   const [saveReady, setSaveReady] = useState(false);
+  const [saveRecoveryNotice, setSaveRecoveryNotice] = useState(false);
   const [rewardNotice, setRewardNotice] = useState<{ station: string; reward: string; bonus?: string; service?: string } | null>(null);
   const throttleRef = useRef(throttle);
   const pausedRef = useRef(paused);
@@ -334,8 +336,17 @@ export default function Home() {
           pausedRef.current = Boolean(runFailureRef.current);
           setPaused(pausedRef.current);
         } else if (!browserAcceptanceRequested) {
-          const saved = localStorage.getItem("ironbound-save-v4") ?? localStorage.getItem("ironbound-save-v3") ?? localStorage.getItem("ironbound-save-v2") ?? localStorage.getItem("ironbound-save-v1");
+          const saveKeys = ["ironbound-save-v4", "ironbound-save-v3", "ironbound-save-v2", "ironbound-save-v1"] as const;
+          const saved = saveKeys.map((key) => localStorage.getItem(key)).find((value) => value !== null) ?? null;
           if (saved) {
+            try {
+              JSON.parse(saved);
+            } catch {
+              saveKeys.forEach((key) => localStorage.removeItem(key));
+              setSaveRecoveryNotice(true);
+              setSaveReady(true);
+              return;
+            }
             const parsed = JSON.parse(saved) as { bonds?: number; ownedEngines?: string[]; equippedEngine?: string; consistCars?: string[]; cameraZoom?: CameraMode; settings?: typeof settings; selectedAudioPack?: AudioPackId; runProgress?: unknown; careerProgress?: unknown; run?: { throttle?: number; speed?: number; boilerLoad?: number; heat?: number; distance?: number; visualTravel?: number; brakeEngaged?: boolean; brakePressure?: number; brakeCylinderPressure?: number; fuel?: number; coal?: number; water?: number; stationsWithoutService?: number; failure?: "fuel" | "coal" | "water" | "service" | "schedule" | null; claimedStops?: string[]; servicedStationSequence?: number } };
             if (typeof parsed.bonds === "number") setBonds(Math.max(0, parsed.bonds));
             const owned = Array.from(new Set([STARTER_LOCOMOTIVE_ID, ...(Array.isArray(parsed.ownedEngines) ? parsed.ownedEngines.filter((id) => LOCOMOTIVES.some((engine) => engine.id === id)) : [])]));
@@ -1097,9 +1108,15 @@ export default function Home() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (screen === "intro") return;
         event.preventDefault();
-        if (screen === "game") { setPaused(true); setScreen("options"); }
-        else { setScreen("game"); setPaused(Boolean(runFailureRef.current) || Boolean(runComplete)); }
+        if (screen === "game") {
+          setPaused(true);
+          setScreen("options");
+        } else {
+          setScreen("game");
+          setPaused(Boolean(runFailureRef.current) || Boolean(runComplete));
+        }
         return;
       }
       if (screen !== "game") return;
@@ -1187,6 +1204,21 @@ export default function Home() {
   const expectedStationBonds = stationBondPayout(activeStation.baseBonds, activeEngine.bondMultiplier, consistCars);
   const routeStopsCleared = runProgress.clearedStationIds.length;
   const routeProgressPercent = runComplete ? 100 : routeStopsCleared / RUN_STATION_COUNT * 100;
+  const hasRunInProgress = !runComplete && !runFailure && (routeStopsCleared > 0 || distance > 0.05);
+  const mainRunActionLabel = runComplete
+    ? "VIEW ROUTE SUMMARY"
+    : runFailure
+      ? "VIEW ENDED RUN"
+      : hasRunInProgress
+        ? "CONTINUE RUN"
+        : "BEGIN RUN";
+  const introRunCopy = runComplete
+    ? "Your westbound run is complete. Review the result, visit the Store, or start the next run."
+    : runFailure
+      ? "Your last run ended and is saved. Open it to review what happened or start a new run."
+      : hasRunInProgress
+        ? `Your westbound run is saved at ${routeStopsCleared} of ${RUN_STATION_COUNT} stops. Continue where you left off.`
+        : "Run six scheduled stops. Release the brake, work the throttle, and stop below 3 MPH at each platform.";
   const nextAction = runComplete
     ? "Route complete."
     : stationState.inZone
@@ -1284,7 +1316,7 @@ export default function Home() {
         : { title: "Service stop missed", detail: `Four stations passed without ${activeFactSheet.fuelType} and water service. The run has ended.` };
 
   return (
-    <main ref={experienceRef} data-app-ready={saveReady ? "true" : "false"} className={`experience phase-golden ${paused ? "is-paused" : ""} ${overloaded ? "is-overloaded" : ""} ${settings.reducedMotion ? "reduced-motion" : ""} ${settings.highContrast ? "high-contrast" : ""}`} style={sceneStyle}>
+    <main ref={experienceRef} data-app-ready={saveReady ? "true" : "false"} data-release-stage={RELEASE_INFO.stage} data-release-build={RELEASE_INFO.buildId} className={`experience phase-golden ${paused ? "is-paused" : ""} ${overloaded ? "is-overloaded" : ""} ${settings.reducedMotion ? "reduced-motion" : ""} ${settings.highContrast ? "high-contrast" : ""}`} style={sceneStyle}>
       <header className="topbar">
         <div className="brand" aria-label="Ironbound Unlimited">
           <span className="brand-mark" aria-hidden="true">IU</span>
@@ -1604,14 +1636,16 @@ export default function Home() {
             <section className="intro-panel">
               <div className="intro-locomotive" aria-hidden="true"><LocomotiveSprite engine={activeEngine} mode="preview" /></div>
               <h1>IRONBOUND <em>UNLIMITED</em></h1>
-              <p>Run six scheduled stops. Release the brake, work the throttle, and stop below 3 MPH at each platform.</p>
+              <p>{introRunCopy}</p>
+              {saveRecoveryNotice && <p className="save-recovery-notice" role="status">A damaged local save was ignored. A clean railway state is ready.</p>}
               {careerProgress.completedRuns > 0 && <div className="career-summary"><strong>{careerProgress.completedRuns}</strong><span>completed runs</span><strong>{careerProgress.bestRunBonds.toLocaleString()}</strong><span>best bonds</span></div>}
               <div className="menu-actions" aria-busy={!saveReady}>
-                <button className="primary-menu-button" disabled={!saveReady} onClick={() => openScreen("game")}>BEGIN RUN</button>
+                <button className="primary-menu-button" disabled={!saveReady} onClick={() => openScreen("game")}>{mainRunActionLabel}</button>
                 <button disabled={!saveReady} onClick={() => openScreen("shop")}>OPEN STORE</button>
                 <button disabled={!saveReady} onClick={() => openScreen("options")}>SETTINGS & OPTIONS</button>
               </div>
               <small>W / ↑ throttle &nbsp;•&nbsp; S / ↓ brake &nbsp;•&nbsp; Space whistle &nbsp;•&nbsp; Esc menu</small>
+              <small className="release-stamp">{releaseDisplayLabel()} • Save v{RELEASE_INFO.saveSchema}</small>
             </section>
           )}
 
@@ -1712,6 +1746,7 @@ export default function Home() {
               </div>
               <div className="current-engine"><span>ENGINE IN SERVICE</span><strong>{activeEngine.name}</strong><small>{activeEngine.wheelArrangement} • ×{activeEngine.bondMultiplier} bonds</small></div>
               <div className="options-actions"><button onClick={() => openScreen("intro")}>MAIN MENU</button><button className="primary-menu-button" onClick={() => openScreen("game")}>RETURN TO RUN</button></div>
+              <small className="release-stamp">{releaseDisplayLabel()} • {RELEASE_INFO.buildId}</small>
             </section>
           )}
         </div>

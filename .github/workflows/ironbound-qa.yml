@@ -8,6 +8,7 @@ on:
       - gpt/stage-d-final-reconciliation
       - gpt/stage-e-run-progression
       - gpt/stage-f-route-content
+      - gpt/stage-g-production-release
   pull_request:
     branches:
       - sites-source

@@ -35,6 +35,7 @@ const STATIONS = [
 const captured = [];
 
 async function waitForVisuals(page) {
+  await expect(page.locator(".experience")).toHaveAttribute("data-app-ready", "true", { timeout: 10_000 });
   await page.waitForFunction(() => [...document.images].every((image) => image.complete));
   await page.evaluate(async () => { await document.fonts?.ready; });
   await page.waitForTimeout(120);
