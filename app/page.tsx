@@ -463,6 +463,26 @@ export default function Home() {
       const cars = Array.from(document.querySelectorAll<HTMLElement>(".consist-car"));
       checks.push({ name: "six-car consist", passed: train?.dataset.carCount === "6" && cars.length === 6, detail: `${cars.length} rendered passenger cars` });
       const scale = Number(train?.dataset.cameraScale);
+      const coachCouplers = Array.from(document.querySelectorAll<HTMLElement>(".consist-coupler"));
+      const engineCoupling = document.querySelector<HTMLElement>(".consist-engine-coupling");
+      const engineUnit = document.querySelector<HTMLElement>(".engine-sprite-unit");
+      const coachGapChecks = cars.slice(0, -1).map((car, index) => {
+        const current = car.getBoundingClientRect();
+        const next = cars[index + 1].getBoundingClientRect();
+        const coupler = coachCouplers[index]?.getBoundingClientRect();
+        const visibleGap = next.left - current.right;
+        const expectedGap = COACH_COUPLING_GAP * scale;
+        const bridge = Boolean(coupler && coupler.left <= current.right + 4 && coupler.right >= next.left - 4);
+        return Math.abs(visibleGap - expectedGap) <= 1.25 && bridge;
+      });
+      checks.push({ name: "coach coupling continuity", passed: coachCouplers.length === cars.length - 1 && coachGapChecks.every(Boolean), detail: `${coachCouplers.length} couplers across ${Math.max(0, cars.length - 1)} coach boundaries` });
+      const tailCarRect = cars.at(-1)?.getBoundingClientRect();
+      const engineRect = engineUnit?.getBoundingClientRect();
+      const engineCouplingRect = engineCoupling?.getBoundingClientRect();
+      const engineBoundaryGap = tailCarRect && engineRect ? engineRect.left - tailCarRect.right : Number.NaN;
+      const expectedEngineGap = ENGINE_COUPLING_GAP * scale;
+      const engineBridge = Boolean(tailCarRect && engineRect && engineCouplingRect && engineCouplingRect.left <= tailCarRect.right + 4 && engineCouplingRect.right >= engineRect.left - 4);
+      checks.push({ name: "coach-to-tender coupling continuity", passed: Number.isFinite(engineBoundaryGap) && Math.abs(engineBoundaryGap - expectedEngineGap) <= 1.5 && engineBridge, detail: Number.isFinite(engineBoundaryGap) ? `${engineBoundaryGap.toFixed(2)}px rendered boundary gap` : "geometry unavailable" });
       checks.push({ name: "automatic framing", passed: train?.dataset.cameraMode === "auto" && Number.isFinite(scale) && scale > 0.35 && scale <= 1, detail: `camera scale ${Number.isFinite(scale) ? scale.toFixed(3) : "missing"}` });
 
       const nearRail = document.querySelector<HTMLElement>(".rail-near")?.getBoundingClientRect();
