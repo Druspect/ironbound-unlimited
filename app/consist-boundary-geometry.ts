@@ -11,7 +11,7 @@
 import {
   CANONICAL_COACH_LENGTH_FEET,
   CANONICAL_COACH_RENDER_WIDTH,
-} from "./fleet-proportions";
+} from "./fleet-proportions.ts";
 
 export const WORLD_PIXELS_PER_FOOT =
   CANONICAL_COACH_RENDER_WIDTH / CANONICAL_COACH_LENGTH_FEET;
