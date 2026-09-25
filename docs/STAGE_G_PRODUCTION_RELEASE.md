@@ -52,3 +52,8 @@ The release audit corrected three concrete edge cases:
 GitHub Actions run **#278** passed the complete integrated suite at commit `e4b1fc1885146088eb7e761c15579ca616e0cbc7`, including build/unit/lint and all 59 Chromium journeys.
 
 The final Stage G candidate passed the exact-tip suite in GitHub Actions run **#280** at commit `8ee0671fe986d7a40148e376a363e88fb5c77203`. Stage G is therefore a completed production candidate.
+
+
+## Publication status
+
+Stage G is the intended published production baseline. After this documentation-only closeout tip passes the exact QA suite, `sites-source` is to be fast-forwarded to the same commit without force.

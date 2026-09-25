@@ -145,9 +145,9 @@ Passenger paint is a render-time livery system in `app/carriage-liveries.css`; a
 
 ## Branch and Deployment Model
 
-- `gpt/stage-g-production-release` — completed Stage G production-release candidate
-- `gpt/stage-f-route-content` — published Stage F baseline
-- `sites-source` — deployment source branch, currently held at the published Stage F tip
+- `gpt/stage-g-production-release` — completed Stage G production-release baseline
+- `gpt/stage-f-route-content` — published Stage F predecessor
+- `sites-source` — deployment source branch promoted to the validated Stage G release tip
 
 Production changes are validated on the active staged-remediation branch first. `sites-source` should only be advanced when the QA branch is a clean fast-forward and the candidate has completed its release review.
 
