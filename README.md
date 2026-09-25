@@ -145,11 +145,12 @@ Passenger paint is a render-time livery system in `app/carriage-liveries.css`; a
 
 ## Branch and Deployment Model
 
-- `gpt/stage-g-production-release` — completed Stage G production-release baseline
-- `gpt/stage-f-route-content` — published Stage F predecessor
-- `sites-source` — deployment source branch promoted to the validated Stage G release tip
+- `main` — canonical GitHub/default branch; kept identical to the published production tip
+- `sites-source` — deployment source; kept identical to `main`
+- `gpt/stage-g-production-release` — validated Stage G release branch and final remediation audit trail
+- earlier `gpt/*` stage/remediation branches — historical references only; no active development
 
-Production changes are validated on the active staged-remediation branch first. `sites-source` should only be advanced when the QA branch is a clean fast-forward and the candidate has completed its release review.
+Ironbound is now at **v1.0.0 / Stage G Production Release**. New work should branch from the current `main` / `sites-source` production tip. Historical remediation branches are retained only to preserve the audit trail described in `docs/BRANCH_HISTORY.md`.
 
 ## Production Principles
 
