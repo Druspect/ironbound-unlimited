@@ -1,148 +1,185 @@
 /*
- * Consist coupling realism
+ * Stage H coupling realism
  * ------------------------
- * Vehicle boxes touch mathematically, but transparent artwork margins can make
- * the train read as disconnected. Render the mechanical interfaces explicitly
- * at each boundary without moving any calibrated body or wheel geometry.
+ * Couplers occupy explicit world-space gaps. Artwork transparency never decides
+ * vehicle spacing, and connector hardware stays above body art so every boundary
+ * remains mechanically legible at normal and compact camera scales.
  */
 
+/* H2: passenger end hardware. */
 .consist-car .car-end-diaphragm {
   position: absolute;
-  z-index: 4;
-  right: -7px;
+  z-index: 7;
+  right: -4px;
   bottom: 29%;
-  width: 14px;
-  height: 36%;
-  border: 1px solid rgba(61, 59, 54, .92);
+  width: 8px;
+  height: 35%;
+  border: 1px solid rgba(69, 66, 59, .96);
   border-radius: 2px;
   background:
-    repeating-linear-gradient(90deg, #151615 0 2px, #393934 2px 4px, #20211f 4px 6px),
-    linear-gradient(180deg, #3e3d39, #171817);
-  box-shadow:
-    inset 0 1px rgba(190, 181, 158, .12),
-    inset 0 -1px rgba(0, 0, 0, .72),
-    1px 2px 3px rgba(0, 0, 0, .62);
+    repeating-linear-gradient(90deg, #111312 0 2px, #3d3c36 2px 4px, #191b19 4px 6px),
+    linear-gradient(180deg, #4b4942, #191b19 72%);
+  box-shadow: inset 0 1px rgba(210, 199, 170, .13), 0 2px 3px rgba(0,0,0,.72);
   pointer-events: none;
 }
 
 .consist-car .car-end-diaphragm::after {
   content: "";
   position: absolute;
-  left: 2px;
-  right: 2px;
-  bottom: -7px;
-  height: 8px;
+  left: -2px;
+  right: -2px;
+  bottom: -6px;
+  height: 7px;
   border-radius: 1px;
-  background: linear-gradient(180deg, #545149, #1e201e 68%, #101110);
+  background: linear-gradient(180deg, #5c574d, #242623 68%, #101210);
   box-shadow: 0 2px 2px rgba(0,0,0,.62);
 }
 
-.consist-coupler {
-  z-index: 2;
-  left: auto;
-  right: -11px;
-  bottom: 20.6%;
-  width: 22px;
-  height: 5px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #6f654f 0 24%, #2a2b29 25% 72%, #111312 73%);
-  box-shadow: 0 2px 2px rgba(0, 0, 0, .72);
-  transform: none;
-}
-
-.consist-coupler::before,
-.consist-coupler::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  transform: translateY(-50%);
-  border: 1px solid #171817;
-  border-radius: 45% 55% 50% 50%;
-  background: #3b3a35;
-}
-
-.consist-coupler::before { left: -2px; }
-.consist-coupler::after { right: -2px; }
-
-/* The final coach-to-tender connection is independent of transparent sprite
-   margins. It deliberately crosses the engine-left boundary. */
+.consist-coupler,
 .consist-engine-coupling {
   position: absolute;
-  z-index: 4;
-  left: calc(var(--engine-left) - 15px);
-  bottom: 20.6%;
-  width: 30px;
+  z-index: 8;
+  bottom: 20.4%;
   height: 6px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #766b53 0 22%, #2b2c29 23% 72%, #111312 73%);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, .76);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #80745a 0 20%, #343531 21% 72%, #121412 73%);
+  box-shadow: 0 2px 3px rgba(0,0,0,.78);
   pointer-events: none;
 }
 
+.consist-coupler {
+  left: 100%;
+  right: auto;
+  width: var(--coach-coupling-gap, 14px);
+}
+
+/* Knuckle faces: one anchored to each vehicle. The bar between them can show
+   a small draft-slack shift without moving either car. */
+.consist-coupler::before,
+.consist-coupler::after,
 .consist-engine-coupling::before,
 .consist-engine-coupling::after {
   content: "";
   position: absolute;
   top: 50%;
   width: 8px;
-  height: 8px;
+  height: 10px;
   transform: translateY(-50%);
-  border: 1px solid #171817;
-  border-radius: 48%;
-  background: #3d3b35;
+  border: 1px solid #151715;
+  border-radius: 42% 56% 48% 52%;
+  background: linear-gradient(135deg, #5a574d, #262825 62%, #111210);
+  box-shadow: 0 1px 2px rgba(0,0,0,.76);
 }
 
+.consist-coupler::before,
 .consist-engine-coupling::before { left: -3px; }
+.consist-coupler::after,
 .consist-engine-coupling::after { right: -3px; }
 
-.consist-engine-coupling > i {
+/* Trainline hoses hang below the knuckle rather than being painted into the
+   carriage art. Brake hose is dominant; the steam-heat line is thinner. */
+.coupler-air-hose,
+.coupler-steam-line {
   position: absolute;
-  left: 43%;
-  top: 5px;
-  width: 9px;
-  height: 13px;
-  border-left: 2px solid rgba(35, 33, 30, .92);
-  border-bottom: 2px solid rgba(35, 33, 30, .92);
-  border-radius: 0 0 0 8px;
-  transform: rotate(-7deg);
+  display: block;
+  pointer-events: none;
+  transform-origin: 50% 0;
 }
 
-/* Make the tender-to-locomotive drawbar legible on every registered engine
-   without changing the sprite's measured tender or locomotive sections. */
+.coupler-air-hose {
+  left: 28%;
+  top: 5px;
+  width: 48%;
+  height: 13px;
+  border-left: 2px solid #242623;
+  border-right: 2px solid #242623;
+  border-bottom: 2px solid #242623;
+  border-radius: 0 0 10px 10px;
+  transform: translateX(var(--coupler-slack, 0px)) rotate(-3deg);
+}
+
+.coupler-steam-line {
+  left: 43%;
+  top: 6px;
+  width: 38%;
+  height: 9px;
+  border-left: 1px solid #6f6857;
+  border-bottom: 1px solid #6f6857;
+  border-radius: 0 0 0 8px;
+  opacity: .86;
+  transform: translateX(calc(var(--coupler-slack, 0px) * .55)) rotate(4deg);
+}
+
+/* H3: final passenger-car to tender boundary. */
+.consist-engine-coupling {
+  left: var(--passenger-world-width);
+  width: var(--engine-coupling-gap, 18px);
+}
+
+.consist-engine-coupling {
+  transform: translateX(calc(var(--coupler-slack, 0px) * .35));
+}
+
+/* Tender-to-locomotive drawbar: registered to each sprite's tender junction.
+   Oversize the visible casting slightly so dark engines do not swallow it. */
 .engine-tender-drawbar {
   position: absolute;
-  z-index: 4;
-  left: calc(var(--tender-junction, 30%) - 2%);
-  bottom: 18.5%;
-  width: 5%;
-  min-width: 10px;
-  height: 4px;
+  z-index: 9;
+  left: calc(var(--tender-junction, 30%) - 2.4%);
+  bottom: 18.2%;
+  width: 6.4%;
+  min-width: 13px;
+  height: 5px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #615846, #242522 58%, #101211);
-  box-shadow: 0 2px 2px rgba(0, 0, 0, .7);
+  background: linear-gradient(180deg, #756b54 0 22%, #30312d 23% 70%, #111310 71%);
+  box-shadow: 0 2px 3px rgba(0,0,0,.78), 0 0 0 1px rgba(157,143,111,.12);
   pointer-events: none;
+  transform: translateX(calc(var(--coupler-slack, 0px) * .22));
 }
 
+.engine-tender-drawbar::before,
+.engine-tender-drawbar::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 9px;
+  transform: translateY(-50%);
+  border: 1px solid #151715;
+  border-radius: 45%;
+  background: #343630;
+  box-shadow: 0 1px 2px rgba(0,0,0,.74);
+}
+
+.engine-tender-drawbar::before { left: -3px; }
+.engine-tender-drawbar::after { right: -3px; }
+
 .engine-sprite-tom-thumb .engine-tender-drawbar {
-  left: 29%;
-  width: 9%;
+  left: 28.5%;
+  width: 10%;
+}
+
+/* H4: under braking the line reads compressed; under power it reads stretched.
+   The vehicles themselves never shift, preserving calibrated wheel geometry. */
+.experience[data-brake-state="set"] .consist-coupler,
+.experience[data-brake-state="set"] .consist-engine-coupling {
+  filter: brightness(.92);
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .consist-car .car-end-diaphragm {
-    right: -6px;
-    width: 12px;
-  }
+  .consist-car .car-end-diaphragm { width: 7px; right: -3px; }
+  .consist-coupler,
+  .consist-engine-coupling { height: 5px; }
+  .coupler-air-hose { height: 10px; }
+  .coupler-steam-line { height: 7px; }
+}
 
-  .consist-coupler {
-    right: -9px;
-    width: 18px;
-  }
-
-  .consist-engine-coupling {
-    left: calc(var(--engine-left) - 12px);
-    width: 24px;
+@media (prefers-reduced-motion: reduce) {
+  .consist-coupler,
+  .consist-engine-coupling,
+  .engine-tender-drawbar,
+  .coupler-air-hose,
+  .coupler-steam-line {
+    transform: none !important;
   }
 }
