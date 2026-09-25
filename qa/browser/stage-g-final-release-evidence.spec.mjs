@@ -20,7 +20,7 @@ test("Stage G final desktop evidence covers fresh and resumed release entry", as
     caret: "hide",
   });
 
-  await page.evaluate((key) => {
+  await page.addInitScript((key) => {
     localStorage.setItem(key, JSON.stringify({
       bonds: 1_250,
       ownedEngines: ["tom-thumb"],
