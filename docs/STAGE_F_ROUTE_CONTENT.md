@@ -59,3 +59,27 @@ Seven deterministic line-side events now punctuate the route: cattle and a secti
 The final Stage F gate captures every scheduled station at desktop size and representative Saltworks/Stillwater states at 932×430 compact landscape. It asserts the train remains contained, platform scenery remains above the cab, route/station identity stays visible, and the large throttle, brake, whistle, mission, and stop guidance remain usable.
 
 Before promotion, the final diff must also confirm that Stage F did not alter locomotive art/registration, wheel or track geometry, physics, audio identity, Stage E economy/progression semantics, or service positions.
+
+
+## Completion status
+
+All five Stage F passes are implemented and reconciled:
+
+- F1 route content backbone — complete
+- F2 biome identity and continuous transitions — complete
+- F3 station individuality and terminal identity — complete
+- F4 deterministic line-side route events — complete
+- F5 desktop/compact evidence and protected-system reconciliation — complete
+
+The final audit also corrected two cross-stage issues before closeout:
+
+- Stage E service guidance remains present alongside the new Stage F approach cues.
+- Main-menu actions now wait for client hydration before becoming clickable, preventing a fast early Store/Run click from being silently lost as Stage F increases initial scene markup.
+
+GitHub Actions run **#273** passed the complete suite at commit `2971ad20232526f32a7491b1a76d769fc9661bb0`, including unit/contract/build/lint, all Chromium journeys, visual regression, performance budgets, Stage F route evidence, and artifact upload.
+
+The Stage F diff against published Stage E is a clean fast-forward and does not modify locomotive registration/artwork, train geometry, locomotive physics, steam operations, engine audio profiles/assets, run economy, or run progression modules.
+
+## Promotion rule
+
+This closeout documentation commit must pass the exact branch-tip QA suite. After that, Stage F is a completed production candidate. `sites-source` remains on the published Stage E tip until Stage F is deliberately published.

@@ -145,7 +145,7 @@ Passenger paint is a render-time livery system in `app/carriage-liveries.css`; a
 
 ## Branch and Deployment Model
 
-- `gpt/stage-f-route-content` — active Stage F route/content development
+- `gpt/stage-f-route-content` — completed Stage F route/content production candidate
 - `gpt/stage-e-run-progression` — published Stage E baseline
 - `sites-source` — deployment source branch, currently held at the published Stage E tip
 
