@@ -109,10 +109,9 @@ test("store previews use one normalized comparison stage", () => {
 });
 
 test("version-four persistence migrates earlier saves and includes reward and service continuity", () => {
-  assert.match(page, /ironbound-save-v4/);
-  assert.match(page, /ironbound-save-v3/);
-  assert.match(page, /\?\? localStorage\.getItem\("ironbound-save-v2"\)/);
-  assert.match(page, /\?\? localStorage\.getItem\("ironbound-save-v1"\)/);
+  assert.match(page, /const saveKeys = \["ironbound-save-v4", "ironbound-save-v3", "ironbound-save-v2", "ironbound-save-v1"\]/);
+  assert.match(page, /saveKeys\.map\(\(key\) => localStorage\.getItem\(key\)\)\.find/);
+  assert.match(page, /saveKeys\.forEach\(\(key\) => localStorage\.removeItem\(key\)\)/);
   for (const field of ["throttle", "speed", "boilerLoad", "heat", "distance", "visualTravel", "brakeEngaged", "fuel", "water", "stationsWithoutService", "failure", "claimedStops", "servicedStationSequence"]) {
     assert.match(page, new RegExp(`\\b${field}\\b`));
   }
