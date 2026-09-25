@@ -1,8 +1,9 @@
 export const RELEASE_INFO = Object.freeze({
   stage: "G",
-  label: "Production Release Candidate",
+  label: "Production Release",
   saveSchema: 4,
-  buildId: "stage-g-rc1",
+  version: "1.0.0",
+  buildId: "stage-g-release",
 });
 
 export function releaseDisplayLabel() {
