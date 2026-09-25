@@ -57,3 +57,17 @@ The final Stage G candidate passed the exact-tip suite in GitHub Actions run **#
 ## Publication status
 
 Stage G is the intended published production baseline. After this documentation-only closeout tip passes the exact QA suite, `sites-source` is to be fast-forwarded to the same commit without force.
+
+
+## Repository closeout
+
+The Stage G publication cleanup also normalizes the repository itself for v1.0.0:
+
+- package and lockfile identity now match `ironbound-unlimited` v1.0.0
+- release metadata now identifies **Stage G • Production Release**, not a release candidate
+- generated `tsconfig.tsbuildinfo` is removed and ignored
+- QA workflow targets the canonical `main`, `sites-source`, and Stage G release refs
+- README documents the final branch/deployment policy
+- `docs/BRANCH_HISTORY.md` records that every legacy remediation ref checked has zero unique commits outside Stage G
+
+The exact repository-cleanup tip must pass the full Ironbound QA suite before `main` and `sites-source` are advanced to it.
