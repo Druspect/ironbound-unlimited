@@ -41,7 +41,7 @@ All five Stage G passes are implemented:
 - G2 input and accessibility hardening — complete
 - G3 release diagnostics — complete
 - G4 production journey audit — complete
-- G5 final reconciliation — complete pending exact closeout-tip QA
+- G5 final reconciliation — complete
 
 The release audit corrected three concrete edge cases:
 
@@ -51,4 +51,4 @@ The release audit corrected three concrete edge cases:
 
 GitHub Actions run **#278** passed the complete integrated suite at commit `e4b1fc1885146088eb7e761c15579ca616e0cbc7`, including build/unit/lint and all 59 Chromium journeys.
 
-The final closeout tip adds only release evidence and documentation. It must pass the same exact-tip suite before Stage G is considered a completed production candidate.
+The final Stage G candidate passed the exact-tip suite in GitHub Actions run **#280** at commit `8ee0671fe986d7a40148e376a363e88fb5c77203`. Stage G is therefore a completed production candidate.
