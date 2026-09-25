@@ -31,17 +31,23 @@ for (const fixture of cases) {
       const worldEngineGap = Number.parseFloat(trainStyle.getPropertyValue("--engine-coupling-gap"));
       const scale = Number.parseFloat(trainStyle.getPropertyValue("--camera-scale")) || 1;
 
-      const nominalCoachGaps = cars.slice(0, -1).map((car, index) => {
-        const next = cars[index + 1];
-        return next.offsetLeft - (car.offsetLeft + car.offsetWidth);
+      const nominalCars = cars.map((car) => ({
+        left: Number.parseFloat(car.style.left || getComputedStyle(car).left),
+        width: Number.parseFloat(car.style.width || getComputedStyle(car).width),
+      }));
+      const nominalCoachGaps = nominalCars.slice(0, -1).map((car, index) => {
+        const next = nominalCars[index + 1];
+        return next.left - (car.left + car.width);
       });
       const renderedCoachBoxes = cars.map((node) => node.getBoundingClientRect());
       const renderedCoachGaps = renderedCoachBoxes.slice(0, -1).map(
         (car, index) => renderedCoachBoxes[index + 1].left - car.right,
       );
-      const lastCar = cars.at(-1);
-      const nominalEngineGap = lastCar && engine
-        ? engine.offsetLeft - (lastCar.offsetLeft + lastCar.offsetWidth)
+      const lastCar = nominalCars.at(-1);
+      const declaredEngineLeft = Number.parseFloat(trainStyle.getPropertyValue("--engine-left"));
+      const computedEngineLeft = engine ? Number.parseFloat(getComputedStyle(engine).left) : Number.NaN;
+      const nominalEngineGap = lastCar && Number.isFinite(declaredEngineLeft)
+        ? declaredEngineLeft - (lastCar.left + lastCar.width)
         : Number.NaN;
 
       return {
@@ -51,6 +57,8 @@ for (const fixture of cases) {
         nominalCoachGaps,
         renderedCoachGaps,
         nominalEngineGap,
+        declaredEngineLeft,
+        computedEngineLeft,
         expectedCoachGap: worldCoachGap,
         expectedRenderedCoachGap: worldCoachGap * scale,
         expectedEngineGap: worldEngineGap,
@@ -70,6 +78,7 @@ for (const fixture of cases) {
       expect(gap).toBeGreaterThan(0);
     }
 
+    expect(Math.abs(geometry.declaredEngineLeft - geometry.computedEngineLeft)).toBeLessThanOrEqual(.01);
     expect(Math.abs(geometry.nominalEngineGap - geometry.expectedEngineGap)).toBeLessThanOrEqual(.001);
     expect(geometry.nominalEngineGap).toBeGreaterThan(0);
   });
