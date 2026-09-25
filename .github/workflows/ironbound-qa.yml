@@ -3,14 +3,12 @@ name: Ironbound QA
 on:
   push:
     branches:
-      - gpt/qa-hardening-six-pack
-      - gpt/stage-c-audio-realism
-      - gpt/stage-d-final-reconciliation
-      - gpt/stage-e-run-progression
-      - gpt/stage-f-route-content
+      - main
+      - sites-source
       - gpt/stage-g-production-release
   pull_request:
     branches:
+      - main
       - sites-source
 
 permissions:
