@@ -1284,7 +1284,7 @@ export default function Home() {
         : { title: "Service stop missed", detail: `Four stations passed without ${activeFactSheet.fuelType} and water service. The run has ended.` };
 
   return (
-    <main ref={experienceRef} className={`experience phase-golden ${paused ? "is-paused" : ""} ${overloaded ? "is-overloaded" : ""} ${settings.reducedMotion ? "reduced-motion" : ""} ${settings.highContrast ? "high-contrast" : ""}`} style={sceneStyle}>
+    <main ref={experienceRef} data-app-ready={saveReady ? "true" : "false"} className={`experience phase-golden ${paused ? "is-paused" : ""} ${overloaded ? "is-overloaded" : ""} ${settings.reducedMotion ? "reduced-motion" : ""} ${settings.highContrast ? "high-contrast" : ""}`} style={sceneStyle}>
       <header className="topbar">
         <div className="brand" aria-label="Ironbound Unlimited">
           <span className="brand-mark" aria-hidden="true">IU</span>
@@ -1606,10 +1606,10 @@ export default function Home() {
               <h1>IRONBOUND <em>UNLIMITED</em></h1>
               <p>Run six scheduled stops. Release the brake, work the throttle, and stop below 3 MPH at each platform.</p>
               {careerProgress.completedRuns > 0 && <div className="career-summary"><strong>{careerProgress.completedRuns}</strong><span>completed runs</span><strong>{careerProgress.bestRunBonds.toLocaleString()}</strong><span>best bonds</span></div>}
-              <div className="menu-actions">
-                <button className="primary-menu-button" onClick={() => openScreen("game")}>BEGIN RUN</button>
-                <button onClick={() => openScreen("shop")}>OPEN STORE</button>
-                <button onClick={() => openScreen("options")}>SETTINGS & OPTIONS</button>
+              <div className="menu-actions" aria-busy={!saveReady}>
+                <button className="primary-menu-button" disabled={!saveReady} onClick={() => openScreen("game")}>BEGIN RUN</button>
+                <button disabled={!saveReady} onClick={() => openScreen("shop")}>OPEN STORE</button>
+                <button disabled={!saveReady} onClick={() => openScreen("options")}>SETTINGS & OPTIONS</button>
               </div>
               <small>W / ↑ throttle &nbsp;•&nbsp; S / ↓ brake &nbsp;•&nbsp; Space whistle &nbsp;•&nbsp; Esc menu</small>
             </section>

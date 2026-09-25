@@ -90,3 +90,17 @@ test("Stage F line-side events are decorative, deterministic, and behind the tra
   expect(layering.route).toBeLessThan(layering.train);
   expect(layering.pointerEvents).toBe("none");
 });
+
+
+test("Stage F waits for hydration before accepting main-menu actions", async ({ page }) => {
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.goto("/");
+
+  const experience = page.locator(".experience");
+  await expect(experience).toHaveAttribute("data-app-ready", "true", { timeout: 10_000 });
+  const store = page.getByRole("button", { name: "OPEN STORE" });
+  await expect(store).toBeEnabled();
+  await store.click();
+  await expect(page.getByRole("heading", { name: "Store" })).toBeVisible();
+  await expect(page.locator(".engine-card-copy").first()).toBeVisible();
+});
